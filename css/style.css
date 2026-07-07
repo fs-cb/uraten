@@ -635,3 +635,97 @@ img,svg,video,canvas{max-width:100%}
 .modal-art::before{
   animation:none !important;
 }
+
+
+/* =========================================================
+   MOBILE PERFORMANCE PATCH
+   スマホのみ backdrop-filter をOFF
+========================================================= */
+@media(max-width:760px){
+  header,
+  .nav,
+  .menu-toggle,
+  .player,
+  .show,
+  .cal-row,
+  .card,
+  .modal,
+  .modal-card,
+  .fab,
+  .cast-link,
+  .tag-link,
+  .status-pill{
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
+
+  header,
+  .nav,
+  .player,
+  .show,
+  .cal-row,
+  .card,
+  .modal-card{
+    background:
+      linear-gradient(155deg,rgba(17,17,30,.94),rgba(8,8,17,.92)) padding-box,
+      linear-gradient(135deg,rgba(246,217,139,.38),rgba(23,236,255,.24),rgba(255,45,149,.22),rgba(255,255,255,.06)) border-box;
+  }
+
+  .fab{
+    background:linear-gradient(135deg,var(--gold),var(--pink),var(--violet));
+  }
+
+  .fab-dc{
+    background:linear-gradient(135deg,#5865F2,#7b6cff);
+  }
+}
+
+
+/* =========================================================
+   PC BACKGROUND LINE MOTION PATCH
+   PCのみ背景ネオンラインの動きをON、スマホは軽量維持
+========================================================= */
+@media(min-width:761px){
+  body::after{
+    animation:neonRunSlow 24s linear infinite;
+  }
+
+  .lux-lines::before,
+  .lux-lines::after{
+    width:56vw;
+    height:1px;
+    left:-22vw;
+    top:20vh;
+    transform:rotate(-14deg);
+    background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent);
+    background-size:auto;
+    background-repeat:initial;
+    background-position:initial;
+    box-shadow:0 0 16px var(--cyan),0 0 28px rgba(255,45,149,.34);
+    animation:streakSlow 16s cubic-bezier(.55,0,.25,1) infinite;
+  }
+
+  .lux-lines::after{
+    top:74vh;
+    width:66vw;
+    transform:rotate(12deg);
+    background:linear-gradient(90deg,transparent,var(--gold),#fff,var(--violet),transparent);
+    animation-duration:22s;
+    animation-delay:-5s;
+  }
+}
+
+@media(max-width:760px){
+  body::after{
+    animation:none !important;
+  }
+
+  .lux-lines::before,
+  .lux-lines::after{
+    animation:lineLightRun 16s linear infinite;
+  }
+
+  .lux-lines::after{
+    animation-duration:20s;
+  }
+}
