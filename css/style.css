@@ -729,3 +729,62 @@ img,svg,video,canvas{max-width:100%}
     animation-duration:20s;
   }
 }
+
+
+/* =========================================================
+   PC ONLY BACKGROUND LINE MOTION FIX
+   PC幅のみ背景ネオンラインを動かす。スマホ指定は変更しない。
+========================================================= */
+@media(min-width:761px){
+  body::after{
+    animation:neonRunSlow 24s linear infinite !important;
+  }
+
+  .lux-lines{
+    display:block !important;
+    opacity:.72 !important;
+  }
+
+  .lux-lines::before{
+    width:56vw !important;
+    height:1px !important;
+    left:-22vw !important;
+    top:20vh !important;
+    transform:rotate(-14deg) !important;
+    background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent) !important;
+    background-size:auto !important;
+    background-repeat:initial !important;
+    background-position:initial !important;
+    box-shadow:0 0 16px var(--cyan),0 0 28px rgba(255,45,149,.34) !important;
+    animation:pcStreakA 16s cubic-bezier(.55,0,.25,1) infinite !important;
+  }
+
+  .lux-lines::after{
+    width:66vw !important;
+    height:1px !important;
+    left:-24vw !important;
+    top:74vh !important;
+    transform:rotate(12deg) !important;
+    background:linear-gradient(90deg,transparent,var(--gold),#fff,var(--violet),transparent) !important;
+    background-size:auto !important;
+    background-repeat:initial !important;
+    background-position:initial !important;
+    box-shadow:0 0 16px rgba(246,217,139,.55),0 0 28px rgba(139,108,255,.32) !important;
+    animation:pcStreakB 22s cubic-bezier(.55,0,.25,1) -5s infinite !important;
+  }
+}
+
+@keyframes pcStreakA{
+  0%{transform:translate3d(-30vw,0,0) rotate(-14deg);opacity:0}
+  12%{opacity:.95}
+  58%{opacity:.68}
+  100%{transform:translate3d(138vw,0,0) rotate(-14deg);opacity:0}
+}
+
+@keyframes pcStreakB{
+  0%{transform:translate3d(-30vw,0,0) rotate(12deg);opacity:0}
+  12%{opacity:.90}
+  58%{opacity:.62}
+  100%{transform:translate3d(138vw,0,0) rotate(12deg);opacity:0}
+}
+
