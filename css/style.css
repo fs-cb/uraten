@@ -262,9 +262,7 @@
     backdrop-filter:blur(18px) saturate(1.25);
   }
   .player{position:relative;border-radius:10px;margin-top:28px;animation:goldPulse 8s ease-in-out infinite;overflow:hidden}
-  .player::before{content:"";position:absolute;inset:-40% -10%;pointer-events:none;background:
-    linear-gradient(108deg,transparent 0 42%,rgba(23,236,255,.0) 44%,rgba(23,236,255,.22) 45%,rgba(255,255,255,.28) 45.4%,rgba(255,45,149,.0) 47%,transparent 48% 100%);
-    transform:translateX(-40%);animation:panelSweep 6.5s ease-in-out infinite;mix-blend-mode:screen}
+  .player::before{display:none}
   @keyframes panelSweep{0%,32%{transform:translateX(-52%)}70%,100%{transform:translateX(52%)}}
   .player-top{padding:28px 24px 27px;background:linear-gradient(160deg,rgba(255,255,255,.035),transparent 55%)}
   .player-top::after{width:5px;background:linear-gradient(180deg,var(--gold),var(--pink),var(--cyan));box-shadow:0 0 18px rgba(246,217,139,.55),0 0 30px rgba(255,45,149,.3)}
@@ -284,7 +282,7 @@
   .cast{color:rgba(251,247,255,.66)}
   .cast-link,.tag-link{border-color:rgba(255,255,255,.13);background:rgba(255,255,255,.035);backdrop-filter:blur(10px);border-radius:8px}
   .play-btn{position:relative;width:92px;height:92px;background:transparent;box-shadow:0 0 22px rgba(246,217,139,.25),0 0 44px rgba(255,45,149,.28),0 18px 42px rgba(0,0,0,.45);overflow:hidden;isolation:isolate}
-  .play-btn::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 210deg,var(--gold),var(--pink),var(--violet),var(--cyan),var(--gold));animation:playRingSpin 5.8s linear infinite;z-index:0}
+  .play-btn::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 210deg,var(--gold),var(--pink),var(--violet),var(--cyan),var(--gold));animation:none;z-index:0}
   .play-btn::after{content:"";position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.26),transparent 32%),linear-gradient(145deg,#171728,#07070e);z-index:1}
   .play-btn span{position:relative;z-index:2;border-left-color:var(--ink);filter:drop-shadow(0 0 7px rgba(23,236,255,.65))}
   @keyframes playRingSpin{to{transform:rotate(1turn)}}
@@ -298,10 +296,11 @@
   .show{border-radius:10px;box-shadow:0 22px 68px rgba(0,0,0,.50),0 0 60px rgba(23,236,255,.06)}
   .show:hover{border-color:transparent;box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(246,217,139,.38),0 0 56px rgba(255,45,149,.18)}
   .show-art{min-height:340px;overflow:hidden}
-  .show-art::before,.card-art::before,.modal-art::before{content:"";position:absolute;inset:0;background:
-    linear-gradient(120deg,transparent 0 36%,rgba(255,255,255,.18) 38%,transparent 41% 100%),
-    repeating-linear-gradient(110deg,rgba(255,255,255,.035) 0 1px,transparent 1px 18px);
-    mix-blend-mode:screen;opacity:.9;animation:artSweep 7s ease-in-out infinite}
+  .show-art::before,.card-art::before,.modal-art::before{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(110deg,rgba(255,255,255,.028) 0 1px,transparent 1px 22px);
+    mix-blend-mode:screen;opacity:.45;
+  }
   .show-art::after,.card-art::after,.modal-art::after{content:"";position:absolute;inset:12px;border:1px solid rgba(246,217,139,.30);border-radius:8px;box-shadow:inset 0 0 22px rgba(23,236,255,.12),0 0 28px rgba(246,217,139,.08);pointer-events:none}
   @keyframes artSweep{0%,25%{background-position:-220px 0,0 0}100%{background-position:560px 0,140px 0}}
   .ph-note{border-color:rgba(246,217,139,.42);color:rgba(255,255,255,.62);background:rgba(0,0,0,.15);backdrop-filter:blur(8px);box-shadow:0 0 26px rgba(246,217,139,.08)}
@@ -501,8 +500,8 @@ img,svg,video,canvas{max-width:100%}
   .play-btn::before{
     inset:-42% !important;
     border-radius:0 !important;
-    background:conic-gradient(from 210deg,var(--gold),var(--pink),var(--violet),var(--cyan),var(--gold));
-    animation:playRingSpin 5.8s linear infinite;
+    background:linear-gradient(90deg,var(--gold),var(--pink),var(--violet),var(--cyan),var(--gold));
+    animation:none !important;
   }
   .play-btn::after{
     inset:4px !important;
@@ -589,3 +588,16 @@ img,svg,video,canvas{max-width:100%}
   .cast-link{display:inline-block}
 }
 
+
+
+/* =========================================================
+   PERFORMANCE LITE PATCH
+   共通: 再生ボタン回転とパネル内スイープ演出を停止
+========================================================= */
+.player::before{display:none !important}
+.play-btn::before{animation:none !important}
+.show-art::before,
+.card-art::before,
+.modal-art::before{
+  animation:none !important;
+}
