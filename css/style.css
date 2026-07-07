@@ -213,14 +213,48 @@
     mix-blend-mode:screen;
     filter:blur(.22px) drop-shadow(0 0 10px rgba(23,236,255,.20));
     transform:translate3d(-2%,0,0) rotate(.001deg);
-    animation:neonRunSlow 24s linear infinite;
+    animation:none;
   }
-  .lux-lines{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.72;mix-blend-mode:screen}
+  .lux-lines{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.70;mix-blend-mode:screen}
   .lux-lines::before,
-  .lux-lines::after{content:"";position:absolute;width:56vw;height:1px;left:-22vw;top:20vh;background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent);box-shadow:0 0 16px var(--cyan),0 0 28px rgba(255,45,149,.34);transform:rotate(-14deg);animation:streakSlow 16s cubic-bezier(.55,0,.25,1) infinite}
-  .lux-lines::after{top:74vh;width:66vw;background:linear-gradient(90deg,transparent,var(--gold),#fff,var(--violet),transparent);animation-duration:22s;animation-delay:-5s;transform:rotate(12deg)}
+  .lux-lines::after{
+    content:"";
+    position:absolute;
+    height:1px;
+    left:50%;
+    top:20vh;
+    width:92vw;
+    transform:translateX(-50%) rotate(-14deg);
+    background:
+      linear-gradient(90deg,transparent 0%,rgba(23,236,255,.34) 18%,rgba(255,255,255,.20) 50%,rgba(255,45,149,.30) 82%,transparent 100%),
+      linear-gradient(90deg,transparent 0%,rgba(255,255,255,0) 40%,rgba(255,255,255,.95) 50%,rgba(255,255,255,0) 60%,transparent 100%);
+    background-size:100% 100%,18% 100%;
+    background-repeat:no-repeat;
+    background-position:center,-24% center;
+    box-shadow:0 0 12px rgba(23,236,255,.24),0 0 22px rgba(255,45,149,.18);
+    animation:lineLightRun 12s linear infinite;
+  }
+  .lux-lines::after{
+    top:74vh;
+    width:96vw;
+    transform:translateX(-50%) rotate(12deg);
+    background:
+      linear-gradient(90deg,transparent 0%,rgba(246,217,139,.28) 18%,rgba(255,255,255,.18) 50%,rgba(139,108,255,.30) 82%,transparent 100%),
+      linear-gradient(90deg,transparent 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,.86) 50%,rgba(255,255,255,0) 62%,transparent 100%);
+    background-size:100% 100%,16% 100%;
+    background-repeat:no-repeat;
+    background-position:center,-22% center;
+    box-shadow:0 0 12px rgba(246,217,139,.20),0 0 22px rgba(139,108,255,.18);
+    animation-duration:16s;
+    animation-delay:-5s;
+  }
   @keyframes auroraShift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(0,-2%,0) scale(1.04)}}
   @keyframes neonRunSlow{0%{background-position:-280px 0,340px 0,0 0,0 0}100%{background-position:620px 0,-720px 0,420px 0,220px 0}}
+
+  @keyframes lineLightRun{
+    0%{background-position:center,-24% center}
+    100%{background-position:center,124% center}
+  }
   @keyframes streakSlow{0%{transform:translate3d(-30vw,0,0) rotate(-14deg);opacity:0}12%{opacity:.95}58%{opacity:.68}100%{transform:translate3d(138vw,0,0) rotate(-14deg);opacity:0}}
   @keyframes goldPulse{0%,100%{box-shadow:0 0 18px rgba(246,217,139,.15),0 0 42px rgba(23,236,255,.08)}50%{box-shadow:0 0 26px rgba(246,217,139,.28),0 0 60px rgba(255,45,149,.12)}}
 
@@ -592,7 +626,7 @@ img,svg,video,canvas{max-width:100%}
 
 /* =========================================================
    PERFORMANCE LITE PATCH
-   共通: 再生ボタン回転とパネル内スイープ演出を停止
+   共通: 再生ボタン回転、パネル内スイープ、背景ライン全体移動を停止
 ========================================================= */
 .player::before{display:none !important}
 .play-btn::before{animation:none !important}
