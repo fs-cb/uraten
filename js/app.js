@@ -129,4 +129,33 @@
 
   function openApply(){document.getElementById('applyModal').classList.add('open')}
   function closeApply(){document.getElementById('applyModal').classList.remove('open')}
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeApply()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeApply();closeMenu()}});
+
+
+// ===== ハンバーガーメニュー =====
+function closeMenu(){
+  const nav=document.getElementById('globalNav');
+  const btn=document.querySelector('.menu-toggle');
+  if(nav) nav.classList.remove('open');
+  if(btn){
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  }
+}
+function toggleMenu(){
+  const nav=document.getElementById('globalNav');
+  const btn=document.querySelector('.menu-toggle');
+  if(!nav||!btn)return;
+  const open=nav.classList.toggle('open');
+  btn.classList.toggle('open',open);
+  btn.setAttribute('aria-expanded',open?'true':'false');
+}
+document.addEventListener('click',e=>{
+  const nav=document.getElementById('globalNav');
+  const btn=document.querySelector('.menu-toggle');
+  if(!nav||!btn)return;
+  if(nav.contains(e.target)||btn.contains(e.target))return;
+  closeMenu();
+});
+document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',closeMenu));
+

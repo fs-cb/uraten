@@ -10,8 +10,11 @@
 <div class="lux-lines" aria-hidden="true"></div>
 
 <header>
-  <div class="logo" onclick="showTop()">URATEN</div>
-  <nav class="nav">
+  <div class="logo" onclick="showTop();closeMenu()">URATEN</div>
+  <button class="menu-toggle" type="button" aria-label="メニューを開く" aria-expanded="false" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="nav" id="globalNav">
     <a onclick="showTop()">放送</a>
     <a onclick="showGallery()">応援イラスト</a>
     <a onclick="scrollTo2('cal')">イベント</a>
