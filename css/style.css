@@ -789,17 +789,3 @@ img,svg,video,canvas{max-width:100%}
 }
 
 
-/* =========================================================
-   OLD MOBILE PERFORMANCE TEST PATCH
-   古いスマホ向け: サムネイル背景回転を停止
-========================================================= */
-@media(max-width:760px){
-  .thumb::before{
-    animation:none !important;
-    transform:none !important;
-    opacity:.20 !important;
-    background:
-      linear-gradient(135deg,transparent 0%,rgba(246,217,139,.22) 32%,rgba(23,236,255,.16) 62%,rgba(255,45,149,.14) 100%) !important;
-  }
-}
-
