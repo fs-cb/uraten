@@ -127,9 +127,7 @@
     }
   })();
 
-  function openApply(){document.getElementById('applyModal').classList.add('open')}
-  function closeApply(){document.getElementById('applyModal').classList.remove('open')}
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeApply();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeMenu()}});
 
 
 // ===== ハンバーガーメニュー =====

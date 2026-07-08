@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URATEN メニュー表</title>
+<style>
+
+  :root{
+    --bg:#03030a; --bg2:#090914; --panel:#11111e; --panel2:#18172a;
+    --line:rgba(255,255,255,.12); --ink:#fbf7ff; --dim:#a9a4c9;
+    --pink:#ff2d95; --cyan:#17ecff; --lime:#d7ff5d; --violet:#8b6cff;
+    --gold:#f6d98b; --rose:#ff6ab6; --glass:rgba(18,18,34,.62);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 560px at 50% -10%,rgba(246,217,139,.14),transparent 62%),
+      linear-gradient(180deg,#03030a 0%,#070711 46%,#03030a 100%);
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.7;
+    padding:0 0 86px;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.92;
+    background:
+      radial-gradient(44vw 34vw at 12% 20%,rgba(255,45,149,.30),transparent 60%),
+      radial-gradient(42vw 34vw at 88% 18%,rgba(23,236,255,.25),transparent 60%),
+      radial-gradient(38vw 32vw at 28% 84%,rgba(139,108,255,.28),transparent 62%),
+      radial-gradient(36vw 30vw at 82% 88%,rgba(246,217,139,.18),transparent 62%),
+      linear-gradient(180deg,rgba(255,255,255,.02),transparent 35%,rgba(255,255,255,.03));
+    filter:saturate(1.15);
+    animation:auroraShift 16s ease-in-out infinite alternate;
+  }
+  body::after{
+    content:"";position:fixed;inset:-16%;z-index:0;pointer-events:none;opacity:.46;
+    background:
+      linear-gradient(112deg,transparent 0 18%,rgba(23,236,255,0) 18.35%,rgba(23,236,255,.58) 18.65%,rgba(255,255,255,.46) 18.85%,rgba(23,236,255,0) 19.3%,transparent 19.65% 100%),
+      linear-gradient(126deg,transparent 0 62%,rgba(255,45,149,0) 62.1%,rgba(255,45,149,.48) 62.35%,rgba(246,217,139,.34) 62.58%,rgba(255,45,149,0) 63.05%,transparent 63.35% 100%),
+      linear-gradient(72deg,transparent 0 42%,rgba(139,108,255,0) 42.25%,rgba(139,108,255,.36) 42.45%,rgba(255,255,255,.24) 42.62%,rgba(139,108,255,0) 43.05%,transparent 43.3% 100%),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 140px);
+    mix-blend-mode:screen;
+    filter:blur(.22px) drop-shadow(0 0 10px rgba(23,236,255,.20));
+    transform:translate3d(-2%,0,0) rotate(.001deg);
+    animation:neonRunSlow 24s linear infinite;
+  }
+  .lux-lines{
+    position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.72;mix-blend-mode:screen
+  }
+  .lux-lines::before,
+  .lux-lines::after{
+    content:"";position:absolute;width:56vw;height:1px;left:-22vw;top:20vh;
+    background:linear-gradient(90deg,transparent,var(--cyan),#fff,var(--pink),transparent);
+    box-shadow:0 0 16px var(--cyan),0 0 28px rgba(255,45,149,.34);
+    transform:rotate(-14deg);
+    animation:streakSlow 16s cubic-bezier(.55,0,.25,1) infinite;
+  }
+  .lux-lines::after{
+    top:74vh;width:66vw;
+    background:linear-gradient(90deg,transparent,var(--gold),#fff,var(--violet),transparent);
+    animation-duration:22s;animation-delay:-5s;transform:rotate(12deg);
+  }
+  @keyframes auroraShift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(0,-2%,0) scale(1.04)}}
+  @keyframes neonRunSlow{0%{background-position:-280px 0,340px 0,0 0,0 0}100%{background-position:620px 0,-720px 0,420px 0,220px 0}}
+  @keyframes streakSlow{0%{transform:translate3d(-30vw,0,0) rotate(-14deg);opacity:0}12%{opacity:.95}58%{opacity:.68}100%{transform:translate3d(138vw,0,0) rotate(-14deg);opacity:0}}
+  @keyframes goldPulse{0%,100%{box-shadow:0 0 18px rgba(246,217,139,.15),0 0 42px rgba(23,236,255,.08)}50%{box-shadow:0 0 26px rgba(246,217,139,.28),0 0 60px rgba(255,45,149,.12)}}
+  @keyframes panelSweep{0%,34%{transform:translateX(-55%)}72%,100%{transform:translateX(55%)}}
+
+  .wrap{
+    position:relative;z-index:1;
+    max-width:920px;margin:0 auto;padding:0 18px;
+  }
+  .wrap::before{
+    content:"";position:absolute;inset:0 -50px 0;z-index:0;pointer-events:none;
+    background:
+      linear-gradient(90deg,transparent,rgba(246,217,139,.10),transparent) top/100% 1px no-repeat,
+      linear-gradient(180deg,rgba(255,255,255,.035),transparent 22%);
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.72) 50%,transparent 100%);
+  }
+  .wrap>*{position:relative;z-index:1}
+
+  .hero{
+    margin-top:28px;
+    padding:44px 22px 34px;
+    text-align:center;
+    border:1px solid transparent;
+    border-radius:10px;
+    overflow:hidden;
+    background:
+      linear-gradient(155deg,rgba(17,17,30,.78),rgba(8,8,17,.72)) padding-box,
+      linear-gradient(135deg,rgba(246,217,139,.46),rgba(23,236,255,.33),rgba(255,45,149,.34),rgba(255,255,255,.08)) border-box;
+    box-shadow:0 18px 54px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter:blur(18px) saturate(1.25);
+    animation:goldPulse 8s ease-in-out infinite;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:-40% -10%;pointer-events:none;
+    background:linear-gradient(108deg,transparent 0 42%,rgba(23,236,255,.0) 44%,rgba(23,236,255,.20) 45%,rgba(255,255,255,.24) 45.4%,rgba(255,45,149,.0) 47%,transparent 48% 100%);
+    transform:translateX(-40%);
+    animation:panelSweep 7.5s ease-in-out infinite;
+    mix-blend-mode:screen;
+  }
+  .logo{
+    position:relative;
+    font-weight:900;font-size:42px;font-style:italic;letter-spacing:.08em;
+    transform:skewX(-6deg);display:inline-block;
+    text-shadow:0 0 18px rgba(255,45,149,.35),0 0 32px rgba(23,236,255,.18);
+    background:linear-gradient(92deg,var(--gold) 0%,#fff 18%,var(--cyan) 45%,var(--pink) 78%,var(--gold) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero h1{
+    position:relative;
+    font-size:12px;font-weight:800;letter-spacing:.36em;
+    color:var(--gold);
+    margin-top:9px;
+    text-shadow:0 0 14px rgba(246,217,139,.30);
+  }
+  .hero p{
+    position:relative;
+    font-size:13px;color:rgba(251,247,255,.66);margin-top:13px;
+  }
+
+  .group{
+    margin:34px 0 40px;
+    padding:22px 20px 20px;
+    border:1px solid transparent;
+    border-radius:10px;
+    background:
+      linear-gradient(155deg,rgba(17,17,30,.55),rgba(8,8,17,.50)) padding-box,
+      linear-gradient(135deg,rgba(246,217,139,.28),rgba(23,236,255,.20),rgba(255,45,149,.20),rgba(255,255,255,.07)) border-box;
+    box-shadow:0 18px 52px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(14px) saturate(1.18);
+  }
+  .group-head{display:flex;align-items:center;gap:13px;margin-bottom:5px}
+  .group-num{
+    font-size:12px;font-weight:900;color:#07070e;
+    width:28px;height:28px;border-radius:6px;display:grid;place-items:center;
+    transform:skewX(-10deg);
+    background:linear-gradient(135deg,var(--gold),var(--cyan));
+    box-shadow:0 0 18px rgba(23,236,255,.30),0 0 18px rgba(246,217,139,.18);
+  }
+  .group-title{
+    font-size:21px;font-weight:900;letter-spacing:.04em;
+    text-shadow:0 0 20px rgba(255,45,149,.14);
+  }
+  .group-sub{
+    font-size:12.5px;color:rgba(251,247,255,.60);
+    margin:0 0 16px 42px;
+  }
+
+  .item{
+    position:relative;
+    border:1px solid transparent;
+    border-radius:10px;
+    background:
+      linear-gradient(155deg,rgba(18,18,34,.72),rgba(8,8,17,.68)) padding-box,
+      linear-gradient(135deg,rgba(246,217,139,.30),rgba(23,236,255,.18),rgba(255,45,149,.16),rgba(255,255,255,.06)) border-box;
+    margin-bottom:11px;padding:16px 18px;
+    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+    box-shadow:0 14px 38px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.055);
+    overflow:hidden;
+    transition:transform .18s,box-shadow .18s,filter .18s;
+  }
+  .item::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:linear-gradient(180deg,var(--gold),var(--cyan),var(--pink));
+    box-shadow:0 0 18px rgba(23,236,255,.48);
+    opacity:.72;
+  }
+  .item:hover{
+    transform:translateX(4px);
+    box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 32px rgba(23,236,255,.10);
+    filter:brightness(1.05);
+  }
+  .item.accent{
+    background:
+      linear-gradient(155deg,rgba(20,16,34,.78),rgba(8,8,17,.70)) padding-box,
+      linear-gradient(135deg,rgba(246,217,139,.52),rgba(255,45,149,.46),rgba(23,236,255,.24)) border-box;
+  }
+  .item.accent::before{background:linear-gradient(180deg,var(--gold),var(--pink));box-shadow:0 0 18px rgba(255,45,149,.48)}
+  .item.free{
+    background:
+      linear-gradient(155deg,rgba(16,25,23,.70),rgba(8,8,17,.68)) padding-box,
+      linear-gradient(135deg,rgba(215,255,93,.34),rgba(246,217,139,.30),rgba(23,236,255,.18)) border-box;
+  }
+  .item.free::before{background:linear-gradient(180deg,var(--lime),var(--gold));box-shadow:0 0 18px rgba(215,255,93,.34)}
+
+  .item-main{flex:1;min-width:0;position:relative;z-index:1}
+  .item-name{font-size:16px;font-weight:850;display:flex;align-items:center;gap:9px;flex-wrap:wrap;letter-spacing:.01em}
+  .item-desc{font-size:12.5px;color:rgba(251,247,255,.61);margin-top:5px}
+  .item-desc b{color:var(--cyan)}
+
+  .tag{
+    font-size:10px;font-weight:900;padding:3px 8px;border-radius:8px;letter-spacing:.08em;white-space:nowrap;
+    background:rgba(255,255,255,.04);backdrop-filter:blur(8px);
+  }
+  .tag-free{background:rgba(215,255,93,.10);color:var(--gold);border:1px solid rgba(246,217,139,.38)}
+  .tag-paid{background:rgba(255,45,149,.14);color:var(--rose);border:1px solid rgba(255,45,149,.38)}
+  .tag-soon{background:rgba(139,108,255,.16);color:#c5baff;border:1px solid rgba(139,108,255,.4)}
+  .tag-hidden{background:rgba(255,255,255,.06);color:rgba(251,247,255,.58);border:1px solid rgba(255,255,255,.12)}
+  .tag-mvp{background:rgba(23,236,255,.12);color:var(--cyan);border:1px solid rgba(23,236,255,.36)}
+
+  .price{flex:none;text-align:right;min-width:124px;position:relative;z-index:1}
+  .price-main{
+    font-size:23px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.12;
+    color:var(--ink);
+    text-shadow:0 0 22px rgba(246,217,139,.16);
+  }
+  .price-main small{font-size:12px;color:rgba(251,247,255,.54);font-weight:700;margin-left:1px}
+  .price-main.free{color:var(--lime);text-shadow:0 0 18px rgba(215,255,93,.22)}
+  .price-sub{font-size:11px;color:rgba(251,247,255,.52);margin-top:3px}
+  .price-reg{font-size:11px;color:rgba(251,247,255,.52);margin-top:4px;padding-top:4px;border-top:1px dashed rgba(255,255,255,.12)}
+  .price-reg b{color:var(--gold);font-weight:800}
+
+  .note{
+    position:relative;
+    font-size:11.5px;color:rgba(251,247,255,.62);
+    background:rgba(0,0,0,.22);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    padding:13px 15px;margin-top:9px;line-height:1.85;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .note b{color:var(--cyan);font-weight:850}
+
+  .legend{
+    display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:30px 0 0;
+    font-size:11px;color:rgba(251,247,255,.62);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:3px;box-shadow:0 0 12px currentColor}
+
+  footer{
+    margin-top:40px;padding-top:22px;border-top:1px solid rgba(246,217,139,.15);
+    font-size:11px;color:rgba(251,247,255,.45);text-align:center;line-height:2;
+  }
+
+  @media(max-width:680px){
+    body{padding-bottom:60px}
+    .wrap{padding:0 14px}
+    .hero{margin-top:18px;padding:36px 18px 28px}
+    .logo{font-size:36px}
+    .hero h1{font-size:11px;letter-spacing:.30em}
+    .group{padding:18px 14px;margin:26px 0 34px}
+    .group-title{font-size:19px}
+    .group-sub{margin-left:0;margin-top:6px}
+    .item{flex-direction:column;gap:10px;padding:15px 15px 14px}
+    .price{align-self:flex-end;min-width:auto;text-align:right}
+    .price-main{font-size:22px}
+  }
+
+</style>
+</head>
+<body>
+<div class="lux-lines" aria-hidden="true"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="logo">URATEN</div>
+    <h1>SERVICE MENU</h1>
+    <p>福岡・天神発、ローカルサブカルの音声事務局<br>MVP版／時間帯による料金差はつけません</p>
+  </div>
+
+  <!-- 1 放送枠 -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">1</div><div class="group-title">放送枠</div></div>
+    <div class="group-sub">24時間Webラジオの番組枠。MVPでは時間帯で料金を変えず、長さで設定。</div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">10分枠</div>
+        <div class="item-desc">短く区切れる回遊向き。昼枠・コーナー編成に。</div>
+      </div>
+      <div class="price"><div class="price-main">5,000<small>円</small></div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">20分枠</div>
+        <div class="item-desc">標準的な番組尺。</div>
+      </div>
+      <div class="price"><div class="price-main">8,000<small>円</small></div></div>
+    </div>
+
+    <div class="item accent">
+      <div class="item-main">
+        <div class="item-name">30分枠<span class="tag tag-mvp">MVP価格</span></div>
+        <div class="item-desc">長尺・濃い番組向き。立ち上げ最初期は需要が薄いと見て割引中。</div>
+      </div>
+      <div class="price">
+        <div class="price-main">10,000<small>円</small></div>
+        <div class="price-reg">通常 <b>12,000円</b></div>
+      </div>
+    </div>
+
+    <div class="group-sub" style="margin:16px 0 10px 4px;font-weight:700;color:var(--ink)">放送枠オプション</div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">放送枠内CM（1本）</div>
+        <div class="item-desc">自分が買った番組枠の中に挿入するCM（局全体に乗るCM枠とは別物）。</div>
+      </div>
+      <div class="price"><div class="price-main">1,000<small>円</small></div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">再放送</div>
+        <div class="item-desc">2回の方が単価が下がる（数量割引）。実工数も2回まとめる方が削減できる。</div>
+      </div>
+      <div class="price">
+        <div class="price-main" style="font-size:15px;line-height:1.5">1回 2,000円<br>2回 3,000円</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 CM枠 -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">2</div><div class="group-title">CM枠</div></div>
+    <div class="group-sub">局全体の編成に乗るCM。相互は枠購入者同士の助け合い、単独告知は有料。</div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">30秒CM 単発（1回）<span class="tag tag-paid">有料</span></div>
+        <div class="item-desc">イベント告知・単独アピールなど。単独CMは1回から有料。</div>
+      </div>
+      <div class="price"><div class="price-main">1,000<small>円</small></div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">30秒CM 5回パック<span class="tag tag-paid">有料</span></div>
+        <div class="item-desc">回数保証。確実に届けたい人向け。</div>
+      </div>
+      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
+    </div>
+
+    <div class="item free">
+      <div class="item-main">
+        <div class="item-name">相互応援CM（1回）<span class="tag tag-free">無料</span></div>
+        <div class="item-desc">出演者同士が互いを紹介。<b style="color:var(--cyan)">放送枠またはうたってみた枠の購入者同士に限る</b>。Discordでマッチング、両者音源を同時提出。</div>
+      </div>
+      <div class="price"><div class="price-main free">無料</div><div class="price-sub">各自1回</div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">一方通行応援CM<span class="tag tag-hidden">裏メニュー</span></div>
+        <div class="item-desc">出演者が他出演者を一方的に応援。公開メニュー非掲載・申請制・出演者限定。</div>
+      </div>
+      <div class="price"><div class="price-main" style="color:var(--dim)">無料</div></div>
+    </div>
+    <div class="note">* 相互応援CMの無料枠は、<b>放送枠・うたってみた枠を買った者同士</b>のみ。通常のイベント告知やクリエイターの単独アピールには相互枠は使えず、<b>単独CMは1回（1,000円）から有料</b>。これで無料枠の乱発を防ぐ。</div>
+  </div>
+
+  <!-- 3 うたってみた枠 -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">3</div><div class="group-title">うたってみた枠</div></div>
+    <div class="group-sub">歌い手の楽曲を放送に乗せる枠。</div>
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">うたってみた（1曲）<span class="tag tag-paid">有料</span></div>
+        <div class="item-desc">相互応援CMの権利が付く枠のひとつ。</div>
+      </div>
+      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
+    </div>
+  </div>
+
+  <!-- 4 応援イラスト -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">4</div><div class="group-title">応援イラスト（絵師枠）</div></div>
+    <div class="group-sub">作品はサイトに掲示し本人のX／pixiv／Discordへ送客。テーマ自由（既存作品OK）。絵師自身がリスナーにもなる入口。</div>
+
+    <div class="item free">
+      <div class="item-main">
+        <div class="item-name">応援イラスト一覧<span class="tag tag-free">無料</span></div>
+        <div class="item-desc">別ページのギャラリーに常時掲載・人数無制限。サムネ→素性カード（名前・自己紹介・リンク・「推す」ボタン）。専用URLで自分を主役表示＆SNS拡散。</div>
+      </div>
+      <div class="price"><div class="price-main free">無料</div><div class="price-sub">恒久・無制限</div></div>
+    </div>
+
+    <div class="item accent">
+      <div class="item-main">
+        <div class="item-name">スライドショー枠（フィーチャー）<span class="tag tag-paid">有料</span></div>
+        <div class="item-desc">トップの大枠に大きく表示。参加者を順送りで巡回（選抜でなく公平）。一覧より圧倒的に目立つオプション。</div>
+      </div>
+      <div class="price"><div class="price-main">2,000<small>円</small></div><div class="price-sub">1掲載期間</div></div>
+    </div>
+    <div class="note">* 一覧（居場所）は<b>恒久無料</b>。居ること自体には課金しない（裾野＝リスナー母数を金で狭めないため）。有料はスライドショー枠のみ。「推す」ボタンの反応・流入は本人のSNS解析で計測（DB不要）。</div>
+  </div>
+
+  <!-- 5 イベントカレンダー -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">5</div><div class="group-title">イベントカレンダー掲載</div></div>
+    <div class="group-sub">天神のサブカルイベントを横断して一覧できる枠。横断カレンダーは既存になく、これ自体がURATENへのアクセス理由になる。</div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">イベント掲載（1回）<span class="tag tag-paid">有料</span></div>
+        <div class="item-desc">サブカルイベントの告知。資料提出・誓約同意・運営審査が必須（下記）。日付固定のため締切ルールあり。</div>
+      </div>
+      <div class="price"><div class="price-main">1,000<small>円</small></div><div class="price-sub">1掲載</div></div>
+    </div>
+    <div class="note">* <b>申請には必須条件あり</b>：HP・SNS・チラシのいずれか提出（なければ受付不可）／誓約への同意（告知と実態を一致・他の勧誘や説明会へ誘導しない・情報は主催者責任・虚偽なら掲載取消に同意）／運営の審査。掲載後に告知と実態が違った場合は<b>Discordで通報</b>を受け、妥当なら取消・以後お断り。<br>* マルチ・ネズミ講・不安につけ込む商材は<b>断固締め出す</b>。一方、メンバーが自分の作品や活動で稼ぐことは応援する。<b>安心して集まれる場を、関わる全員で守る</b>。</div>
+  </div>
+
+  <!-- 6 サブスク -->
+  <div class="group">
+    <div class="group-head"><div class="group-num">6</div><div class="group-title">サブスク</div></div>
+    <div class="group-sub">リスナー向けの月額。育った後の「二本目の脚」。</div>
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">URATEN Radio+<span class="tag tag-soon">MVP外</span></div>
+        <div class="item-desc">聴き逃し7日＋推薦チケット3枚。MVPでは実装しない。</div>
+      </div>
+      <div class="price"><div class="price-main">680<small>円/月</small></div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--lime)"></i>無料</span>
+    <span><i class="dot" style="background:var(--pink)"></i>有料</span>
+    <span><i class="dot" style="background:var(--cyan)"></i>MVP価格</span>
+    <span><i class="dot" style="background:var(--violet)"></i>MVP外</span>
+    <span><i class="dot" style="background:#5a5a7a"></i>裏メニュー</span>
+  </div>
+
+  <footer>
+    URATEN SERVICE MENU ／ MVP版<br>
+    時間帯による料金差はつけない方針。一部価格は需要・リスナー数を見て更新する仮置きを含む。<br>
+    本メニューはMVP前のたたき台であり、数値・条件は実運用の検証結果に応じて更新されます。
+  </footer>
+</div>
+</body>
+</html>
