@@ -47,6 +47,9 @@
     border:1px solid rgba(255,45,149,.38);box-shadow:0 0 18px rgba(255,45,149,.2);
     background:linear-gradient(135deg,#3a1140,#103048)}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  /* nowplaying から取得したアートワーク（あれば盤面の上に被せる） */
+  .thumb-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:2;border-radius:inherit}
+  .thumb-art[hidden]{display:none}
   /* サムネ無し時のCSSレコード盤 */
   .vinyl{position:absolute;inset:0;display:grid;place-items:center}
   .vinyl::before{content:"";width:84px;height:84px;border-radius:50%;
@@ -65,6 +68,9 @@
   .play-btn{flex:none;width:84px;height:84px;border-radius:50%;border:none;cursor:pointer;
     background:linear-gradient(135deg,var(--pink),var(--violet));display:grid;place-items:center;box-shadow:0 0 24px rgba(255,45,149,.45)}
   .play-btn span{width:0;height:0;border-left:17px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
+  /* 再生中は一時停止アイコン（縦2本）に切り替え */
+  .play-btn.playing span{width:20px;height:22px;border:none;border-left:7px solid #fff;border-right:7px solid #fff;border-top:0;border-bottom:0;margin-left:0;box-sizing:border-box}
+  .play-btn.loading{opacity:.7;cursor:progress}
   /* 次の番組（1番組1列・縦並び） */
   .upnext{display:flex;flex-direction:column;border-top:1px solid var(--line)}
   .up{padding:11px 18px;display:flex;align-items:center;gap:12px;font-size:14.5px}

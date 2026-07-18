@@ -157,3 +157,196 @@ document.addEventListener('click',e=>{
 });
 document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',closeMenu));
 
+
+// ===== 放送プレイヤー（ストリーム再生 + nowplaying メタ取得） =====
+// - 素のJSのみ・ストレージ不使用・外部ライブラリなし
+// - 再生はユーザーのタップ起点のみ（オートプレイなし）
+// - メタはベストエフォート：取得失敗や内部ファイル名っぽい値は表示しない
+(function initRadio(){
+  const STREAM_URL = 'https://radio.ura-ten.jp/listen/uraten/radio.mp3';
+  const NP_API     = 'https://radio.ura-ten.jp/api/nowplaying/uraten';
+  const POLL_MS    = 20000; // 15〜30秒の範囲
+  const FALLBACK_TITLE = 'URATEN';
+
+  const audio   = document.getElementById('radioAudio');
+  const playBtn = document.getElementById('playBtn');
+  const titleEl = document.getElementById('npTitle');
+  const artistEl= document.getElementById('npArtist');
+  const artEl   = document.getElementById('npArt');
+  const vinylEl = document.getElementById('npVinyl');
+  if(!audio || !playBtn) return;
+
+  let wantPlaying = false;          // ユーザーの再生意図
+  let reconnectTimer = null;
+  let backoff = 2000;               // 再接続の待ち時間（指数バックオフ）
+  let pollTimer = null;             // メタ取得ポーリングの interval
+  let curMeta = {title:FALLBACK_TITLE, artist:'', art:''};
+
+  // --- メタの検証：値が無い / 内部ファイル名っぽい / artist空 は不採用 ---
+  const FILE_EXT = /\.(mp3|m4a|aac|ogg|oga|flac|wav|wma|opus|aif|aiff|alac|webm)\b/i;
+  const clean = s => (typeof s === 'string' ? s.trim() : '');
+  const looksInternal = s => FILE_EXT.test(s);
+
+  // --- 表示反映 ---
+  function renderMeta(title, artist, art){
+    curMeta = { title: title || FALLBACK_TITLE, artist: artist || '', art: art || '' };
+    titleEl.textContent  = curMeta.title;
+    artistEl.textContent = curMeta.artist;
+    if(art){
+      artEl.src = art;
+      artEl.hidden = false;
+      if(vinylEl) vinylEl.style.display = 'none';
+    }else{
+      artEl.hidden = true;
+      artEl.removeAttribute('src');
+      if(vinylEl) vinylEl.style.display = '';
+    }
+    setMediaMetadata();
+  }
+  // アート読み込み失敗時は盤面へフォールバック
+  if(artEl){
+    artEl.addEventListener('error', ()=>{
+      artEl.hidden = true;
+      artEl.removeAttribute('src');
+      if(vinylEl) vinylEl.style.display = '';
+    });
+  }
+
+  function applyNowPlaying(np){
+    let title = '', artist = '', art = '';
+    try{
+      const song = np && np.now_playing && np.now_playing.song;
+      if(song){
+        const t = clean(song.title), a = clean(song.artist), ar = clean(song.art);
+        const valid = t && a && !looksInternal(t) && !looksInternal(a);
+        if(valid){
+          title = t;
+          artist = a;
+          if(/^https?:\/\//i.test(ar)) art = ar;
+        }
+      }
+    }catch(e){ /* 壊れたJSONは黙って空扱い */ }
+    renderMeta(title, artist, art);
+  }
+
+  async function poll(){
+    try{
+      const res = await fetch(NP_API, {cache:'no-store'});
+      if(!res.ok) return;                 // 404等は黙って据え置き
+      applyNowPlaying(await res.json());
+    }catch(e){ /* ネットワーク/CORS失敗も黙って空扱い（プレイヤーは動き続ける） */ }
+  }
+  // ポーリングは「表示中」または「再生中」のときだけ回す。
+  // 非表示かつ停止中は無駄な取得を止める。
+  function shouldPoll(){ return !document.hidden || wantPlaying; }
+  function startPolling(){
+    if(pollTimer) return;
+    poll();                               // 開始時に即1回
+    pollTimer = setInterval(poll, POLL_MS);
+  }
+  function stopPolling(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+  function updatePolling(){
+    if(shouldPoll()) startPolling(); else stopPolling();
+  }
+
+  // --- Media Session ---
+  function setMediaMetadata(){
+    if(!('mediaSession' in navigator) || typeof window.MediaMetadata !== 'function') return;
+    const art = curMeta.art;
+    const artwork = art
+      ? [96,128,192,256,384,512].map(s=>({src:art, sizes:s+'x'+s, type:''}))
+      : [];
+    try{
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: curMeta.title || FALLBACK_TITLE,
+        artist: curMeta.artist || '',
+        album: 'URATEN Radio',
+        artwork
+      });
+    }catch(e){ /* 一部環境では失敗しうる。無視 */ }
+  }
+  function setPlaybackState(state){
+    if('mediaSession' in navigator){
+      try{ navigator.mediaSession.playbackState = state; }catch(e){}
+    }
+  }
+  if('mediaSession' in navigator){
+    try{
+      navigator.mediaSession.setActionHandler('play',  ()=>startPlay());
+      navigator.mediaSession.setActionHandler('pause', ()=>stopPlay());
+      navigator.mediaSession.setActionHandler('stop',  ()=>stopPlay());
+    }catch(e){}
+  }
+
+  // --- UI ---
+  function updateUI(loading){
+    const playing = wantPlaying && !audio.paused;
+    playBtn.classList.toggle('playing', playing);
+    playBtn.classList.toggle('loading', !!loading && wantPlaying && audio.paused);
+    playBtn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+    playBtn.setAttribute('aria-label', wantPlaying ? '停止' : '再生');
+    setPlaybackState(playing ? 'playing' : 'paused');
+  }
+
+  // --- 接続/再接続 ---
+  function connect(){
+    // ライブ配信の最新エッジを掴むためキャッシュバスターを付けて張り直す
+    audio.src = STREAM_URL + (STREAM_URL.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now();
+    audio.load();
+  }
+  function clearReconnect(){
+    if(reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer = null; }
+    backoff = 2000;
+  }
+  function scheduleReconnect(){
+    if(!wantPlaying || reconnectTimer) return;
+    reconnectTimer = setTimeout(()=>{
+      reconnectTimer = null;
+      if(!wantPlaying) return;
+      connect();
+      const p = audio.play();
+      if(p && p.catch) p.catch(()=>scheduleReconnect());
+      backoff = Math.min(Math.round(backoff * 1.6), 15000);
+    }, backoff);
+    updateUI(true);
+  }
+
+  function startPlay(){
+    wantPlaying = true;
+    connect();
+    const p = audio.play();
+    if(p && p.catch) p.catch(()=>{ /* 再生開始失敗（未ジェスチャ等）→ 意図は保持しUIのみ更新 */ updateUI(); });
+    updateUI(true);
+    poll();          // 再生開始時にメタを即更新
+    updatePolling(); // 再生中はポーリングを確実に動かす
+  }
+  function stopPlay(){
+    wantPlaying = false;
+    clearReconnect();
+    audio.pause();
+    audio.removeAttribute('src'); // 停止で回線を解放（裏で鳴り続けない）
+    audio.load();
+    updateUI();
+    updatePolling(); // 停止中かつ非表示ならポーリングを止める
+  }
+  function toggle(){ wantPlaying ? stopPlay() : startPlay(); }
+
+  playBtn.addEventListener('click', toggle);
+
+  audio.addEventListener('playing', ()=>{ clearReconnect(); updateUI(); });
+  audio.addEventListener('pause',   ()=>updateUI());
+  audio.addEventListener('waiting', ()=>updateUI(true));
+  audio.addEventListener('error',   ()=>{ if(wantPlaying) scheduleReconnect(); });
+  audio.addEventListener('ended',   ()=>{ if(wantPlaying) scheduleReconnect(); });
+  audio.addEventListener('stalled', ()=>{ if(wantPlaying) scheduleReconnect(); });
+
+  // 表示状態が変わったらポーリングの要否を見直す
+  document.addEventListener('visibilitychange', updatePolling);
+
+  // 読み込み時からメタを取得（放送中の曲は再生前でも「取れたら出す」）
+  // ※非表示で開かれた場合は shouldPoll() が false になり取得しない
+  updatePolling();
+})();
+

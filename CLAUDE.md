@@ -94,17 +94,17 @@ CLAUDE.md         … 本ファイル
 
 **完了：**
 - Cloudflare Pages で公開中（Git 接続・自動デプロイ稼働）
-- イベントカレンダーは `data/events.json` 駆動（サンプル4件）
 - CSS / JS のファイル分割済み
 - VS Code + git + Claude Code の編集ライン確立
+- VPS 契約・AzuraCast 構築（ゲート C-1 実施済み）
+- ドメイン `ura-ten.jp` 取得済みでSSHにて稼働中（現在は pages.dev。取得後もサイト側の変更は不要）
 
 **未着手・未確定：**
-- VPS 契約・AzuraCast 構築（ゲート C-1 未実施）
 - Tally フォーム未作成 → Sheets 列スキーマ未確定 → 変換スクリプト未着手
 - service account・鍵の取得（未実施。実施時は本ファイル2章を厳守）
-- ラジオプレーヤー未実装（6章の要件で実装する）
-- ドメイン `ura-ten.jp` 未取得（現在は pages.dev。取得後もサイト側の変更は不要）
+- ラジオプレーヤー実装中（6章の要件で実装する）
 - 決済は当面銀行振込（Stripe は審査通過後にフォームへ一体化。サイト側実装なし）
+- イベントカレンダーは `data/events.json` 駆動（サンプル4件）
 
 ## 8. 実装時の作法
 

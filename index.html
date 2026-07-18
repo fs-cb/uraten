@@ -31,17 +31,19 @@
       <div class="onair"><i></i>ON AIR</div>
       <div class="player-row">
         <div class="thumb">
-          <div class="vinyl"></div>
+          <div class="vinyl" id="npVinyl"></div>
+          <img class="thumb-art" id="npArt" alt="" hidden>
         </div>
         <div class="player-info">
           <div class="onair-time">22:00 - 23:00</div>
-          <div class="prog">深夜のうたい場</div>
-          <div class="cast">出演：天神シンガーズ</div>
+          <div class="prog" id="npTitle">URATEN</div>
+          <div class="cast" id="npArtist"></div>
           <a class="cast-link">番組詳細を見る →</a>
         </div>
-        <button class="play-btn" aria-label="再生"><span></span></button>
+        <button class="play-btn" id="playBtn" aria-label="再生" aria-pressed="false"><span></span></button>
       </div>
     </div>
+    <audio id="radioAudio" preload="none"></audio>
     <div class="upnext">
       <div class="up"><span class="up-time">23:00</span><span class="up-thumb"></span><span class="up-name">天神トラックメイカー集会</span><span class="up-label">NEXT</span></div>
       <div class="up"><span class="up-time">23:30</span><span class="up-thumb"></span><span class="up-name">深夜の作業用BGM</span><span class="up-label">その次</span></div>
