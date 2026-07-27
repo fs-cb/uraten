@@ -175,6 +175,9 @@
 
   .mockbar{background:var(--violet);color:#fff;font-size:11px;text-align:center;padding:7px;letter-spacing:.03em;font-weight:700}
   footer{margin-top:54px;padding-top:22px;border-top:1px solid var(--line);font-size:11px;color:var(--dim);text-align:center;line-height:2}
+  .legal-links{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
+  .legal-links a{font-size:11px;color:var(--dim);text-decoration:none;letter-spacing:.02em}
+  .legal-links a:hover{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
 
   @media(max-width:760px){
     .show{grid-template-columns:1fr}

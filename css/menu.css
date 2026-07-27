@@ -231,6 +231,9 @@ footer{
   margin-top:40px;padding-top:22px;border-top:1px solid rgba(246,217,139,.15);
   font-size:11px;color:rgba(251,247,255,.45);text-align:center;line-height:2;
 }
+.legal-links{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
+.legal-links a{font-size:11px;color:rgba(251,247,255,.55);text-decoration:none;letter-spacing:.02em}
+.legal-links a:hover{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
 
 @media(max-width:680px){
   body{padding-bottom:60px}
