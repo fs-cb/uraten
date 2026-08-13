@@ -152,7 +152,7 @@ body::after{
   width:5px;height:5px;border-radius:2px;
   background:linear-gradient(135deg,var(--gold),var(--cyan));
 }
-.doc li>ul{margin:6px 0 4px}
+.doc li>ul,.doc li>ol{margin:6px 0 4px}
 
 /* ---- 注意書き（たたき台・要専門家確認） ---- */
 .warn{
@@ -190,6 +190,13 @@ body::after{
 }
 .doc tbody td{color:rgba(251,247,255,.82)}
 .doc td strong,.doc th strong{color:var(--cyan)}
+
+/* 2列の短い表（料金表・返金基準表）はスマホでも横スクロールさせない */
+.doc table.table-narrow{min-width:0}
+.doc table.table-narrow th:last-child,
+.doc table.table-narrow td:last-child{
+  width:30%;text-align:right;white-space:nowrap;
+}
 
 /* ---- 区切り線 ---- */
 .doc hr{
