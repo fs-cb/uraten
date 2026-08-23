@@ -412,3 +412,141 @@ footer{
   }
 }
 
+
+
+/* =========================================================
+   MENU 2026-08 改修分
+   ヒーローのキャッチ／リード／箇条書き／強調ボックス／
+   申込みボタン／申込みの流れ。
+   背景・パネル・配色は既存のまま（このファイルの上部）。
+========================================================= */
+
+/* ---- ヒーロー ---- */
+.hero-catch{
+  position:relative;
+  font-size:clamp(19px,5.2vw,26px);
+  font-weight:900;letter-spacing:.06em;line-height:1.5;
+  color:var(--ink);
+  margin-top:16px;
+  text-shadow:0 0 22px rgba(246,217,139,.26),0 0 34px rgba(255,45,149,.14);
+}
+.hero-catch + p{margin-top:14px}
+.hero-tax{
+  font-size:11.5px;letter-spacing:.06em;
+  color:rgba(251,247,255,.52);
+  margin-top:10px;
+}
+
+/* ---- セクション見出し・リード ---- */
+.group-head .group-title{margin:0}
+.group-sub{line-height:1.85}
+
+/* ---- 箇条書き ---- */
+.list{
+  list-style:none;margin:20px 0 0;padding:0;
+}
+.list li{
+  position:relative;
+  padding-left:16px;margin-bottom:9px;
+  font-size:12.5px;line-height:1.95;
+  color:rgba(251,247,255,.70);
+}
+.list li:last-child{margin-bottom:0}
+.list li::before{
+  content:"";position:absolute;left:0;top:.92em;
+  width:8px;height:1px;
+  background:linear-gradient(90deg,var(--gold),var(--cyan));
+  box-shadow:0 0 8px rgba(23,236,255,.45);
+}
+.list b{color:var(--cyan);font-weight:850}
+
+/* ---- 強調ボックス（note の派生） ---- */
+.note.flag{
+  border-left:2px solid var(--gold);
+  background:rgba(246,217,139,.06);
+  color:rgba(251,247,255,.74);
+  font-size:12px;
+  margin-top:16px;
+}
+.note.flag b{color:var(--gold)}
+.note.flag a{
+  color:var(--cyan);text-decoration:none;
+  border-bottom:1px solid rgba(23,236,255,.38);
+}
+.note.flag a:hover{color:var(--ink);border-bottom-color:var(--gold)}
+
+/* ---- 申込みボタン ---- */
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.cta{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:12px 22px;border-radius:9px;
+  font-size:13.5px;font-weight:900;letter-spacing:.04em;
+  text-decoration:none;color:#07070e;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  box-shadow:0 0 22px rgba(23,236,255,.20),0 10px 24px rgba(0,0,0,.30);
+  transition:transform .18s,filter .18s,box-shadow .18s;
+}
+.cta::after{content:"→";font-weight:900;transition:transform .18s}
+.cta:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.cta:hover::after{transform:translateX(3px)}
+.cta.ghost{
+  color:var(--ink);background:transparent;
+  border:1px solid rgba(246,217,139,.42);
+  box-shadow:none;
+}
+.cta.ghost:hover{background:rgba(246,217,139,.08)}
+
+/* ---- キーボードフォーカス ---- */
+a:focus-visible,
+.cta:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+  border-radius:9px;
+}
+
+/* ---- 申込みの流れ ---- */
+.flow{list-style:none;counter-reset:step;margin:22px 0 0;padding:0}
+.flow li{
+  counter-increment:step;position:relative;
+  margin-left:13px;padding:0 0 22px 40px;
+  border-left:1px solid rgba(255,255,255,.12);
+}
+.flow li:last-child{border-left-color:transparent;padding-bottom:0}
+.flow li::before{
+  content:counter(step,decimal-leading-zero);
+  position:absolute;left:-14px;top:-1px;
+  width:27px;height:27px;border-radius:7px;
+  display:grid;place-items:center;
+  font-size:11px;font-weight:900;color:#07070e;
+  transform:skewX(-10deg);
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  box-shadow:0 0 16px rgba(23,236,255,.26);
+}
+.flow b{display:block;font-size:14.5px;font-weight:900;letter-spacing:.02em}
+.flow span{
+  display:block;margin-top:4px;
+  font-size:12.5px;line-height:1.9;
+  color:rgba(251,247,255,.62);
+}
+
+/* ---- 狭い画面（〜400px）---- */
+@media(max-width:400px){
+  .group{padding:16px 12px}
+  .item{padding:14px 13px}
+  .price-main{font-size:20px}
+  .group-title{font-size:17.5px}
+  .cta{width:100%;justify-content:center;padding:13px 16px}
+  .flow li{padding-left:34px}
+}
+
+/* ---- モーション低減 ---- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  html{scroll-behavior:auto}
+  .hero,
+  .lux-lines,
+  .lux-lines::before,
+  .lux-lines::after,
+  body::before,
+  body::after{animation:none !important}
+}

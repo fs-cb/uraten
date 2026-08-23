@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>URATEN メニュー表</title>
+<title>メニュー｜URATEN</title>
+<meta name="description" content="URATENの放送枠・CM枠・歌い手枠・イラスト枠・イベントカレンダー掲載枠の料金と申込み方法。">
 <link rel="stylesheet" href="./css/menu.css">
 </head>
 <body>
@@ -13,18 +14,20 @@
   <div class="hero">
     <div class="logo">URATEN</div>
     <h1>SERVICE MENU</h1>
-    <p>福岡・天神発、ローカルサブカルの音声事務局<br>MVP版／時間帯による料金差はつけません</p>
+    <p class="hero-catch">つくったものを、電波にのせる。</p>
+    <p>URATENは、福岡・天神のクリエイターのための24時間Webラジオです。<br>番組・CM・楽曲・イラスト・イベント情報を、それぞれの枠で受け付けています。</p>
+    <p class="hero-tax">表示価格はすべて税込です。</p>
   </div>
 
-  <!-- 1 放送枠 -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">1</div><div class="group-title">放送枠</div></div>
-    <div class="group-sub">24時間Webラジオの番組枠。MVPでは時間帯で料金を変えず、長さで設定。</div>
+  <!-- ============ 01 放送枠 ============ -->
+  <section class="group" id="broadcast">
+    <div class="group-head"><div class="group-num">01</div><h2 class="group-title">放送枠</h2></div>
+    <p class="group-sub">自分の番組をURATENで放送する枠です。収録した音源をご提出いただき、編成に組み込んで放送します。</p>
 
     <div class="item">
       <div class="item-main">
         <div class="item-name">10分枠</div>
-        <div class="item-desc">短く区切れる回遊向き。昼枠・コーナー編成に。</div>
+        <div class="item-desc">短くまとめたトークやコーナーに。</div>
       </div>
       <div class="price"><div class="price-main">5,000<small>円</small></div></div>
     </div>
@@ -32,153 +35,227 @@
     <div class="item">
       <div class="item-main">
         <div class="item-name">20分枠</div>
-        <div class="item-desc">標準的な番組尺。</div>
+        <div class="item-desc">標準的な番組の長さです。</div>
       </div>
       <div class="price"><div class="price-main">8,000<small>円</small></div></div>
     </div>
 
-    <div class="item accent">
+    <div class="item">
       <div class="item-main">
-        <div class="item-name">30分枠<span class="tag tag-mvp">MVP価格</span></div>
-        <div class="item-desc">長尺・濃い番組向き。立ち上げ最初期は需要が薄いと見て割引中。</div>
+        <div class="item-name">30分枠</div>
+        <div class="item-desc">ゲストを迎える回や、じっくり話したい内容に。</div>
       </div>
-      <div class="price">
-        <div class="price-main">10,000<small>円</small></div>
-        <div class="price-reg">通常 <b>12,000円</b></div>
-      </div>
+      <div class="price"><div class="price-main">10,000<small>円</small></div></div>
     </div>
 
-    <div class="group-sub" style="margin:16px 0 10px 4px;font-weight:700;color:var(--ink)">放送枠オプション</div>
+    <ul class="list">
+      <li>URATENが用意したBGMを、番組内で自由に使えます。</li>
+      <li>ご自身が権利を持つオリジナル音源も使用できます（配信についての権利処理はご自身でご確認ください）。</li>
+      <li>放送の日時・順序は編成の都合で決まります。お申込みの直後に放送されるものではありません。</li>
+    </ul>
+
+    <div class="note flag">
+      日付の決まった告知を番組に含める場合は、<b>開催日の20日前まで</b>にお申込みと素材のご提出をお願いします。それ以降もお受けしますが、開催日より前の放送はお約束できません。
+    </div>
+
+    <div class="cta-row">
+      <!-- リンク先：放送枠フォーム -->
+      <a class="cta" href="#">放送枠を申し込む</a>
+    </div>
+  </section>
+
+  <!-- ============ 02 歌い手枠 ============ -->
+  <section class="group" id="singer">
+    <div class="group-head"><div class="group-num">02</div><h2 class="group-title">歌い手枠</h2></div>
+    <p class="group-sub">歌唱した楽曲を放送する枠です。複数の方の楽曲をまとめて、ひとつの番組として編成します。</p>
 
     <div class="item">
       <div class="item-main">
-        <div class="item-name">放送枠内CM（1本）</div>
-        <div class="item-desc">自分が買った番組枠の中に挿入するCM（局全体に乗るCM枠とは別物）。</div>
+        <div class="item-name">歌い手枠（1曲）</div>
+        <div class="item-desc">1回のお申込みにつき1曲です。</div>
+      </div>
+      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
+    </div>
+
+    <ul class="list">
+      <li>受け付けられるのは、ご自身が権利を持つオリジナル曲か、URATENでの配信について権利者から許諾を得ている楽曲です。</li>
+      <li>この枠ではURATEN提供のBGMは使いません。音源はご自身でご用意ください。</li>
+      <li>人が歌う・音声合成ソフト・生成AIによる歌唱、いずれも歓迎します。<b>メインの歌唱がどれにあたるかだけ、お申込み時に教えてください。</b>申告に応じて編成を分けることがあります。</li>
+      <li>音声合成ソフトをお使いの場合、URATEN上の表示では「音声合成ソフトウェアを使用」と記載します（キャラクター名は使用しません）。ご自身のSNS等での紹介にはこの制限はかかりません。</li>
+    </ul>
+
+    <div class="cta-row">
+      <!-- リンク先：歌い手枠フォーム -->
+      <a class="cta" href="#">歌い手枠を申し込む</a>
+    </div>
+  </section>
+
+  <!-- ============ 03 CM枠 ============ -->
+  <section class="group" id="cm">
+    <div class="group-head"><div class="group-num">03</div><h2 class="group-title">CM枠</h2></div>
+    <p class="group-sub">活動・イベント・お店・作品を30秒のCMで紹介する枠です。放送の合間に流します。</p>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">CM枠（小）</div>
+        <div class="item-desc">CM音源1本。</div>
+      </div>
+      <div class="price"><div class="price-main">1,200<small>円</small></div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">CM枠（大）</div>
+        <div class="item-desc">CM音源3本まで。内容を変えて複数出したい方に。</div>
+      </div>
+      <div class="price"><div class="price-main">2,500<small>円</small></div></div>
+    </div>
+
+    <ul class="list">
+      <li><b>それぞれの音源について、放送期間中に最低1回の放送を保証します。</b>日時・回数・順序は編成の都合で決まります。</li>
+      <li>CMはURATENが用意したBGMを使ってご自身で制作していただきます。お支払いの確認後、BGMをダウンロードできるようになります。</li>
+      <li>ご提出は、BGMと音声を合わせた完成音源でお願いします。URATENでの編集や合成は行いません。</li>
+      <li>CM枠（大）は、3本までを一度にまとめてご提出ください。後からの追加はできません。</li>
+      <li>宣伝する内容は実在するものに限ります。誇大な表現や事実と異なる内容は放送できません。</li>
+    </ul>
+
+    <div class="note flag">
+      日付の決まった告知CMは、<b>開催日の20日前まで</b>にお申込みと素材のご提出をお願いします。それ以降もお受けしますが、開催日より前の放送はお約束できません。
+    </div>
+
+    <div class="cta-row">
+      <!-- リンク先：CM枠フォーム -->
+      <a class="cta" href="#">CM枠を申し込む</a>
+    </div>
+  </section>
+
+  <!-- ============ 04 イラスト枠 ============ -->
+  <section class="group" id="illust">
+    <div class="group-head"><div class="group-num">04</div><h2 class="group-title">イラスト枠</h2></div>
+    <p class="group-sub">作品をURATENのサイトに掲載し、X・pixivなどご自身の発表の場へご案内します。</p>
+
+    <div class="item free">
+      <div class="item-main">
+        <div class="item-name">ギャラリー掲載</div>
+        <div class="item-desc">サムネイルから外部リンクへ。掲載は1か月ごとの更新制で、更新はいつでも無料、回数の制限もありません。</div>
+      </div>
+      <div class="price"><div class="price-main free">無料</div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">スライドショー枠</div>
+        <div class="item-desc">トップページに巡回掲載（2週間）。自己紹介文と外部リンクを2件まで掲載できます。</div>
+      </div>
+      <div class="price"><div class="price-main">2,000<small>円</small></div></div>
+    </div>
+
+    <ul class="list">
+      <li>お申込み時にご提出いただくのは、サムネイル画像1枚（10MBまで）と、作品を掲載しているページのリンクです。</li>
+      <li>掲載できるのは全年齢向けの作品に限ります。成人向けの活動をされている方の参加は歓迎しています（作品そのものの掲載はできません）。</li>
+      <li><b>生成AIによって生成された作品は掲載できません。</b>ご本人が制作した作品に限ります。</li>
+      <li>二次創作は、原作の権利者が定めるガイドラインの範囲内かどうかをご自身でご確認ください。URATENでは可否の判断を行いません。</li>
+    </ul>
+
+    <div class="cta-row">
+      <!-- リンク先：イラスト（無料）フォーム -->
+      <a class="cta" href="#">ギャラリーに掲載する</a>
+      <!-- リンク先：スライドショー枠フォーム -->
+      <a class="cta ghost" href="#">スライドショー枠を申し込む</a>
+    </div>
+  </section>
+
+  <!-- ============ 05 イベントカレンダー掲載枠 ============ -->
+  <section class="group" id="calendar">
+    <div class="group-head"><div class="group-num">05</div><h2 class="group-title">イベントカレンダー掲載枠</h2></div>
+    <p class="group-sub">主催・出演されるイベントを、天神のサブカルイベントを横断するカレンダーに掲載します。</p>
+
+    <div class="item">
+      <div class="item-main">
+        <div class="item-name">1〜2件</div>
       </div>
       <div class="price"><div class="price-main">1,000<small>円</small></div></div>
     </div>
 
     <div class="item">
       <div class="item-main">
-        <div class="item-name">再放送</div>
-        <div class="item-desc">2回の方が単価が下がる（数量割引）。実工数も2回まとめる方が削減できる。</div>
+        <div class="item-name">3〜6件</div>
+        <div class="item-desc">毎月イベントを開催されている方に。</div>
       </div>
-      <div class="price">
-        <div class="price-main" style="font-size:15px;line-height:1.5">1回 2,000円<br>2回 3,000円</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2 CM枠 -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">2</div><div class="group-title">CM枠</div></div>
-    <div class="group-sub">局全体の編成に乗るCM。相互は枠購入者同士の助け合い、単独告知は有料。</div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">30秒CM 単発（1回）<span class="tag tag-paid">有料</span></div>
-        <div class="item-desc">イベント告知・単独アピールなど。単独CMは1回から有料。</div>
-      </div>
-      <div class="price"><div class="price-main">1,000<small>円</small></div></div>
+      <div class="price"><div class="price-main">2,000<small>円</small></div></div>
     </div>
 
     <div class="item">
       <div class="item-main">
-        <div class="item-name">30秒CM 5回パック<span class="tag tag-paid">有料</span></div>
-        <div class="item-desc">回数保証。確実に届けたい人向け。</div>
+        <div class="item-name">7〜10件</div>
+        <div class="item-desc">ライブハウス・イベントスペースの月間スケジュールに。</div>
       </div>
       <div class="price"><div class="price-main">3,000<small>円</small></div></div>
     </div>
 
-    <div class="item free">
-      <div class="item-main">
-        <div class="item-name">相互応援CM（1回）<span class="tag tag-free">無料</span></div>
-        <div class="item-desc">出演者同士が互いを紹介。<b style="color:var(--cyan)">放送枠またはうたってみた枠の購入者同士に限る</b>。Discordでマッチング、両者音源を同時提出。</div>
-      </div>
-      <div class="price"><div class="price-main free">無料</div><div class="price-sub">各自1回</div></div>
+    <ul class="list">
+      <li>まとめてお申込みいただけるのは、同じ主催者のイベントに限ります。掲載枠を他の方へ譲ることはできません。</li>
+      <li>イベント名・日時・会場・出演者・料金・参加方法と、詳しい情報を掲載しているページのリンクをご提出ください。</li>
+      <li>開催日より前の掲載をご希望の場合は、<b>開催日の7日前まで</b>のお申込みをおすすめします。それ以降もお受けしますが、開催日より前の掲載はお約束できません。</li>
+      <li>開催が終わったイベントも、実績として掲載できます。</li>
+      <li>掲載後に内容の変更や中止があった場合は、お早めにご連絡ください。</li>
+    </ul>
+
+    <div class="cta-row">
+      <!-- リンク先：カレンダー1〜2件フォーム -->
+      <a class="cta" href="#">1〜2件を申し込む</a>
+      <!-- リンク先：カレンダー3〜6件フォーム -->
+      <a class="cta ghost" href="#">3〜6件</a>
+      <!-- リンク先：カレンダー7〜10件フォーム -->
+      <a class="cta ghost" href="#">7〜10件</a>
     </div>
+  </section>
 
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">一方通行応援CM<span class="tag tag-hidden">裏メニュー</span></div>
-        <div class="item-desc">出演者が他出演者を一方的に応援。公開メニュー非掲載・申請制・出演者限定。</div>
-      </div>
-      <div class="price"><div class="price-main" style="color:var(--dim)">無料</div></div>
+  <!-- ============ 06 お申込みから放送・掲載まで ============ -->
+  <section class="group" id="flow">
+    <div class="group-head"><div class="group-num">06</div><h2 class="group-title">お申込みから放送・掲載まで</h2></div>
+
+    <ol class="flow">
+      <li>
+        <b>お申込みとお支払い</b>
+        <span>クレジットカードはお申込みと同時に決済されます。銀行振込はお申込みから7日以内にお願いします。</span>
+      </li>
+      <li>
+        <b>受付のご連絡</b>
+        <span>入金の確認から5日以内に、素材のご提出方法をメールでお送りします。</span>
+      </li>
+      <li>
+        <b>素材のご提出</b>
+        <span>音源・作品・掲載情報をご提出ください。</span>
+      </li>
+      <li>
+        <b>審査結果のご連絡</b>
+        <span>ご提出から10日以内にメールでお知らせします。</span>
+      </li>
+      <li>
+        <b>放送・掲載</b>
+        <span>放送枠・歌い手枠はご提出から60日以内、CM枠・スライドショー枠は30日以内、イベントカレンダーは14日以内に放送・掲載します。</span>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ 07 お申込みの前に ============ -->
+  <section class="group" id="notes">
+    <div class="group-head"><div class="group-num">07</div><h2 class="group-title">お申込みの前に</h2></div>
+
+    <ul class="list">
+      <li>すべての枠で審査を行います。内容やリンク先を確認したうえで、お受けできない場合があります。有料の枠では、お支払いのあとに審査を行うことがあります。</li>
+      <li>ご提出いただく素材の権利は、ご自身でご確認ください。URATENでは権利関係の確認は行いません。<b>「商用利用ができる」ことと「放送・配信に使える」ことは別の許諾です。</b>判断に迷う素材はお使いにならないでください。</li>
+      <li>18歳未満の方は、保護者の同意を得たうえでお申込みください。お申込みフォームで確認します。</li>
+      <li>放送・掲載の可否や時間帯、順序は、URATENが決定します。ランキングや放送回数の保証、収益の分配は行っていません（CM枠の最低1回の放送保証を除きます）。</li>
+      <li>放送・掲載のために、尺の調整や音量の調整など、必要な範囲で編集を行うことがあります。</li>
+      <li>キャンセルはいつでもお申し出いただけます。審査結果のご連絡前（イラスト・カレンダーは掲載開始前）であれば、決済にかかった費用を差し引いて返金します。審査を通過しなかった場合は全額を返金します。</li>
+    </ul>
+
+    <div class="note flag">
+      詳しい条件は、<a href="./terms.html">利用規約</a>・<a href="./tokushoho.html">特定商取引法に基づく表記</a>・<a href="./refund.html">返金・キャンセルポリシー</a>をご確認ください。お申込みの際に同意していただきます。
     </div>
-    <div class="note">* 相互応援CMの無料枠は、<b>放送枠・うたってみた枠を買った者同士</b>のみ。通常のイベント告知やクリエイターの単独アピールには相互枠は使えず、<b>単独CMは1回（1,000円）から有料</b>。これで無料枠の乱発を防ぐ。</div>
-  </div>
-
-  <!-- 3 歌い手枠 -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">3</div><div class="group-title">歌い手枠</div></div>
-    <div class="group-sub">歌い手の楽曲を放送に乗せる枠。</div>
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">オリジナルソング（1曲）<span class="tag tag-paid">有料</span></div>
-        <div class="item-desc">相互応援CMの権利が付く枠のひとつ。</div>
-      </div>
-      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
-    </div>
-  </div>
-
-  <!-- 4 応援イラスト -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">4</div><div class="group-title">応援イラスト（絵師枠）</div></div>
-    <div class="group-sub">作品はサイトに掲示し本人のX／pixiv／Discordへ送客。テーマ自由（既存作品OK）。絵師自身がリスナーにもなる入口。</div>
-
-    <div class="item free">
-      <div class="item-main">
-        <div class="item-name">応援イラスト一覧<span class="tag tag-free">無料</span></div>
-        <div class="item-desc">別ページのギャラリーに常時掲載・人数無制限。サムネ→素性カード（名前・自己紹介・リンク・「推す」ボタン）。専用URLで自分を主役表示＆SNS拡散。</div>
-      </div>
-      <div class="price"><div class="price-main free">無料</div><div class="price-sub">恒久・無制限</div></div>
-    </div>
-
-    <div class="item accent">
-      <div class="item-main">
-        <div class="item-name">スライドショー枠（フィーチャー）<span class="tag tag-paid">有料</span></div>
-        <div class="item-desc">トップの大枠に大きく表示。参加者を順送りで巡回（選抜でなく公平）。一覧より圧倒的に目立つオプション。</div>
-      </div>
-      <div class="price"><div class="price-main">2,000<small>円</small></div><div class="price-sub">1掲載期間</div></div>
-    </div>
-    <div class="note">* 一覧（居場所）は<b>恒久無料</b>。居ること自体には課金しない（裾野＝リスナー母数を金で狭めないため）。有料はスライドショー枠のみ。「推す」ボタンの反応・流入は本人のSNS解析で計測（DB不要）。</div>
-  </div>
-
-  <!-- 5 イベントカレンダー -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">5</div><div class="group-title">イベントカレンダー掲載</div></div>
-    <div class="group-sub">天神のサブカルイベントを横断して一覧できる枠。横断カレンダーは既存になく、これ自体がURATENへのアクセス理由になる。</div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">イベント掲載（1回）<span class="tag tag-paid">有料</span></div>
-        <div class="item-desc">サブカルイベントの告知。資料提出・誓約同意・運営審査が必須（下記）。日付固定のため締切ルールあり。</div>
-      </div>
-      <div class="price"><div class="price-main">1,000<small>円</small></div><div class="price-sub">1掲載</div></div>
-    </div>
-    <div class="note">* <b>申請には必須条件あり</b>：HP・SNS・チラシのいずれか提出（なければ受付不可）／誓約への同意（告知と実態を一致・他の勧誘や説明会へ誘導しない・情報は主催者責任・虚偽なら掲載取消に同意）／運営の審査。掲載後に告知と実態が違った場合は<b>Discordで通報</b>を受け、妥当なら取消・以後お断り。<br>* マルチ・ネズミ講・不安につけ込む商材は<b>断固締め出す</b>。一方、メンバーが自分の作品や活動で稼ぐことは応援する。<b>安心して集まれる場を、関わる全員で守る</b>。</div>
-  </div>
-
-  <!-- 6 サブスク -->
-  <div class="group">
-    <div class="group-head"><div class="group-num">6</div><div class="group-title">サブスク</div></div>
-    <div class="group-sub">リスナー向けの月額。育った後の「二本目の脚」。</div>
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">URATEN Radio+<span class="tag tag-soon">MVP外</span></div>
-        <div class="item-desc">聴き逃し7日＋推薦チケット3枚。MVPでは実装しない。</div>
-      </div>
-      <div class="price"><div class="price-main">680<small>円/月</small></div></div>
-    </div>
-  </div>
-
-  <div class="legend">
-    <span><i class="dot" style="background:var(--lime)"></i>無料</span>
-    <span><i class="dot" style="background:var(--pink)"></i>有料</span>
-    <span><i class="dot" style="background:var(--cyan)"></i>MVP価格</span>
-    <span><i class="dot" style="background:var(--violet)"></i>MVP外</span>
-    <span><i class="dot" style="background:#5a5a7a"></i>裏メニュー</span>
-  </div>
+  </section>
 
   <footer>
     <div class="legal-links">
