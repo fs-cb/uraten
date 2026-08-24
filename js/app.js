@@ -62,7 +62,7 @@
     document.getElementById('showHandle').textContent=a.h;
     document.getElementById('showBio').textContent=a.bio.replace(/\n/g,' ');
   }
-  setInterval(()=>{showIdx=(showIdx+1)%showOrder.length;renderShow()},3500);
+  setInterval(()=>{showIdx=(showIdx+1)%showOrder.length;renderShow()},4000);
   renderShow();
 
   // ===== モーダル =====
