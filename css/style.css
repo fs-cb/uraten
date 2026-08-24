@@ -798,3 +798,25 @@ img,svg,video,canvas{max-width:100%}
 }
 
 
+
+/* =========================================================
+   作品画像（サンプル）
+   artists の img があるときだけ実画像を敷く。
+   img が無い／画像が読み込めない場合は従来のダミー塗り（.g1〜）に戻る。
+========================================================= */
+.art-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;display:block;
+}
+.has-img .ph-note,
+.has-img .mini{display:none}
+
+/* 作品枠の既定比率を 16:9 に統一（一覧カード・モーダル・トップの大枠）
+   ※ 先行定義の 1:1 / 固定高を上書きするため、必ず末尾に置く */
+.card-art,
+.modal-art,
+.show-art{
+  aspect-ratio:16/9;
+  height:auto;
+  min-height:0;
+}

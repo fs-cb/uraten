@@ -1,18 +1,33 @@
   const artists = {
-    a1:{n:"あおい かな",h:"@aoi_kana_art",on:true,g:"g1",bio:"天神を拠点に、ネオン街と猫をよく描いています。\nアイコン・配信素材・ジャケットなどお気軽に。\n作業中はいつもURATEN流してます。"},
-    a2:{n:"みなと れい",h:"@minato_rei",on:true,g:"g2",bio:"ポップで明るい色が得意。\nVTuberの立ち絵・ロゴまわりよくやってます。"},
-    a3:{n:"しおり",h:"@shiori_draws",on:false,g:"g3",bio:"水彩風の柔らかいタッチ。\n今は受付を止めていますが、再開したらここに出します。"},
-    a4:{n:"クロ",h:"@kuro_ill",on:true,g:"g4",bio:"モノクロ・線画中心。\nCDジャケットやフライヤーのご相談どうぞ。"},
-    a5:{n:"ゆの",h:"@yuno_art",on:true,g:"g5",bio:"ゆるいキャラ絵描いてます。\nスタンプ・グッズ向けの絵も。"},
-    a6:{n:"はる",h:"@haru_paint",on:false,g:"g6",bio:"背景・風景がメイン。\n受付停止中です。"},
-    a7:{n:"ねむ",h:"@nemu_doodle",on:true,g:"g7",bio:"落書きみたいな勢い重視の絵。\n配信のサムネとかよく描きます。"},
-    a8:{n:"そら",h:"@sora_canvas",on:true,g:"g8",bio:"アナログ油彩を取り込んで加工してます。\n一点物の雰囲気が出せます。"},
-    a9:{n:"いと",h:"@ito_e",on:true,g:"g9",bio:"和風モチーフが得意。\n御朱印帳みたいな細かい絵も描きます。"},
-    a10:{n:"ましろ",h:"@mashiro_d",on:true,g:"g10",bio:"パステル系の女の子イラスト。\nグッズ・名刺デザインなど。"},
-    a11:{n:"げん",h:"@gen_works",on:false,g:"g11",bio:"メカ・ロボット系。\n今は本業が忙しく受付停止。"},
-    a12:{n:"こはく",h:"@kohaku_art",on:true,g:"g12",bio:"あたたかい色のイラスト。\n絵本のような世界観が好きです。"},
+    a1:{n:"あおい かな",h:"@aoi_kana_art",on:true,g:"g1",img:"./images/sample-01.webp",bio:"天神を拠点に、ネオン街と猫をよく描いています。\nアイコン・配信素材・ジャケットなどお気軽に。\n作業中はいつもURATEN流してます。"},
+    a2:{n:"みなと れい",h:"@minato_rei",on:true,g:"g2",img:"./images/sample-02.webp",bio:"女の子をイラストを描いています。\nVTuberの立ち絵・ロゴまわりよくやってます。"},
+    a3:{n:"しおり",h:"@shiori_draws",on:false,g:"g3",img:"./images/sample-03.webp",bio:"ダークなイラストがメインです。\n今は受付を止めていますが、再開したらここに出します。"},
+    a4:{n:"クロ",h:"@kuro_ill",on:true,g:"g4",img:"./images/sample-04.webp",bio:"色々描いてます。最近は和服が好きです。\nCDジャケットやフライヤーのご相談どうぞ。"},
+    a5:{n:"ゆの",h:"@yuno_art",on:true,g:"g5",img:"./images/sample-05.webp",bio:"メカ・ロボット系。\nスタンプ・グッズ向けの絵も。"},
+    a6:{n:"はる",h:"@haru_paint",on:false,g:"g6",img:"./images/sample-06.webp",bio:"ファンタジーとかゲームとか。トレカのイラストもやってます。\n受付停止中です。"},
+    a7:{n:"ねむ",h:"@nemu_doodle",on:true,g:"g7",img:"./images/sample-07.webp",bio:"ポップで落書きみたいな勢い重視の絵。\n配信のサムネとかよく描きます。"},
+    a8:{n:"そら",h:"@sora_canvas",on:true,g:"g8",img:"./images/sample-08.webp",bio:"水彩画風にハマってます。是非ギャラリーも見てください。\n一点物の雰囲気が出せます。"},
   };
   const keys = Object.keys(artists);
+
+  // ===== 作品画像の敷き込み =====
+  // img があれば実画像を敷く。無い／読み込めない絵師は従来のダミー塗り（.g1〜）のまま。
+  // パスは src プロパティ経由で入れる（innerHTML へ展開しない）。
+  function paintArt(el, a, lazy){
+    if(!el) return;
+    el.querySelectorAll('.art-img').forEach(n=>n.remove());
+    el.classList.remove('has-img');
+    if(!a || !a.img) return;
+    const img=document.createElement('img');
+    img.className='art-img';
+    img.alt='';
+    if(lazy) img.loading="lazy";   // 一覧のカードのみ遅延。大枠・モーダルは即読み込み（切替時の空白を避ける）
+    img.decoding='async';
+    img.addEventListener('error',()=>{img.remove();el.classList.remove('has-img')});
+    img.src=a.img;
+    el.prepend(img);
+    el.classList.add('has-img');
+  }
 
   // ===== ページ切替 =====
   function showTop(){document.getElementById('topPage').classList.add('active');document.getElementById('galleryPage').classList.remove('active');window.scrollTo(0,0)}
@@ -25,7 +40,8 @@
     const a=artists[k];
     const el=document.createElement('div');
     el.className='card';el.onclick=()=>openModal(k);
-    el.innerHTML=`<div class="card-art ${a.g}"><span class="recv ${a.on?'on':'off'}">${a.on?'受付中':'受付停止'}</span><span class="mini">ART</span></div><div class="card-foot"><b>${a.n}</b><span>${a.h}</span></div>`;
+    el.innerHTML=`<div class="card-art ${a.g}"><span class="mini">ART</span></div><div class="card-foot"><b>${a.n}</b><span>${a.h}</span></div>`;
+    paintArt(el.querySelector(".card-art"), a, true);
     grid.appendChild(el);
   });
 
@@ -39,6 +55,7 @@
     const art=document.getElementById('showArt');
     art.className='show-art '+a.g;
     art.innerHTML=`<div class="show-frame"></div><div class="ph-note">ILLUSTRATION</div><div class="dots" id="dots"></div>`;
+    paintArt(art,a);
     const dd=art.querySelector('#dots');
     showOrder.slice(0,8).forEach((_,i)=>{const d=document.createElement('i');if(i===showIdx%8)d.className='on';dd.appendChild(d)});
     document.getElementById('showName').textContent=a.n;
@@ -61,6 +78,7 @@
     document.getElementById('mHandle').textContent=a.h;
     document.getElementById('mBio').textContent=a.bio;
     document.getElementById('mArt').className='modal-art '+a.g;
+    paintArt(document.getElementById("mArt"), a);
     const st=document.getElementById('mStatus');
     st.innerHTML=`<i></i>${a.on?'依頼受付中':'依頼受付停止中'}`;
     st.style.color=a.on?'var(--lime)':'var(--dim)';
