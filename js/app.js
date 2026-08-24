@@ -1,12 +1,12 @@
   const artists = {
-    a1:{n:"あおい かな",h:"@aoi_kana_art",on:true,g:"g1",img:"./images/sample-01.webp",bio:"天神を拠点に、ネオン街と猫をよく描いています。\nアイコン・配信素材・ジャケットなどお気軽に。\n作業中はいつもURATEN流してます。"},
-    a2:{n:"みなと れい",h:"@minato_rei",on:true,g:"g2",img:"./images/sample-02.webp",bio:"女の子をイラストを描いています。\nVTuberの立ち絵・ロゴまわりよくやってます。"},
-    a3:{n:"しおり",h:"@shiori_draws",on:false,g:"g3",img:"./images/sample-03.webp",bio:"ダークなイラストがメインです。\n今は受付を止めていますが、再開したらここに出します。"},
-    a4:{n:"クロ",h:"@kuro_ill",on:true,g:"g4",img:"./images/sample-04.webp",bio:"色々描いてます。最近は和服が好きです。\nCDジャケットやフライヤーのご相談どうぞ。"},
-    a5:{n:"ゆの",h:"@yuno_art",on:true,g:"g5",img:"./images/sample-05.webp",bio:"メカ・ロボット系。\nスタンプ・グッズ向けの絵も。"},
-    a6:{n:"はる",h:"@haru_paint",on:false,g:"g6",img:"./images/sample-06.webp",bio:"ファンタジーとかゲームとか。トレカのイラストもやってます。\n受付停止中です。"},
-    a7:{n:"ねむ",h:"@nemu_doodle",on:true,g:"g7",img:"./images/sample-07.webp",bio:"ポップで落書きみたいな勢い重視の絵。\n配信のサムネとかよく描きます。"},
-    a8:{n:"そら",h:"@sora_canvas",on:true,g:"g8",img:"./images/sample-08.webp",bio:"水彩画風にハマってます。是非ギャラリーも見てください。\n一点物の雰囲気が出せます。"},
+    a1:{n:"あおい かな",h:"@aoi_kana_art",g:"g1",img:"./images/sample-01.webp",bio:"天神を拠点に、ネオン街と猫をよく描いています。\nアイコン・配信素材・ジャケットなどお気軽に。\n作業中はいつもURATEN流してます。"},
+    a2:{n:"みなと れい",h:"@minato_rei",g:"g2",img:"./images/sample-02.webp",bio:"女の子をイラストを描いています。\nVTuberの立ち絵・ロゴまわりよくやってます。"},
+    a3:{n:"しおり",h:"@shiori_draws",g:"g3",img:"./images/sample-03.webp",bio:"ダークなイラストがメインです。\n漫画も大好きです。"},
+    a4:{n:"クロ",h:"@kuro_ill",g:"g4",img:"./images/sample-04.webp",bio:"色々描いてます。最近は和服が好きです。\nCDジャケットやフライヤーのご相談どうぞ。"},
+    a5:{n:"ゆの",h:"@yuno_art",g:"g5",img:"./images/sample-05.webp",bio:"メカ・ロボット系。\nスタンプ・グッズ向けの絵も。"},
+    a6:{n:"はる",h:"@haru_paint",g:"g6",img:"./images/sample-06.webp",bio:"ファンタジーとかゲームとか。\nトレカのイラストもやってます。"},
+    a7:{n:"ねむ",h:"@nemu_doodle",g:"g7",img:"./images/sample-07.webp",bio:"ポップで落書きみたいな勢い重視の絵。\n配信のサムネとかよく描きます。"},
+    a8:{n:"そら",h:"@sora_canvas",g:"g8",img:"./images/sample-08.webp",bio:"水彩画風にハマってます。\n是非ギャラリーも見てください。"},
   };
   const keys = Object.keys(artists);
 
@@ -61,11 +61,6 @@
     document.getElementById('showName').textContent=a.n;
     document.getElementById('showHandle').textContent=a.h;
     document.getElementById('showBio').textContent=a.bio.replace(/\n/g,' ');
-    const st=document.getElementById('showStatus');
-    st.innerHTML=`<i></i>${a.on?'依頼受付中':'依頼受付停止中'}`;
-    st.style.color=a.on?'var(--lime)':'var(--dim)';
-    st.style.borderColor=a.on?'rgba(200,255,61,.4)':'var(--line)';
-    st.querySelector('i').style.background=a.on?'var(--lime)':'#9a98c4';
   }
   setInterval(()=>{showIdx=(showIdx+1)%showOrder.length;renderShow()},3500);
   renderShow();
@@ -79,11 +74,6 @@
     document.getElementById('mBio').textContent=a.bio;
     document.getElementById('mArt').className='modal-art '+a.g;
     paintArt(document.getElementById("mArt"), a);
-    const st=document.getElementById('mStatus');
-    st.innerHTML=`<i></i>${a.on?'依頼受付中':'依頼受付停止中'}`;
-    st.style.color=a.on?'var(--lime)':'var(--dim)';
-    st.style.borderColor=a.on?'rgba(200,255,61,.4)':'var(--line)';
-    st.querySelector('i').style.background=a.on?'var(--lime)':'#9a98c4';
     modal.classList.add('open');
   }
   function closeModal(){modal.classList.remove('open')}

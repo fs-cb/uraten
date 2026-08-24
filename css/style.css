@@ -94,8 +94,6 @@
   .show-body{padding:24px}
   .artist-name{font-size:25px;font-weight:900;margin-bottom:5px}
   .artist-handle{font-size:13px;color:var(--cyan);margin-bottom:13px}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--lime);border:1px solid rgba(200,255,61,.4);padding:4px 10px;border-radius:30px;margin-bottom:13px}
-  .status-pill i{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
   .artist-bio{font-size:13px;line-height:1.85;color:var(--dim)}
   .push-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
   .btn-push{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;padding:8px 15px;border-radius:9px;border:none;cursor:pointer;color:#0a0a12;background:var(--lime)}
@@ -121,9 +119,6 @@
   .card:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 10px 30px rgba(19,231,255,.16)}
   .card-art{aspect-ratio:1/1;display:grid;place-items:center;position:relative}
   .card-art .mini{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.14em}
-  .recv{position:absolute;top:8px;right:8px;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px}
-  .recv.on{background:rgba(200,255,61,.16);color:var(--lime);border:1px solid rgba(200,255,61,.4)}
-  .recv.off{background:rgba(255,255,255,.06);color:var(--dim);border:1px solid var(--line)}
   .card-foot{padding:10px 12px}
   .card-foot b{font-size:13px;font-weight:800;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-foot span{font-size:10px;color:var(--cyan)}
@@ -350,7 +345,6 @@
   .show-body{padding:30px;background:linear-gradient(180deg,rgba(255,255,255,.045),transparent)}
   .artist-name{font-size:28px;letter-spacing:.04em}
   .artist-handle{color:var(--cyan);text-shadow:0 0 12px rgba(23,236,255,.28)}
-  .status-pill{background:rgba(215,255,93,.055);backdrop-filter:blur(8px);box-shadow:inset 0 0 12px rgba(215,255,93,.05);border-radius:8px}
   .btn-push{background:linear-gradient(135deg,var(--gold),var(--lime));box-shadow:0 0 22px rgba(246,217,139,.18);color:#07070e;border-radius:8px}
 
   .cal{gap:12px}
@@ -365,8 +359,6 @@
   .card{border-radius:10px;overflow:hidden}
   .card:hover{transform:translateY(-6px) scale(1.01);border-color:transparent;box-shadow:0 22px 56px rgba(0,0,0,.45),0 0 28px rgba(23,236,255,.18)}
   .card-foot{padding:13px 14px;background:rgba(0,0,0,.18)}
-  .recv.on{background:rgba(215,255,93,.10);border-color:rgba(246,217,139,.38);color:var(--gold)}
-  .recv.off{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.11)}
 
   .g1{background:radial-gradient(circle at 25% 20%,rgba(246,217,139,.35),transparent 25%),linear-gradient(135deg,#3a123e,#0b3a4a 58%,#090913)}
   .g2{background:radial-gradient(circle at 70% 18%,rgba(23,236,255,.30),transparent 26%),linear-gradient(135deg,#17115f,#5c2457 64%,#0a0a13)}
@@ -662,8 +654,7 @@ img,svg,video,canvas{max-width:100%}
   .modal-card,
   .fab,
   .cast-link,
-  .tag-link,
-  .status-pill{
+  .tag-link{
     -webkit-backdrop-filter:none !important;
     backdrop-filter:none !important;
   }
