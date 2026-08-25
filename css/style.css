@@ -164,7 +164,6 @@
   .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
   .btn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;padding:12px 18px;border-radius:10px;text-decoration:none;cursor:pointer;border:none}
   .btn-push{background:var(--lime);color:#0a0a12}
-  .btn-dc{background:#5865F2;color:#fff}
   .btn-x{background:transparent;color:var(--ink);border:1px solid var(--line)}
   .btn-x:hover{border-color:var(--cyan);color:var(--cyan)}
 
