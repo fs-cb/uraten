@@ -1,0 +1,150 @@
+/* =========================================================
+   URATEN BGM 試聴ページ
+   配色・パネル・タイポは css/menu.css の意匠と変数に従う。
+   このファイルは menu.css のあとに読み込む前提。
+   bgm.html と、後続の bgm-dl.html で共用する。
+========================================================= */
+
+/* ---- 用途の切替（CM用／トーク用）---- */
+.bgm-tabs{display:flex;gap:8px;margin-top:18px}
+.bgm-tab{
+  flex:1 1 0;min-height:46px;padding:12px 14px;
+  border-radius:9px;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:900;letter-spacing:.06em;
+  color:rgba(251,247,255,.62);
+  background:rgba(0,0,0,.24);
+  border:1px solid rgba(255,255,255,.12);
+  transition:color .18s,background .18s,box-shadow .18s;
+}
+.bgm-tab:hover{color:var(--ink)}
+.bgm-tab.is-on{
+  color:#07070e;border-color:transparent;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  box-shadow:0 0 20px rgba(23,236,255,.20);
+}
+.bgm-tab:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---- タグ絞り込み ---- */
+.bgm-filter{margin-top:16px;display:flex;flex-direction:column;gap:11px}
+.bgm-fgroup{display:flex;align-items:flex-start;gap:11px;flex-wrap:wrap}
+.bgm-flabel{
+  flex:none;min-width:44px;padding-top:8px;
+  font-size:11px;font-weight:900;letter-spacing:.10em;color:var(--gold);
+}
+.bgm-fchips{flex:1 1 200px;display:flex;flex-wrap:wrap;gap:7px}
+.bgm-chip-btn{
+  min-height:36px;padding:7px 14px;border-radius:8px;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.04em;
+  color:rgba(251,247,255,.68);
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.14);
+  transition:color .18s,background .18s,border-color .18s,box-shadow .18s;
+}
+.bgm-chip-btn:hover{color:var(--ink);border-color:rgba(255,255,255,.26)}
+.bgm-chip-btn.is-on{
+  color:var(--cyan);
+  background:rgba(23,236,255,.12);
+  border-color:rgba(23,236,255,.52);
+  box-shadow:0 0 14px rgba(23,236,255,.16);
+}
+.bgm-chip-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---- 件数表示・解除 ---- */
+.bgm-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:16px;padding-top:13px;
+  border-top:1px solid rgba(255,255,255,.10);
+}
+.bgm-count{
+  font-size:12px;font-weight:800;letter-spacing:.04em;
+  color:rgba(251,247,255,.62);font-variant-numeric:tabular-nums;
+}
+.bgm-count b{color:var(--ink);font-size:15px;font-weight:900;margin-right:1px}
+.bgm-clear{
+  flex:none;min-height:34px;padding:6px 13px;border-radius:8px;cursor:pointer;
+  font-family:inherit;font-size:11.5px;font-weight:800;letter-spacing:.04em;
+  color:rgba(251,247,255,.62);
+  background:transparent;
+  border:1px solid rgba(255,255,255,.16);
+  transition:color .18s,border-color .18s;
+}
+.bgm-clear:hover{color:var(--gold);border-color:rgba(246,217,139,.42)}
+.bgm-clear:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+.bgm-excerpt{
+  margin-top:11px;font-size:11.5px;line-height:1.8;
+  color:rgba(251,247,255,.56);
+}
+
+/* ---- 一覧 ---- */
+.bgm-list{margin-top:13px;display:flex;flex-direction:column;gap:8px}
+.bgm-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 13px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(18,18,34,.66);
+  transition:border-color .18s,box-shadow .18s;
+}
+.bgm-row.is-playing{
+  border-color:rgba(23,236,255,.46);
+  box-shadow:0 0 22px rgba(23,236,255,.12);
+}
+.bgm-play{
+  flex:none;width:46px;height:46px;border-radius:9px;cursor:pointer;
+  display:grid;place-items:center;
+  font-family:inherit;font-size:14px;line-height:1;color:#07070e;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  border:1px solid transparent;
+  box-shadow:0 6px 18px rgba(0,0,0,.28);
+  transition:filter .18s,transform .18s;
+}
+.bgm-play:hover{filter:brightness(1.08)}
+.bgm-play:active{transform:scale(.96)}
+.bgm-play:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.bgm-row.is-playing .bgm-play{background:linear-gradient(135deg,var(--pink),var(--violet));color:#fff}
+.bgm-row.is-loading .bgm-play{
+  background:rgba(255,255,255,.10);color:rgba(251,247,255,.72);
+  border-color:rgba(255,255,255,.18);box-shadow:none;
+  animation:bgmPulse 1.1s ease-in-out infinite;
+}
+@keyframes bgmPulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+.bgm-info{flex:1;min-width:0}
+.bgm-name{
+  font-size:13.5px;font-weight:850;letter-spacing:.02em;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+.bgm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.bgm-chip{
+  font-size:10.5px;font-weight:800;letter-spacing:.05em;
+  padding:2px 8px;border-radius:7px;white-space:nowrap;
+  color:rgba(251,247,255,.62);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.11);
+}
+.bgm-state{
+  display:block;margin-top:5px;
+  font-size:11px;font-weight:800;letter-spacing:.04em;
+  color:var(--cyan);
+}
+.bgm-state.is-error{color:var(--rose)}
+.bgm-time{
+  flex:none;font-size:12.5px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+  color:rgba(251,247,255,.58);
+}
+
+.bgm-msg{
+  margin-top:14px;font-size:12.5px;line-height:1.9;
+  color:rgba(251,247,255,.60);
+}
+.bgm-msg.is-error{color:var(--rose)}
+
+@media(max-width:400px){
+  .bgm-tab{font-size:12px;letter-spacing:.04em}
+  .bgm-flabel{min-width:100%;padding-top:0}
+  .bgm-row{gap:10px;padding:9px 11px}
+  .bgm-play{width:44px;height:44px}
+  .bgm-name{font-size:13px}
+}

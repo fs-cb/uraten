@@ -1,0 +1,561 @@
+{
+  "version": "2026-09-01",
+  "preview_base": "https://media.ura-ten.jp/",
+  "items": [
+    {
+      "id": "URT-B-CM-001",
+      "title": "夜の公園",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-CM-001.mp3"
+    },
+    {
+      "id": "URT-B-CM-002",
+      "title": "放課後の夕日",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-CM-002.mp3"
+    },
+    {
+      "id": "URT-B-CM-003",
+      "title": "ポップスター",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-003.mp3"
+    },
+    {
+      "id": "URT-B-CM-004",
+      "title": "エレキシャイン",
+      "category": "cm",
+      "duration": 30,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-004.mp3"
+    },
+    {
+      "id": "URT-B-CM-005",
+      "title": "マジカルピース",
+      "category": "cm",
+      "duration": 27,
+      "tags": [
+        "明るい",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-005.mp3"
+    },
+    {
+      "id": "URT-B-CM-006",
+      "title": "ラウンジグルーヴ",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "かっこいい",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-006.mp3"
+    },
+    {
+      "id": "URT-B-CM-007",
+      "title": "ナイトチェイス",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "シリアス",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-007.mp3"
+    },
+    {
+      "id": "URT-B-CM-008",
+      "title": "レインドロップ",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "シリアス",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-008.mp3"
+    },
+    {
+      "id": "URT-B-CM-009",
+      "title": "ジャズナイト",
+      "category": "cm",
+      "duration": 30,
+      "tags": [
+        "おしゃれ",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-009.mp3"
+    },
+    {
+      "id": "URT-B-CM-010",
+      "title": "ジェントルマン",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "おしゃれ",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-010.mp3"
+    },
+    {
+      "id": "URT-B-CM-011",
+      "title": "深夜のドライブ",
+      "category": "cm",
+      "duration": 28,
+      "tags": [
+        "シリアス",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-011.mp3"
+    },
+    {
+      "id": "URT-B-CM-012",
+      "title": "メモリー",
+      "category": "cm",
+      "duration": 27,
+      "tags": [
+        "あたたかい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-012.mp3"
+    },
+    {
+      "id": "URT-B-CM-013",
+      "title": "町のオルゴール",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "あたたかい",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-CM-013.mp3"
+    },
+    {
+      "id": "URT-B-CM-014",
+      "title": "バニーショップ",
+      "category": "cm",
+      "duration": 28,
+      "tags": [
+        "かわいい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-014.mp3"
+    },
+    {
+      "id": "URT-B-CM-015",
+      "title": "ポップキャンディー",
+      "category": "cm",
+      "duration": 28,
+      "tags": [
+        "かわいい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-015.mp3"
+    },
+    {
+      "id": "URT-B-CM-016",
+      "title": "テディの散歩",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "かわいい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-016.mp3"
+    },
+    {
+      "id": "URT-B-CM-017",
+      "title": "スクールラン",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "かっこいい",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-017.mp3"
+    },
+    {
+      "id": "URT-B-CM-018",
+      "title": "ロックステージ",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "かっこいい",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-018.mp3"
+    },
+    {
+      "id": "URT-B-CM-019",
+      "title": "エレキビート",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "かっこいい",
+        "速い"
+      ],
+      "preview": "bgm/preview/URT-B-CM-019.mp3"
+    },
+    {
+      "id": "URT-B-CM-020",
+      "title": "夜カフェ",
+      "category": "cm",
+      "duration": 28,
+      "tags": [
+        "あたたかい",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-CM-020.mp3"
+    },
+    {
+      "id": "URT-B-CM-021",
+      "title": "古いステレオ",
+      "category": "cm",
+      "duration": 29,
+      "tags": [
+        "おしゃれ",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-CM-021.mp3"
+    },
+    {
+      "id": "URT-B-TK-001",
+      "title": "ティータイム",
+      "category": "talk",
+      "duration": 179,
+      "tags": [
+        "あたたかい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-001.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-002",
+      "title": "海の見えるテラス",
+      "category": "talk",
+      "duration": 174,
+      "tags": [
+        "あたたかい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-002.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-003",
+      "title": "夕暮れの海岸",
+      "category": "talk",
+      "duration": 200,
+      "tags": [
+        "おしゃれ",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-003.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-004",
+      "title": "セカンドストリート",
+      "category": "talk",
+      "duration": 268,
+      "tags": [
+        "おしゃれ",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-004.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-005",
+      "title": "シガーの煙",
+      "category": "talk",
+      "duration": 189,
+      "tags": [
+        "おしゃれ",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-005.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-006",
+      "title": "ジャズバー",
+      "category": "talk",
+      "duration": 202,
+      "tags": [
+        "おしゃれ",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-006.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-007",
+      "title": "夏の昼下がり",
+      "category": "talk",
+      "duration": 177,
+      "tags": [
+        "あたたかい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-007.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-008",
+      "title": "緑の広場",
+      "category": "talk",
+      "duration": 290,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-008.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-009",
+      "title": "石畳の散歩道",
+      "category": "talk",
+      "duration": 213,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-009.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-010",
+      "title": "都会の街灯",
+      "category": "talk",
+      "duration": 243,
+      "tags": [
+        "かっこいい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-010.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-011",
+      "title": "光の教会",
+      "category": "talk",
+      "duration": 225,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-011.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-012",
+      "title": "白い花束",
+      "category": "talk",
+      "duration": 219,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-012.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-013",
+      "title": "AM2:00",
+      "category": "talk",
+      "duration": 270,
+      "tags": [
+        "シリアス",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-013.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-014",
+      "title": "ひとりのベンチ",
+      "category": "talk",
+      "duration": 223,
+      "tags": [
+        "シリアス",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-014.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-015",
+      "title": "迷いの道",
+      "category": "talk",
+      "duration": 195,
+      "tags": [
+        "シリアス",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-015.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-016",
+      "title": "タクシーから見る夜景",
+      "category": "talk",
+      "duration": 245,
+      "tags": [
+        "シリアス",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-016.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-017",
+      "title": "空と雲",
+      "category": "talk",
+      "duration": 250,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-017.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-018",
+      "title": "モーションカラー",
+      "category": "talk",
+      "duration": 206,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-018.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-019",
+      "title": "スキップしながら",
+      "category": "talk",
+      "duration": 224,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-019.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-020",
+      "title": "好きな本と",
+      "category": "talk",
+      "duration": 174,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-020.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-021",
+      "title": "朝のラジオ",
+      "category": "talk",
+      "duration": 220,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-021.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-022",
+      "title": "木枯らし",
+      "category": "talk",
+      "duration": 222,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-022.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-023",
+      "title": "新月",
+      "category": "talk",
+      "duration": 219,
+      "tags": [
+        "落ち着き",
+        "ゆっくり"
+      ],
+      "preview": "bgm/preview/URT-B-TK-023.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-024",
+      "title": "マイアミバーガー",
+      "category": "talk",
+      "duration": 180,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-024.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-025",
+      "title": "ウォーキング",
+      "category": "talk",
+      "duration": 195,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-025.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-026",
+      "title": "テクノ・テクノ",
+      "category": "talk",
+      "duration": 200,
+      "tags": [
+        "かっこいい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-026.mp3",
+      "preview_duration": 75
+    },
+    {
+      "id": "URT-B-TK-027",
+      "title": "今日のスマイル",
+      "category": "talk",
+      "duration": 240,
+      "tags": [
+        "明るい",
+        "ふつう"
+      ],
+      "preview": "bgm/preview/URT-B-TK-027.mp3",
+      "preview_duration": 75
+    }
+  ]
+}

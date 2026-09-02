@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BGM試聴｜URATEN</title>
+<meta name="description" content="URATENが放送枠・CM枠向けに提供しているBGMの試聴ページ。CM用・トーク用を、雰囲気とテンポで絞り込んで聴けます。">
+<link rel="stylesheet" href="./css/menu.css">
+<link rel="stylesheet" href="./css/bgm.css">
+</head>
+<body>
+<div class="lux-lines" aria-hidden="true"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="logo">URATEN</div>
+    <h1>BGM LIBRARY</h1>
+    <p class="hero-catch">番組の下じきを、先に聴く。</p>
+    <p>URATENが番組とCMのためにご用意しているBGMです。<br>お申込みの前に、どんな音があるかをここで確かめられます。</p>
+  </div>
+
+  <!-- ============ 01 BGMを試聴する ============ -->
+  <section class="group" id="library">
+    <div class="group-head"><div class="group-num">01</div><h2 class="group-title">BGMを試聴する</h2></div>
+    <p class="group-sub">用途を選び、雰囲気とテンポで絞り込めます。左の再生ボタンで試聴できます。</p>
+
+    <div class="bgm-tabs" id="bgmTabs" role="tablist" aria-label="用途">
+      <button type="button" class="bgm-tab is-on" role="tab" aria-selected="true" aria-controls="bgmList" data-category="cm">CM用</button>
+      <button type="button" class="bgm-tab" role="tab" aria-selected="false" aria-controls="bgmList" data-category="talk">トーク用</button>
+    </div>
+
+    <div class="bgm-filter" id="bgmFilter"></div>
+
+    <div class="bgm-bar">
+      <p class="bgm-count" id="bgmCount">読み込み中です。</p>
+      <button type="button" class="bgm-clear" id="bgmClear" hidden>絞り込みを解除</button>
+    </div>
+
+    <p class="bgm-excerpt" id="bgmExcerpt" hidden>トーク用の試聴は、約75秒の抜粋です。表示している尺は原本の長さです。</p>
+
+    <div class="bgm-list" id="bgmList" role="tabpanel"></div>
+    <p class="bgm-msg" id="bgmMsg">読み込み中です。</p>
+  </section>
+
+  <!-- ============ 02 お申込みについて ============ -->
+  <section class="group" id="apply">
+    <div class="group-head"><div class="group-num">02</div><h2 class="group-title">お申込みについて</h2></div>
+    <p class="group-sub">BGMのご利用は、枠のお申込みに含まれます。単体での販売は行っていません。</p>
+
+    <ul class="list">
+      <li>ここで試聴できるBGMは、<b>放送枠・CM枠のご利用に利用権が含まれます。</b>別途の料金はかかりません。</li>
+      <li><b>原本のダウンロードは、お申込みのあとにご案内します。</b>このページで配信しているのは試聴用の音源です。</li>
+      <li><b>歌い手枠では、提供BGMを使用しません。</b>楽曲そのものを放送する枠のため、対象外です。</li>
+    </ul>
+
+    <div class="note flag">
+      料金と申込み方法は<a href="./menu.html">メニュー</a>をご覧ください。ご利用の条件は<a href="./terms.html">利用規約</a>の「提供BGMの利用条件」に定めています。
+    </div>
+
+    <div class="cta-row">
+      <a class="cta" href="./menu.html">メニューを見る</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="legal-links">
+      <a href="./terms.html">利用規約</a>
+      <a href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a href="./refund.html">返金・キャンセルポリシー</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+    </div>
+  </footer>
+</div>
+<script src="./js/bgm.js"></script>
+<script>
+  uratenBgm.init({
+    dataUrl: './data/bgm.json',
+    tagsUrl: './data/bgm-tags.json'
+  });
+</script>
+</body>
+</html>
