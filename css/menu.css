@@ -550,3 +550,98 @@ a:focus-visible,
   body::before,
   body::after{animation:none !important}
 }
+
+/* ---- 負荷低減 ---- */
+.item{
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+
+/* =========================================================
+   MENU 2026-09 二層化コンポーネント
+   .slot-rules  = 常時表示のルール（申込み可否を左右する条件）
+   .slot-notes  = 折りたたみ（運用・細目）
+   既存の .list / .note は 02〜08 で使用中のため残すこと。
+========================================================= */
+
+/* ---- 常時表示のルール ---- */
+.slot-rules{
+  margin:20px 0 0;
+  font-size:13.5px;
+  line-height:1.95;
+  color:rgba(251,247,255,.74);
+}
+.slot-rules p{
+  margin:0 0 .7em;
+  max-width:40em;
+}
+.slot-rules p:last-child{margin-bottom:0}
+.slot-rules b{
+  color:var(--cyan);
+  font-weight:700;
+  text-shadow:none;
+}
+
+/* ---- 折りたたみ ---- */
+.slot-notes{
+  margin:18px 0 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.slot-notes>summary{
+  cursor:pointer;
+  list-style:none;
+  padding:13px 26px 13px 0;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.02em;
+  color:rgba(251,247,255,.80);
+  position:relative;
+}
+.slot-notes>summary::-webkit-details-marker{display:none}
+.slot-notes>summary::after{
+  content:"";
+  position:absolute;right:6px;top:50%;
+  width:7px;height:7px;
+  border-right:1.5px solid var(--gold);
+  border-bottom:1.5px solid var(--gold);
+  transform:translateY(-70%) rotate(45deg);
+  transition:transform .18s ease;
+}
+.slot-notes[open]>summary::after{
+  transform:translateY(-20%) rotate(-135deg);
+}
+.slot-notes>summary:hover{color:var(--ink)}
+.slot-notes>summary:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+.slot-notes dl{
+  margin:0;
+  padding:2px 0 18px;
+  font-size:12.5px;
+  line-height:1.9;
+}
+.slot-notes dt{
+  font-weight:700;
+  color:var(--gold);
+  margin-top:1.2em;
+  text-shadow:none;
+}
+.slot-notes dt:first-child{margin-top:0}
+.slot-notes dd{
+  margin:.3em 0 0;
+  max-width:42em;
+  color:rgba(251,247,255,.68);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .slot-notes>summary::after{transition:none !important}
+}
+
+@media(max-width:400px){
+  .slot-rules{font-size:13px}
+  .slot-notes dl{font-size:12px}
+}
