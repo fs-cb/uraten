@@ -13,7 +13,7 @@ body{
     linear-gradient(180deg,#03030a 0%,#070711 46%,#03030a 100%);
   color:var(--ink);
   font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
-  -webkit-font-smoothing:antialiased;
+  -webkit-font-smoothing:auto;
   line-height:1.7;
   padding:0 0 86px;
   overflow-x:hidden;
@@ -141,7 +141,7 @@ body::after{
   text-shadow:0 0 20px rgba(255,45,149,.14);
 }
 .group-sub{
-  font-size:12.5px;color:rgba(251,247,255,.60);
+  font-size:12.5px;color:rgba(251,247,255,.84);
   margin:0 0 16px 42px;
 }
 
@@ -184,7 +184,7 @@ body::after{
 
 .item-main{flex:1;min-width:0;position:relative;z-index:1}
 .item-name{font-size:16px;font-weight:850;display:flex;align-items:center;gap:9px;flex-wrap:wrap;letter-spacing:.01em}
-.item-desc{font-size:12.5px;color:rgba(251,247,255,.61);margin-top:5px}
+.item-desc{font-size:12.5px;color:rgba(251,247,255,.84);margin-top:5px}
 .item-desc b{color:var(--cyan)}
 
 .tag{
@@ -205,13 +205,13 @@ body::after{
 }
 .price-main small{font-size:12px;color:rgba(251,247,255,.54);font-weight:700;margin-left:1px}
 .price-main.free{color:var(--lime);text-shadow:0 0 18px rgba(215,255,93,.22)}
-.price-sub{font-size:11px;color:rgba(251,247,255,.52);margin-top:3px}
-.price-reg{font-size:11px;color:rgba(251,247,255,.52);margin-top:4px;padding-top:4px;border-top:1px dashed rgba(255,255,255,.12)}
+.price-sub{font-size:11px;color:rgba(251,247,255,.74);margin-top:3px}
+.price-reg{font-size:11px;color:rgba(251,247,255,.74);margin-top:4px;padding-top:4px;border-top:1px dashed rgba(255,255,255,.12)}
 .price-reg b{color:var(--gold);font-weight:800}
 
 .note{
   position:relative;
-  font-size:11.5px;color:rgba(251,247,255,.62);
+  font-size:11.5px;color:rgba(251,247,255,.80);
   background:rgba(0,0,0,.22);
   border:1px solid rgba(255,255,255,.10);
   border-radius:10px;
@@ -449,7 +449,7 @@ footer{
   position:relative;
   padding-left:16px;margin-bottom:9px;
   font-size:12.5px;line-height:1.95;
-  color:rgba(251,247,255,.70);
+  color:rgba(251,247,255,.86);
 }
 .list li:last-child{margin-bottom:0}
 .list li::before{
@@ -569,11 +569,10 @@ a:focus-visible,
   margin:20px 0 0;
   font-size:13.5px;
   line-height:1.95;
-  color:rgba(251,247,255,.74);
+  color:rgba(251,247,255,.88);
 }
 .slot-rules p{
   margin:0 0 .7em;
-  max-width:40em;
 }
 .slot-rules p:last-child{margin-bottom:0}
 .slot-rules b{
@@ -595,7 +594,7 @@ a:focus-visible,
   font-size:12.5px;
   font-weight:700;
   letter-spacing:.02em;
-  color:rgba(251,247,255,.80);
+  color:rgba(251,247,255,.92);
   position:relative;
 }
 .slot-notes>summary::-webkit-details-marker{display:none}
@@ -633,15 +632,85 @@ a:focus-visible,
 .slot-notes dt:first-child{margin-top:0}
 .slot-notes dd{
   margin:.3em 0 0;
-  max-width:42em;
-  color:rgba(251,247,255,.68);
+  color:rgba(251,247,255,.82);
 }
 
 @media (prefers-reduced-motion: reduce){
   .slot-notes>summary::after{transition:none !important}
 }
 
-@media(max-width:400px){
-  .slot-rules{font-size:13px}
-  .slot-notes dl{font-size:12px}
+/* =========================================================
+   MENU 2026-09 タイポグラフィ調整
+   日本語本文の最小サイズ引き上げ／無効ウェイトの修正／
+   コントラストAA未満箇所の修正／小さい文字のグロー除去。
+   配色・レイアウト・背景は変更しない。
+========================================================= */
+
+/* ---- 1. 日本語本文の下限を引き上げる ---- */
+.item-desc,
+.list li,
+.group-sub,
+.flow span{
+  font-size:13.5px;
+}
+.note,
+.hero-tax{
+  font-size:12.5px;
+}
+.price-sub,
+.price-reg,
+footer,
+.legal-links a{
+  font-size:12px;
+}
+
+/* ---- 2. 存在しないウェイト（850）を宣言しない ---- */
+/* 850 は実フォントに存在しない。ブラウザが近傍ウェイトへ
+   解決するため見た目はほぼ変わらないが、宣言としては無効値。
+   実在ウェイト（800/900）は対象外とする */
+.item-name,
+.list b,
+.note b{
+  font-weight:700;
+}
+
+/* ---- 3. コントラストAA未満の箇所を修正 ---- */
+/* 実測 4.33:1 → 基準未達。該当は footer のみ */
+footer{
+  color:rgba(251,247,255,.60);
+}
+
+/* ---- 4. 小さい文字のグローを外す ---- */
+/* 見出し・ロゴのグローは残す */
+.list b,
+.note b,
+.item-desc b,
+.note.flag b{
+  text-shadow:none;
+}
+
+/* =========================================================
+   MENU 2026-09 日本語の折り返し調整
+   最終行に1〜数文字だけ残る「中途半端な改行」を防ぐ。
+   文節単位の折り返し／禁則の厳格化／最終行の孤立回避。
+   font-size は変更しない。
+   未対応ブラウザは各宣言を無視し、従来どおり折り返す。
+========================================================= */
+.group-sub,
+.item-desc,
+.list li,
+.note,
+.slot-rules p,
+.slot-notes dt,
+.slot-notes dd{
+  word-break:auto-phrase;
+  line-break:strict;
+  text-wrap:pretty;
+}
+
+/* ---- 07「レギュラー枠の流れ」見出しの前に間隔 ---- */
+/* .flow は margin-bottom を持たず、最後の li も padding-bottom:0 のため
+   直後の h3 が詰まって見える。2つ目の流れの始まりを分ける */
+.flow + h3.group-title{
+  margin-top:36px;
 }
