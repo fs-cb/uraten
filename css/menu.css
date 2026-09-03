@@ -495,6 +495,20 @@ footer{
   box-shadow:none;
 }
 .cta.ghost:hover{background:rgba(246,217,139,.08)}
+/* PC: 申込みボタンと同じ行の右端に、小さめの副ボタンとして置く
+   （高さは flex の stretch で申込みボタンと揃う） */
+@media(min-width:681px){
+  .cta.mini{
+    margin-left:auto;
+    padding:8px 14px;
+    font-size:12px;
+    letter-spacing:.02em;
+  }
+}
+/* スマホ・タブレット: 申込みボタンの下に、同じサイズで並べる */
+@media(max-width:680px){
+  .cta.mini{width:100%;justify-content:center}
+}
 
 /* ---- キーボードフォーカス ---- */
 a:focus-visible,
