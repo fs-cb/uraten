@@ -20,7 +20,7 @@ body{
     radial-gradient(900px 560px at 50% -10%,rgba(246,217,139,.14),transparent 62%),
     linear-gradient(180deg,#03030a 0%,#070711 46%,#03030a 100%);
   color:var(--ink);
-  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
+  font-family:"Zen Kaku Gothic New","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
   -webkit-font-smoothing:antialiased;
   line-height:1.9;
   padding:0 0 72px;
@@ -122,7 +122,7 @@ body::after{
 }
 .doc h2:first-child{margin-top:4px}
 .doc h3{
-  font-size:15.5px;font-weight:850;letter-spacing:.02em;
+  font-size:15.5px;font-weight:700;letter-spacing:.02em;
   color:var(--gold);
   margin:26px 0 6px;
   scroll-margin-top:20px;
@@ -133,7 +133,7 @@ body::after{
   font-size:14px;color:rgba(251,247,255,.82);
   margin:10px 0;
 }
-.doc strong{color:var(--cyan);font-weight:850}
+.doc strong{color:var(--cyan);font-weight:700}
 
 /* ---- リスト ---- */
 .doc ol,.doc ul{
@@ -181,11 +181,11 @@ body::after{
 }
 .doc thead th{
   background:rgba(23,236,255,.08);
-  color:var(--ink);font-weight:850;letter-spacing:.03em;
+  color:var(--ink);font-weight:700;letter-spacing:.03em;
 }
 .doc tbody th{
   background:rgba(255,255,255,.03);
-  color:var(--gold);font-weight:800;white-space:nowrap;
+  color:var(--gold);font-weight:700;white-space:nowrap;
   width:32%;
 }
 .doc tbody td{color:rgba(251,247,255,.82)}

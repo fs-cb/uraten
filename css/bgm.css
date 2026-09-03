@@ -34,7 +34,7 @@
 .bgm-fchips{flex:1 1 200px;display:flex;flex-wrap:wrap;gap:7px}
 .bgm-chip-btn{
   min-height:36px;padding:7px 14px;border-radius:8px;cursor:pointer;
-  font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.04em;
+  font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;
   color:rgba(251,247,255,.68);
   background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.14);
@@ -56,13 +56,13 @@
   border-top:1px solid rgba(255,255,255,.10);
 }
 .bgm-count{
-  font-size:12px;font-weight:800;letter-spacing:.04em;
+  font-size:12px;font-weight:700;letter-spacing:.04em;
   color:rgba(251,247,255,.62);font-variant-numeric:tabular-nums;
 }
 .bgm-count b{color:var(--ink);font-size:15px;font-weight:900;margin-right:1px}
 .bgm-clear{
   flex:none;min-height:34px;padding:6px 13px;border-radius:8px;cursor:pointer;
-  font-family:inherit;font-size:11.5px;font-weight:800;letter-spacing:.04em;
+  font-family:inherit;font-size:11.5px;font-weight:700;letter-spacing:.04em;
   color:rgba(251,247,255,.62);
   background:transparent;
   border:1px solid rgba(255,255,255,.16);
@@ -111,13 +111,13 @@
 
 .bgm-info{flex:1;min-width:0}
 .bgm-name{
-  font-size:13.5px;font-weight:850;letter-spacing:.02em;
+  font-size:13.5px;font-weight:700;letter-spacing:.02em;
   font-variant-numeric:tabular-nums;
   overflow-wrap:anywhere;
 }
 .bgm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
 .bgm-chip{
-  font-size:10.5px;font-weight:800;letter-spacing:.05em;
+  font-size:10.5px;font-weight:700;letter-spacing:.05em;
   padding:2px 8px;border-radius:7px;white-space:nowrap;
   color:rgba(251,247,255,.62);
   background:rgba(255,255,255,.05);
@@ -125,12 +125,12 @@
 }
 .bgm-state{
   display:block;margin-top:5px;
-  font-size:11px;font-weight:800;letter-spacing:.04em;
+  font-size:11px;font-weight:700;letter-spacing:.04em;
   color:var(--cyan);
 }
 .bgm-state.is-error{color:var(--rose)}
 .bgm-time{
-  flex:none;font-size:12.5px;font-weight:800;
+  flex:none;font-size:12.5px;font-weight:700;
   font-variant-numeric:tabular-nums;
   color:rgba(251,247,255,.58);
 }

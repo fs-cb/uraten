@@ -12,7 +12,7 @@ body{
     radial-gradient(900px 560px at 50% -10%,rgba(246,217,139,.14),transparent 62%),
     linear-gradient(180deg,#03030a 0%,#070711 46%,#03030a 100%);
   color:var(--ink);
-  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
+  font-family:"Zen Kaku Gothic New","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
   -webkit-font-smoothing:auto;
   line-height:1.7;
   padding:0 0 86px;
@@ -107,7 +107,7 @@ body::after{
 }
 .hero h1{
   position:relative;
-  font-size:12px;font-weight:800;letter-spacing:.36em;
+  font-size:12px;font-weight:700;letter-spacing:.36em;
   color:var(--gold);
   margin-top:9px;
   text-shadow:0 0 14px rgba(246,217,139,.30);
@@ -183,7 +183,7 @@ body::after{
 .item.free::before{background:linear-gradient(180deg,var(--lime),var(--gold));box-shadow:0 0 18px rgba(215,255,93,.34)}
 
 .item-main{flex:1;min-width:0;position:relative;z-index:1}
-.item-name{font-size:16px;font-weight:850;display:flex;align-items:center;gap:9px;flex-wrap:wrap;letter-spacing:.01em}
+.item-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px;flex-wrap:wrap;letter-spacing:.01em}
 .item-desc{font-size:12.5px;color:rgba(251,247,255,.84);margin-top:5px}
 .item-desc b{color:var(--cyan)}
 
@@ -207,7 +207,7 @@ body::after{
 .price-main.free{color:var(--lime);text-shadow:0 0 18px rgba(215,255,93,.22)}
 .price-sub{font-size:11px;color:rgba(251,247,255,.74);margin-top:3px}
 .price-reg{font-size:11px;color:rgba(251,247,255,.74);margin-top:4px;padding-top:4px;border-top:1px dashed rgba(255,255,255,.12)}
-.price-reg b{color:var(--gold);font-weight:800}
+.price-reg b{color:var(--gold);font-weight:700}
 
 .note{
   position:relative;
@@ -218,7 +218,7 @@ body::after{
   padding:13px 15px;margin-top:9px;line-height:1.85;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
-.note b{color:var(--cyan);font-weight:850}
+.note b{color:var(--cyan);font-weight:700}
 
 .legend{
   display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:30px 0 0;
@@ -458,7 +458,7 @@ footer{
   background:linear-gradient(90deg,var(--gold),var(--cyan));
   box-shadow:0 0 8px rgba(23,236,255,.45);
 }
-.list b{color:var(--cyan);font-weight:850}
+.list b{color:var(--cyan);font-weight:700}
 
 /* ---- 強調ボックス（note の派生） ---- */
 .note.flag{
@@ -641,7 +641,7 @@ a:focus-visible,
 
 /* =========================================================
    MENU 2026-09 タイポグラフィ調整
-   日本語本文の最小サイズ引き上げ／無効ウェイトの修正／
+   日本語本文の最小サイズ引き上げ／
    コントラストAA未満箇所の修正／小さい文字のグロー除去。
    配色・レイアウト・背景は変更しない。
 ========================================================= */
@@ -664,23 +664,13 @@ footer,
   font-size:12px;
 }
 
-/* ---- 2. 存在しないウェイト（850）を宣言しない ---- */
-/* 850 は実フォントに存在しない。ブラウザが近傍ウェイトへ
-   解決するため見た目はほぼ変わらないが、宣言としては無効値。
-   実在ウェイト（800/900）は対象外とする */
-.item-name,
-.list b,
-.note b{
-  font-weight:700;
-}
-
-/* ---- 3. コントラストAA未満の箇所を修正 ---- */
+/* ---- 2. コントラストAA未満の箇所を修正 ---- */
 /* 実測 4.33:1 → 基準未達。該当は footer のみ */
 footer{
   color:rgba(251,247,255,.60);
 }
 
-/* ---- 4. 小さい文字のグローを外す ---- */
+/* ---- 3. 小さい文字のグローを外す ---- */
 /* 見出し・ロゴのグローは残す */
 .list b,
 .note b,
