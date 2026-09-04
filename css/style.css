@@ -816,11 +816,25 @@ img,svg,video,canvas{max-width:100%}
   body::after{
     mix-blend-mode:normal;
     opacity:.52;   /* screen 解除分の明るさを補う（元 .46） */
+    /* filter から blur(.22px) を外す。標準偏差 0.22 CSSpx のぼかしで、
+       元のグラデーション自体が数px幅で滑らかに減衰しているため判別できない。
+       グローを担っている drop-shadow は見た目に効くので残す。 */
+    filter:drop-shadow(0 0 10px rgba(23,236,255,.20));
   }
 
   .lux-lines{
     mix-blend-mode:normal;
     opacity:.80;   /* 同上（元 .70） */
+  }
+
+  /* ページ全高の mask レイヤーを外す。
+     .wrap::before の中身は「上端 1px の金線」と「上から22%で消える白い薄がけ」だけ。
+     マスク（180deg で 0%→1.0 / 50%→.72）はその範囲でほぼ 1.0 のままなので、
+     差は最大 alpha 0.0007（mobile の opacity:.65 込み）＝ 8bit 色で表現できない量。
+     見た目は変えずに、ページ全高の合成レイヤーだけが消える。 */
+  .wrap::before{
+    -webkit-mask-image:none;
+    mask-image:none;
   }
 }
 
