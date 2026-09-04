@@ -352,6 +352,9 @@
         dom.msg.textContent = 'BGMの一覧を読み込めませんでした。時間をおいて、もう一度お試しください。';
       }
     });
+
+    /* 呼び出し側から再生を止められるようにしておく（DL版が一覧を隠すときに使う） */
+    return { stop: stopPlayback };
   }
 
   global.uratenBgm = { init: init, formatDuration: formatDuration };

@@ -22,6 +22,20 @@ data/events.json  … 公開イベントデータ（変換スクリプトの出�
 
 以後は git push するだけで自動で再配信される。`ura-ten.jp` 取得後はPagesのカスタムドメイン設定でDNSを向けるだけ（サイト側の変更は不要）。
 
+## BGM原本ダウンロード用 Worker の置き場所
+
+`bgm-dl.html` が呼ぶ Cloudflare Worker のコードは、**このリポジトリには置かない**。
+
+```
+uraten-site/
+├ uraten/                  … このリポジトリ（＝Pagesの公開対象。ルートがそのまま配信される）
+└ uraten-bgm-dl-worker/    … Worker一式（index.js / wrangler.toml / README.md）
+```
+
+ビルドコマンドなし・出力ディレクトリ `/` の構成では、リポジトリ内のファイルはすべてそのまま配信される。
+Git接続のPagesにはアップロードを除外する仕組み（`.cfignore` 等）がないため、公開したくないものはリポジトリの外に置く。
+デプロイ手順は `uraten-bgm-dl-worker/README.md` を参照。
+
 ## ローカル確認の注意
 
 `index.html` をダブルクリックで開くと **fetch が失敗しカレンダーが表示されない**（`file://` ではJSONを読めない）。必ずローカルサーバー経由で見ること。

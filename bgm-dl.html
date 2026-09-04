@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>BGMダウンロード｜URATEN</title>
+<meta name="description" content="URATENの放送枠・レギュラー枠・CM枠をお申し込みの方向けの、提供BGM原本のダウンロードページです。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="./css/menu.css">
+<link rel="stylesheet" href="./css/bgm.css">
+</head>
+<body>
+<div class="lux-lines" aria-hidden="true"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="logo">URATEN</div>
+    <h1>BGM DOWNLOAD</h1>
+    <p class="hero-catch">つくるための、原本を。</p>
+    <p>お申し込みいただいた方向けの、提供BGMのダウンロードページです。<br>ここで配布しているのは、制作に使える原本（全長・高音質）です。</p>
+  </div>
+
+  <!-- ============ 01 合言葉 ============ -->
+  <section class="group" id="gate">
+    <div class="group-head"><div class="group-num">01</div><h2 class="group-title">合言葉を入力する</h2></div>
+    <p class="group-sub">放送枠・レギュラー枠・CM枠をお申し込みの方に、合言葉をお伝えしています。</p>
+
+    <form class="bgm-gate" id="bgmGate" novalidate>
+      <label class="bgm-gate-label" for="bgmPass">合言葉</label>
+      <div class="bgm-gate-row">
+        <input class="bgm-gate-input" id="bgmPass" name="passphrase" type="text"
+               autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
+               enterkeyhint="go" aria-describedby="bgmGateHelp">
+        <button class="cta bgm-gate-btn" type="submit" id="bgmGateBtn">一覧を表示</button>
+      </div>
+      <p class="note" id="bgmGateHelp">合言葉は、お申込みの受付メールに記載しています。すべて小文字です。前後に空白が入っていても構いません。</p>
+      <p class="bgm-gate-msg" id="bgmGateMsg" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <!-- ============ 02 BGMをダウンロードする ============ -->
+  <section class="group" id="library" hidden>
+    <div class="group-head"><div class="group-num">02</div><h2 class="group-title">BGMをダウンロードする</h2></div>
+    <p class="group-sub">用途を選び、雰囲気とテンポで絞り込めます。左の再生ボタンで試聴、その隣のボタンで原本をダウンロードできます。</p>
+
+    <div class="bgm-tabs" id="bgmTabs" role="tablist" aria-label="用途">
+      <button type="button" class="bgm-tab is-on" role="tab" aria-selected="true" aria-controls="bgmList" data-category="cm">CM用</button>
+      <button type="button" class="bgm-tab" role="tab" aria-selected="false" aria-controls="bgmList" data-category="talk">トーク用</button>
+    </div>
+
+    <div class="bgm-filter" id="bgmFilter"></div>
+
+    <div class="bgm-bar">
+      <p class="bgm-count" id="bgmCount">読み込み中です。</p>
+      <button type="button" class="bgm-clear" id="bgmClear" hidden>絞り込みを解除</button>
+    </div>
+
+    <p class="bgm-excerpt" id="bgmExcerpt" hidden>トーク用の試聴は、約75秒の抜粋です。ダウンロードされる原本は全長です。</p>
+
+    <div class="bgm-list" id="bgmList" role="tabpanel"></div>
+    <p class="bgm-msg" id="bgmMsg">読み込み中です。</p>
+
+    <div class="note flag">
+      <b>提供BGMは、URATENでの放送に関わる制作にのみお使いいただけます。</b>再配布や、素材としての転売はできません。詳しくは<a href="./terms.html">利用規約</a>の「提供BGMの利用条件」をご確認ください。
+    </div>
+  </section>
+
+  <footer>
+    <div class="legal-links">
+      <a href="./terms.html">利用規約</a>
+      <a href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a href="./refund.html">返金・キャンセルポリシー</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+    </div>
+  </footer>
+</div>
+<script src="./js/bgm.js"></script>
+<script src="./js/bgm-dl.js"></script>
+<script>
+  uratenBgmDl.init({
+    /* ↓ デプロイした Worker のURL。末尾のスラッシュは付けない。
+       未設定のままだとページ上にその旨が表示される。 */
+    workerBase: 'https://uraten-bgm-dl.uraten-jp.workers.dev',
+    dataUrl: './data/bgm.json',
+    tagsUrl: './data/bgm-tags.json'
+  });
+</script>
+</body>
+</html>
