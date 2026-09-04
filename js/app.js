@@ -46,24 +46,142 @@
   });
 
   // ===== 巡回スライドショー（順送り・全員一巡） =====
-  const showOrder = [...keys]; // 登録順で全員を巡回
+  // 4秒ごとに innerHTML でサブツリーを作り直すと、切替のたびにスタイル再計算・
+  // レイアウト・画像デコードがメインスレッドで走り、旧端末ではスクロール中の
+  // カクつきになる。そこで
+  //   (1) 中身は初回に1回だけ組み立てて使い回す（以降 innerHTML を使わない）
+  //   (2) 画像は A/B の2枚を重ねて常設し、次の画像は表示中の4秒間に先読み＋
+  //       decode() まで済ませておく。切替時は class の付け替えだけにする
+  //   (3) 見えていない間（画面外・裏タブ・ギャラリーページ表示中）は止める
+  // 見た目は従来どおり。フェードは付けない（瞬間切替のまま）。
+  const showOrder = [...keys];   // 登録順で全員を巡回
+  const SHOW_DOT_MAX = 8;        // ドットの表示上限（従来どおり）
+  const SHOW_MS = 4000;
   let showIdx = 0;
-  const dotsEl = document.getElementById('dots');
-  showOrder.slice(0,8).forEach((_,i)=>{const d=document.createElement('i');dotsEl.appendChild(d)});
-  function renderShow(){
-    const a=artists[showOrder[showIdx]];
-    const art=document.getElementById('showArt');
-    art.className='show-art '+a.g;
-    art.innerHTML=`<div class="show-frame"></div><div class="ph-note">ILLUSTRATION</div><div class="dots" id="dots"></div>`;
-    paintArt(art,a);
-    const dd=art.querySelector('#dots');
-    showOrder.slice(0,8).forEach((_,i)=>{const d=document.createElement('i');if(i===showIdx%8)d.className='on';dd.appendChild(d)});
-    document.getElementById('showName').textContent=a.n;
-    document.getElementById('showHandle').textContent=a.h;
-    document.getElementById('showBio').textContent=a.bio.replace(/\n/g,' ');
+
+  const showArtEl  = document.getElementById('showArt');
+  const showNameEl = document.getElementById('showName');
+  const showHandEl = document.getElementById('showHandle');
+  const showBioEl  = document.getElementById('showBio');
+
+  // --- 中身の組み立て（初回のみ） ---
+  showArtEl.textContent = '';
+  // 画像は2枚（A/B）を重ねて置き、表示側にだけ .on を付ける。
+  const showImgs = [0,1].map(()=>{
+    const img = document.createElement('img');
+    img.className = 'art-img';
+    img.alt = '';
+    img.decoding = 'async';
+    showArtEl.appendChild(img);
+    return img;
+  });
+  // 画像より後ろに追加することで、従来（画像を prepend）と同じ重なり順を保つ。
+  const showFrameEl = document.createElement('div');
+  showFrameEl.className = 'show-frame';
+  showArtEl.appendChild(showFrameEl);
+  const showNoteEl = document.createElement('div');
+  showNoteEl.className = 'ph-note';
+  showNoteEl.textContent = 'ILLUSTRATION';
+  showArtEl.appendChild(showNoteEl);
+  const showDotsBox = document.createElement('div');
+  showDotsBox.className = 'dots';
+  showDotsBox.id = 'dots';
+  showArtEl.appendChild(showDotsBox);
+  const showDotEls = showOrder.slice(0,SHOW_DOT_MAX).map(()=>{
+    const d = document.createElement('i');
+    showDotsBox.appendChild(d);
+    return d;
+  });
+  // 初回に ILLUSTRATION 枠が一瞬見えないよう先に付けておく
+  // （従来も paintArt が src セット直後に has-img を付けていた）。
+  if(artists[showOrder[0]] && artists[showOrder[0]].img) showArtEl.classList.add('has-img');
+
+  let showLive = 0;              // いま表示している showImgs のインデックス
+  let showBusy = false;          // 切替の多重発火よけ
+  const showFailed = new Set();  // 読み込みに失敗した絵師キー
+
+  // 待機側スロットに画像を読み込み、デコードまで終わらせる。
+  // 戻り値: 表示できるなら true ／ 画像なし・失敗なら false（従来のダミー塗りに戻す）
+  async function showPreload(slot, key){
+    const a = artists[key];
+    const img = showImgs[slot];
+    if(!a || !a.img || showFailed.has(key)) return false;
+    if(img.dataset.key === key && img.dataset.ready === '1') return true;
+    img.dataset.key = key;
+    img.dataset.ready = '';
+    img.src = a.img;
+    try{
+      // 表示する「前に」オフスレッドでデコードを終わらせるのが目的。
+      // decode() 未対応のブラウザでは従来どおりブラウザ任せにする。
+      if(typeof img.decode === 'function') await img.decode();
+      if(img.dataset.key !== key) return false;   // 途中で次の画像に追い越された
+      img.dataset.ready = '1';
+      return true;
+    }catch(e){
+      // 追い越しによる中断は失敗として数えない。
+      if(img.dataset.key === key) showFailed.add(key);
+      return false;
+    }
   }
-  setInterval(()=>{showIdx=(showIdx+1)%showOrder.length;renderShow()},4000);
-  renderShow();
+
+  async function showGoTo(idx){
+    if(showBusy) return;
+    showBusy = true;
+    try{
+      const key = showOrder[idx];
+      const a   = artists[key];
+      const standby = 1 - showLive;
+
+      // 読み込み＋デコードを先に済ませる（この間、表示中の画像はそのまま出ている）
+      const ok = await showPreload(standby, key);
+
+      // ここから先は class とテキストの付け替えだけ（デコードを伴わない）
+      showIdx = idx;
+      showArtEl.className = 'show-art ' + a.g + (ok ? ' has-img' : '');
+      showImgs[showLive].classList.remove('on');
+      if(ok){
+        showImgs[standby].classList.add('on');
+        showLive = standby;
+      }
+      showDotEls.forEach((d,i)=>{ d.className = (i === idx % SHOW_DOT_MAX) ? 'on' : ''; });
+      showNameEl.textContent = a.n;
+      showHandEl.textContent = a.h;
+      showBioEl.textContent  = a.bio.replace(/\n/g,' ');
+
+      // 次の画像を、この4秒の間に先読みしておく（次の切替の作業をゼロにする）
+      showPreload(1 - showLive, showOrder[(idx + 1) % showOrder.length]);
+    }finally{
+      showBusy = false;
+    }
+  }
+
+  // --- タイマー：見えていない間は止める ---
+  let showTimer = null;
+  let showOnScreen = true;       // IntersectionObserver 未対応なら常時 true 扱い
+
+  function showShouldRun(){ return showOnScreen && !document.hidden; }
+  function showStart(){
+    if(showTimer || !showShouldRun()) return;
+    showTimer = setInterval(()=>showGoTo((showIdx + 1) % showOrder.length), SHOW_MS);
+  }
+  function showStop(){
+    if(showTimer){ clearInterval(showTimer); showTimer = null; }
+  }
+  function showUpdateTimer(){
+    if(showShouldRun()) showStart(); else showStop();
+  }
+
+  if('IntersectionObserver' in window){
+    // #topPage が display:none のとき（ギャラリー表示中）も交差しないので止まる。
+    new IntersectionObserver(es=>{
+      showOnScreen = es[es.length-1].isIntersecting;
+      showUpdateTimer();
+    },{rootMargin:'120px'}).observe(showArtEl);
+  }
+  document.addEventListener('visibilitychange', showUpdateTimer);
+
+  showGoTo(0);
+  showUpdateTimer();
 
   // ===== モーダル =====
   const modal=document.getElementById('modal');

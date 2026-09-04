@@ -801,6 +801,47 @@ img,svg,video,canvas{max-width:100%}
 .has-img .ph-note,
 .has-img .mini{display:none}
 
+/* =========================================================
+   MOBILE SCROLL PERFORMANCE PATCH
+   スマホのみ、全画面 fixed レイヤーの mix-blend-mode:screen を解除。
+   screen 合成付きの position:fixed 要素は、背面（スクロールする本文）と
+   毎フレーム合成し直す必要があり、スクロールのコンポジタ高速パスから
+   外れる。旧端末ではこれがカクつきの主因になる。
+   これらのレイヤーは z-index:0（本文 .wrap は z-index:1）なので、
+   合成相手は暗い body 背景のみ。暗背景に対する screen は通常合成と
+   ほぼ同じ結果になるため、opacity をわずかに上げるだけで見た目を保てる。
+   PC（761px 以上）は従来どおり screen のまま。
+========================================================= */
+@media(max-width:760px){
+  body::after{
+    mix-blend-mode:normal;
+    opacity:.52;   /* screen 解除分の明るさを補う（元 .46） */
+  }
+
+  .lux-lines{
+    mix-blend-mode:normal;
+    opacity:.80;   /* 同上（元 .70） */
+  }
+}
+
+
+
+/* =========================================================
+   スライドショー（トップの大枠）
+   画像を A/B の2枚重ねで常設し、表示側だけ .on で見せる。
+   切替時にデコードもレイアウトも起こさないための構造。
+   一覧カード・モーダルの .art-img には影響しない（#showArt 限定）。
+========================================================= */
+#showArt .art-img{opacity:0}
+#showArt .art-img.on{opacity:1}
+
+/* ドットは要素を使い回すようになるため、.dots i の transition:.3s が効いて
+   点灯がフェードするようになる。従来（毎回作り直しで transition が発火しない）
+   と同じ瞬間切替を維持する。フェードさせたい場合はこの1行を消す。 */
+#showArt .dots i{transition:none}
+
+
+
 /* 作品枠の既定比率を 16:9 に統一（一覧カード・モーダル・トップの大枠）
    ※ 先行定義の 1:1 / 固定高を上書きするため、必ず末尾に置く */
 .card-art,
