@@ -865,3 +865,100 @@ img,svg,video,canvas{max-width:100%}
   height:auto;
   min-height:0;
 }
+
+
+/* =========================================================
+   イベントカレンダー（index.html の直近5件 / calendar.html の全件）
+   既存の .cal / .cal-row / LUX NEON の意匠はそのまま使い、
+   日付表記の変更（10/9〜10/10）と、月見出し・バッジ・導線だけを足す。
+   重いアニメーションは増やさない（transition / animation を新設しない）。
+========================================================= */
+
+/* 行全体がリンク（url があるイベント）になる */
+a.cal-row{text-decoration:none;color:inherit}
+a.cal-row:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* 日付欄：年は出さない。範囲は「10/9〜10/10」で、狭ければ〜で折り返す */
+.cal-date{width:auto;min-width:56px;max-width:96px}
+.cal-date b{font-size:19px;white-space:nowrap}
+.cal-date span{font-size:11.5px;white-space:nowrap}
+.cal-date.is-range b{font-size:14px;line-height:1.35;white-space:normal}
+.cal-date.is-range span{font-size:10.5px;white-space:normal}
+
+/* 開催中・お知らせあり */
+.cal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.cal-info .cal-badge{
+  font-size:10.5px;font-weight:900;letter-spacing:.06em;line-height:1.7;
+  padding:2px 9px;border-radius:7px;
+}
+.cal-info .cal-badge.is-live{color:#07070e;background:var(--lime)}
+.cal-info .cal-badge.is-notice{
+  color:var(--gold);
+  background:rgba(246,217,139,.10);
+  border:1px solid rgba(246,217,139,.42);
+}
+
+/* 終了したイベント */
+.cal-row.is-done{opacity:.62}
+.cal-row.is-done .cal-date b{color:var(--dim);text-shadow:none}
+
+/* 読み込み中・0件・エラー */
+.cal-empty{padding:20px;font-size:13px;color:var(--dim);line-height:1.9}
+
+/* トップ：5件に収まらなかった残り */
+.cal-rest{margin-top:12px;font-size:12.5px;color:var(--dim);text-align:center}
+
+/* トップ：カレンダーへの導線 */
+.cal-all{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-top:16px;padding:16px 22px;border-radius:12px;
+  font-size:15px;font-weight:900;letter-spacing:.04em;
+  text-decoration:none;color:#07070e;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  box-shadow:0 12px 32px rgba(0,0,0,.38),0 0 26px rgba(23,236,255,.16);
+}
+.cal-all:hover{filter:brightness(1.06)}
+.cal-all:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* calendar.html：見出し */
+.cal-head{
+  margin:26px 0 12px;
+  font-size:15px;font-weight:900;letter-spacing:.06em;
+}
+.cal-month{
+  margin-top:14px;
+  font-size:12px;font-weight:900;letter-spacing:.12em;
+  color:var(--gold);text-shadow:0 0 14px rgba(246,217,139,.25);
+}
+.cal .cal-month:first-child{margin-top:0}
+
+/* calendar.html：終了分の折りたたみ（details。JSもアニメーションも使わない） */
+.cal-done{margin-top:30px;border-top:1px solid var(--line)}
+.cal-done>summary{
+  position:relative;cursor:pointer;list-style:none;
+  padding:14px 26px 14px 0;
+  font-size:14px;font-weight:900;letter-spacing:.04em;color:var(--dim);
+}
+.cal-done>summary::-webkit-details-marker{display:none}
+.cal-done>summary::after{
+  content:"";position:absolute;right:6px;top:50%;
+  width:7px;height:7px;
+  border-right:1.5px solid var(--gold);border-bottom:1.5px solid var(--gold);
+  transform:translateY(-70%) rotate(45deg);
+}
+.cal-done[open]>summary::after{transform:translateY(-20%) rotate(-135deg)}
+.cal-done>summary:hover{color:var(--ink)}
+.cal-done>summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+.cal-done>summary span{margin-left:4px;font-weight:700;color:rgba(255,255,255,.42)}
+.cal-done .cal{margin-top:6px;padding-bottom:6px}
+
+/* calendar.html：ヘッダとリンク（トップと違いJSを積まないため素のリンクで組む） */
+a.logo{text-decoration:none}
+a.back{text-decoration:none}
+
+@media(max-width:760px){
+  /* 既存の 2カラムグリッド（52px 固定）だと「12/30〜12/31」が入らない */
+  .cal-row{grid-template-columns:minmax(56px,auto) minmax(0,1fr)}
+  .cal-all{font-size:14px;padding:15px 18px}
+  .cal-head{font-size:14px}
+}

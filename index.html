@@ -83,11 +83,12 @@
   <section class="sec" id="cal">
     <div class="sec-head">
       <div class="sec-title">イベント情報</div>
-      <a class="sec-link">カレンダーで全部見る →</a>
     </div>
     <div class="cal" id="calList">
-      <div class="cal-empty" style="padding:20px;font-size:13px;color:var(--dim)">イベント情報を読み込んでいます…</div>
+      <div class="cal-empty">イベント情報を読み込んでいます…</div>
     </div>
+    <p class="cal-rest" id="calRest" hidden></p>
+    <a class="cal-all" href="./calendar.html">カレンダーでぜんぶ見る<span aria-hidden="true">→</span></a>
   </section>
 
   <footer>
@@ -154,6 +155,7 @@
   </div>
 </div>
 
+<script src="./js/calendar.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>

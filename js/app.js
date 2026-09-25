@@ -215,43 +215,10 @@
   function openSched(){document.getElementById('schedModal').classList.add('open')}
   function closeSched(){document.getElementById('schedModal').classList.remove('open')}
 
-  // ===== イベントカレンダー（data/events.json から描画） =====
-  // Sheets→JSON変換スクリプトが吐く公開JSONを読む。ここがパイプラインの終端。
-  (async function renderCal(){
-    const box=document.getElementById('calList');
-    const MONTHS=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-    const WDAYS=["日","月","火","水","木","金","土"];
-    try{
-      const res=await fetch('./data/events.json',{cache:'no-store'});
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      const data=await res.json();
-      const today=new Date();today.setHours(0,0,0,0);
-      const events=(data.events||[])
-        .filter(e=>{const d=new Date(e.date+'T00:00:00');return !isNaN(d)&&d>=today;})
-        .sort((a,b)=>a.date.localeCompare(b.date)||String(a.time||'').localeCompare(String(b.time||'')));
-      if(events.length===0){
-        box.innerHTML='<div class="cal-empty" style="padding:20px;font-size:13px;color:var(--dim)">現在掲載中のイベントはありません</div>';
-        return;
-      }
-      box.innerHTML='';
-      events.forEach(e=>{
-        const d=new Date(e.date+'T00:00:00');
-        const row=document.createElement(e.url?'a':'div');
-        row.className='cal-row';
-        if(e.url){row.href=e.url;row.target='_blank';row.rel='noopener';row.style.textDecoration='none';row.style.color='inherit';}
-        const place=[e.venue,e.area].filter(Boolean).join(' / ');
-        row.innerHTML=`<div class="cal-date"><b>${String(d.getDate()).padStart(2,'0')}</b><span>${MONTHS[d.getMonth()]} ${WDAYS[d.getDay()]}</span></div>`
-          +`<div class="cal-info"><b></b><span></span></div>`
-          +`<div class="cal-time">${e.time||''}</div>`;
-        row.querySelector('.cal-info b').textContent=e.name||'';
-        row.querySelector('.cal-info span').textContent=place;
-        box.appendChild(row);
-      });
-    }catch(err){
-      box.innerHTML='<div class="cal-empty" style="padding:20px;font-size:13px;color:var(--dim)">イベント情報を読み込めませんでした。時間をおいて再度お試しください。</div>';
-      console.error('events.json load failed:',err);
-    }
-  })();
+  // ===== イベントカレンダー =====
+  // 読み込み・日付判定・描画は js/calendar.js（calendar.html と共用）に置いてある。
+  // ここでは直近5件の描画を呼ぶだけ。
+  if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeMenu()}});
 

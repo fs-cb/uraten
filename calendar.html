@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>イベントカレンダー｜URATEN</title>
+<meta name="description" content="URATENに掲載中のイベント一覧。福岡・天神を中心としたライブ・展示・配信イベントを、開催日順にまとめています。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="lux-lines" aria-hidden="true"></div>
+
+<header>
+  <a class="logo" href="./index.html">URATEN</a>
+</header>
+
+<div class="wrap">
+  <section class="sec" style="margin-top:30px">
+    <div class="sec-head">
+      <div class="sec-title">イベントカレンダー</div>
+      <a class="sec-link" href="./index.html">← トップに戻る</a>
+    </div>
+    <p class="page-intro">URATENに掲載中のイベントです。イベントをタップすると、主催者の告知ページが新しいタブで開きます。詳しい内容・料金・参加方法は、リンク先でご確認ください。</p>
+
+    <h2 class="cal-head">これから</h2>
+    <div class="cal" id="calSoon">
+      <div class="cal-empty">イベント情報を読み込んでいます…</div>
+    </div>
+
+    <details class="cal-done" id="calDoneWrap" hidden>
+      <summary>終了したイベント<span id="calDoneCount"></span></summary>
+      <div class="cal" id="calDone"></div>
+    </details>
+
+    <a class="back" href="./index.html">← トップに戻る</a>
+  </section>
+
+  <footer>
+    <div class="legal-links">
+      <a href="./terms.html">利用規約</a>
+      <a href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a href="./refund.html">返金・キャンセルポリシー</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+    </div>
+  </footer>
+</div>
+
+<script src="./js/calendar.js"></script>
+<script>
+  uratenCalendar.renderFull();
+</script>
+</body>
+</html>
