@@ -109,7 +109,6 @@
   .cal-info{flex:1;min-width:0}
   .cal-info b{font-size:16px;font-weight:700;display:block}
   .cal-info span{font-size:12px;color:var(--dim)}
-  .cal-time{flex:none;font-size:16px;color:var(--cyan);font-weight:700}
 
   /* ===== 応援イラスト一覧ページ ===== */
   .page{display:none}
@@ -352,7 +351,6 @@
   .cal-row:hover{transform:translateX(4px);box-shadow:0 20px 54px rgba(0,0,0,.5),0 0 32px rgba(23,236,255,.10)}
   .cal-date b{color:var(--gold);text-shadow:0 0 14px rgba(246,217,139,.25)}
   .cal-info span{color:rgba(251,247,255,.55)}
-  .cal-time{color:var(--cyan);text-shadow:0 0 14px rgba(23,236,255,.30)}
 
   .grid{gap:16px}
   .card{border-radius:10px;overflow:hidden}
@@ -571,11 +569,6 @@ img,svg,video,canvas{max-width:100%}
     align-items:center;
   }
   .cal-info b{font-size:14.5px}
-  .cal-time{
-    grid-column:2;
-    justify-self:start;
-    font-size:13px;
-  }
 
   .float{
     left:14px;
@@ -885,13 +878,12 @@ a.cal-row:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .cal-date.is-range b{font-size:14px;line-height:1.35;white-space:normal}
 .cal-date.is-range span{font-size:10.5px;white-space:normal}
 
-/* 開催中・お知らせあり */
+/* お知らせあり（中止・延期）バッジ */
 .cal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .cal-info .cal-badge{
   font-size:10.5px;font-weight:900;letter-spacing:.06em;line-height:1.7;
   padding:2px 9px;border-radius:7px;
 }
-.cal-info .cal-badge.is-live{color:#07070e;background:var(--lime)}
 .cal-info .cal-badge.is-notice{
   color:var(--gold);
   background:rgba(246,217,139,.10);

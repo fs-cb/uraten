@@ -5,6 +5,8 @@
    - 「今日」は閲覧端末の時計ではなく日本時間（Asia/Tokyo）で判定する。
      日付はすべて YYYY-MM-DD の文字列のまま比較する（Date に通すと
      閲覧者のタイムゾーンで前後1日ずれるため）
+   - 終了したかどうかだけを見る。開催中の判定・表示は行わない
+     （リアルタイムの進行を追う用途ではないため）
    - イベント名・会場は申請者が入力した文字列。必ず textContent で入れる
    - url は http(s) で始まるものだけリンクにする
    - 状態はブラウザに保存しない。外部ライブラリを使わない
@@ -18,11 +20,9 @@
   var YMD      = /^\d{4}-\d{2}-\d{2}$/;
 
   var MSG = {
-    loading: 'イベント情報を読み込んでいます…',
-    empty:   '現在掲載中のイベントはありません',
-    error:   'イベント情報を読み込めませんでした。時間をおいて再度お試しください。',
-    notice:  'お知らせあり・詳細はリンク先で確認',
-    live:    '開催中'
+    empty:  '現在掲載中のイベントはありません',
+    error:  'イベント情報を読み込めませんでした。時間をおいて再度お試しください。',
+    notice: 'お知らせあり・詳細はリンク先で確認'
   };
 
   /* ---------- 日付 ---------- */
@@ -58,12 +58,7 @@
   /* 終了日。end が無ければ start が終了日 */
   function lastDay(ev) { return ev.end || ev.start; }
 
-  /* 'ended' 終了 / 'live' 開催中 / 'soon' これから */
-  function phase(ev, today) {
-    if (lastDay(ev) < today) return 'ended';
-    if (ev.start <= today) return 'live';
-    return 'soon';
-  }
+  function isEnded(ev, today) { return lastDay(ev) < today; }
 
   /* ---------- データ ---------- */
 
@@ -71,6 +66,7 @@
     return (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u : '';
   }
 
+  /* 表示に使う項目だけを取り出す。未知のフィールドが増えても無視して動く */
   function normalize(data) {
     var raw = (data && Array.isArray(data.events)) ? data.events : [];
     var out = [];
@@ -78,7 +74,6 @@
       if (!ev || typeof ev.start !== 'string' || !YMD.test(ev.start)) return;
       var end = (typeof ev.end === 'string' && YMD.test(ev.end) && ev.end > ev.start) ? ev.end : null;
       out.push({
-        id:     typeof ev.id === 'string' ? ev.id : '',
         name:   typeof ev.name === 'string' ? ev.name : '',
         start:  ev.start,
         end:    end,
@@ -99,11 +94,12 @@
 
   /* ---------- 並び順 ---------- */
 
-  /* 開始日順。同じ開始日のイベントは読み込みごとに入れ替える。
+  /* 開始日順（desc なら降順）。同じ開始日のイベントは読み込みごとに入れ替える。
      掲載料をいただいている以上、同日のイベント間で露出に偏りを作らないため。 */
-  function byStart(list) {
+  function byStart(list, desc) {
     var sorted = list.slice().sort(function (a, b) {
-      return a.start < b.start ? -1 : (a.start > b.start ? 1 : 0);
+      if (a.start === b.start) return 0;
+      return (a.start < b.start ? -1 : 1) * (desc ? -1 : 1);
     });
     var out = [];
     var i = 0;
@@ -137,9 +133,8 @@
   }
 
   /* 1件分の行。url があれば行全体がリンクになる */
-  function buildRow(ev, today, opts) {
-    var state = phase(ev, today);
-    var row = el(ev.url ? 'a' : 'div', 'cal-row' + (state === 'ended' ? ' is-done' : ''));
+  function buildRow(ev, today) {
+    var row = el(ev.url ? 'a' : 'div', 'cal-row' + (isEnded(ev, today) ? ' is-done' : ''));
     if (ev.url) {
       row.href = ev.url;
       row.target = '_blank';
@@ -162,10 +157,12 @@
     info.appendChild(el('b', 'cal-name', ev.name));        /* 申請者入力 → textContent */
     info.appendChild(el('span', 'cal-venue', ev.venue));   /* 同上 */
 
-    var badges = el('div', 'cal-badges');
-    if (state === 'live') badges.appendChild(el('span', 'cal-badge is-live', MSG.live));
-    if (opts && opts.notice && ev.notice) badges.appendChild(el('span', 'cal-badge is-notice', MSG.notice));
-    if (badges.childNodes.length) info.appendChild(badges);
+    /* 中止・延期があるイベントへ誘導しないよう、トップにも一覧にも出す */
+    if (ev.notice) {
+      var badges = el('div', 'cal-badges');
+      badges.appendChild(el('span', 'cal-badge is-notice', MSG.notice));
+      info.appendChild(badges);
+    }
 
     row.appendChild(date);
     row.appendChild(info);
@@ -173,7 +170,7 @@
   }
 
   /* 月見出しを挟みながら並べる */
-  function fillMonths(box, list, today, opts) {
+  function fillMonths(box, list, today) {
     var current = '';
     list.forEach(function (ev) {
       var label = monthLabel(ev.start);
@@ -181,7 +178,7 @@
         current = label;
         box.appendChild(el('div', 'cal-month', label));
       }
-      box.appendChild(buildRow(ev, today, opts));
+      box.appendChild(buildRow(ev, today));
     });
   }
 
@@ -194,24 +191,21 @@
 
     load().then(function (events) {
       var today = todayJst();
-      /* 開催中を先に、そのあと開始日順 */
-      var live = byStart(events.filter(function (ev) { return phase(ev, today) === 'live'; }));
-      var soon = byStart(events.filter(function (ev) { return phase(ev, today) === 'soon'; }));
-      var all  = live.concat(soon);
+      var open = byStart(events.filter(function (ev) { return !isEnded(ev, today); }));
 
-      if (!all.length) {
+      if (!open.length) {
         note(box, MSG.empty);
         if (rest) rest.hidden = true;
         return;
       }
 
       box.textContent = '';
-      all.slice(0, TOP_MAX).forEach(function (ev) {
-        box.appendChild(buildRow(ev, today, { notice: false }));
+      open.slice(0, TOP_MAX).forEach(function (ev) {
+        box.appendChild(buildRow(ev, today));
       });
 
       if (rest) {
-        var over = all.length - TOP_MAX;
+        var over = open.length - TOP_MAX;
         rest.textContent = over > 0 ? ('ほか' + over + '件のイベント') : '';
         rest.hidden = over <= 0;
       }
@@ -235,21 +229,19 @@
 
     load().then(function (events) {
       var today = todayJst();
-      /* 開催中とこれからは、月見出しを付けたいので開始日順でひと続きにする
-         （開催中は行のバッジで分かる） */
-      var soon = byStart(events.filter(function (ev) { return phase(ev, today) !== 'ended'; }));
-      var done = byStart(events.filter(function (ev) { return phase(ev, today) === 'ended'; }));
+      var open = byStart(events.filter(function (ev) { return !isEnded(ev, today); }));
+      var done = byStart(events.filter(function (ev) { return isEnded(ev, today); }), true);  /* 新しい順 */
 
       soonBox.textContent = '';
-      if (!soon.length) {
+      if (!open.length) {
         note(soonBox, MSG.empty);
       } else {
-        fillMonths(soonBox, soon, today, { notice: true });
+        fillMonths(soonBox, open, today);
       }
 
       doneBox.textContent = '';
       if (done.length) {
-        fillMonths(doneBox, done, today, { notice: true });
+        fillMonths(doneBox, done, today);
         if (doneWrap) doneWrap.hidden = false;
         if (doneCount) doneCount.textContent = '（' + done.length + '件）';
       }
