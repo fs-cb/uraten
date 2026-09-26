@@ -873,24 +873,34 @@ a.cal-row:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 
 /* 行＝「日付枠（固定幅）」＋「イベント枠」。
    日付枠の幅は最長表記「12/30 〜 12/31」が 19px で収まる幅（実測最大 約120px）に固定し、
-   全行でイベント名の開始位置を揃える。縦は上揃え（会場が空の行も名前の位置が揃う） */
-.cal{--cal-date-w:124px}
-.cal-row{align-items:start}
+   全行でイベント名の開始位置を揃える。
+
+   縦の揃え（文字サイズを変えても崩れない作り）：
+   - 1段目：行を align-items:baseline にし、日付枠（グリッドの1段目＝開始日）と
+     イベント名（1行目）のベースラインをブラウザに揃えさせる。会場の有無に左右されない
+   - 2段目：日付とイベント名の箱の下端を text-box でベースラインまで削り、
+     「ベースライン → 間隔 --cal-sub-gap → 曜日／会場」を両枠で同じ組み方にする。
+     曜日と会場は同じ文字サイズ・行高（--cal-sub-fs / --cal-sub-lh）を使う。
+     イベント名が折り返すと会場は名前の最終行の下に来るため、そのときは揃わない（仕様）
+   - text-box 非対応ブラウザでは2段目が数px ずれるだけで、1段目は揃う */
+.cal{--cal-date-w:124px;--cal-sub-fs:13px;--cal-sub-lh:1.5;--cal-sub-gap:3px}
+.cal-row{align-items:baseline}
 .cal-date{
   width:var(--cal-date-w);
   display:grid;grid-template-columns:auto;justify-content:center;
-  column-gap:5px;row-gap:5px;
+  column-gap:5px;row-gap:var(--cal-sub-gap);
 }
 .cal-date.is-range{grid-template-columns:auto auto auto}
 .cal-date b,
-.cal-date i{font-size:19px;font-weight:900;font-style:normal;line-height:1;white-space:nowrap}
+.cal-date i{font-size:19px;font-weight:900;font-style:normal;line-height:1;white-space:nowrap;text-box:trim-end text alphabetic}
 .cal-date i{color:var(--gold)}
 .cal-row.is-done .cal-date i{color:var(--dim)}
-.cal-date span{grid-row:2;font-size:13px;line-height:1;white-space:nowrap;text-align:center}
+.cal-date span{grid-row:2;font-size:var(--cal-sub-fs);line-height:var(--cal-sub-lh);white-space:nowrap;text-align:center}
 .cal-date.is-range span:last-child{grid-column:3}
 
-/* 会場 */
-.cal-info .cal-venue{display:block;margin-top:3px;font-size:13px}
+/* イベント名・会場（2段目の揃えは上のコメント参照） */
+.cal-info .cal-name{text-box:trim-end text alphabetic}
+.cal-info .cal-venue{display:block;margin-top:var(--cal-sub-gap);font-size:var(--cal-sub-fs);line-height:var(--cal-sub-lh)}
 
 /* お知らせあり（中止・延期）バッジ */
 .cal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
@@ -967,15 +977,15 @@ a.logo{text-decoration:none}
      単日の行も同じ列構成にし、全行で日付の中心とイベント名の左端を揃える */
   .cal{--cal-date-w:71px}
   .cal-row{
-    grid-template-columns:var(--cal-date-w) minmax(0,1fr);align-items:start;
+    grid-template-columns:var(--cal-date-w) minmax(0,1fr);align-items:baseline;
     gap:10px;padding:14px 10px 13px 12px;
   }
   .cal-date,
   .cal-date.is-range{grid-template-columns:19px 50px;justify-content:start;column-gap:2px}
   .cal-date b,
   .cal-date span{grid-column:2;justify-self:center}
-  .cal-date.is-range i{grid-column:1;grid-row:3;margin-top:4px}
-  .cal-date.is-range b:last-of-type{grid-row:3;margin-top:4px}
+  .cal-date.is-range i{grid-column:1;grid-row:3;margin-top:1px}
+  .cal-date.is-range b:last-of-type{grid-row:3;margin-top:1px}
   .cal-date.is-range span:last-child{grid-column:2;grid-row:4}
   .cal-all{font-size:14px;padding:15px 18px}
   .cal-head{font-size:14px}
