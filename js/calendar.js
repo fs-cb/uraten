@@ -141,17 +141,16 @@
       row.rel = 'noopener noreferrer';
     }
 
+    /* 日付枠は2行×（1列 or 3列）のグリッド。上段が日付、下段が曜日。
+       期間は「開始 〜 終了」の3列にして、曜日をそれぞれの日付の真下に置く */
     var date = el('div', 'cal-date' + (ev.end ? ' is-range' : ''));
-    var big = el('b');
+    date.appendChild(el('b', null, monthDay(ev.start)));
     if (ev.end) {
-      big.appendChild(document.createTextNode(monthDay(ev.start) + '〜'));
-      big.appendChild(document.createElement('wbr'));   /* 狭いときだけ「〜」で折る */
-      big.appendChild(document.createTextNode(monthDay(ev.end)));
-    } else {
-      big.textContent = monthDay(ev.start);
+      date.appendChild(el('i', null, '〜'));
+      date.appendChild(el('b', null, monthDay(ev.end)));
     }
-    date.appendChild(big);
-    date.appendChild(el('span', null, ev.end ? (weekday(ev.start) + '〜' + weekday(ev.end)) : weekday(ev.start)));
+    date.appendChild(el('span', null, weekday(ev.start)));
+    if (ev.end) date.appendChild(el('span', null, weekday(ev.end)));
 
     var info = el('div', 'cal-info');
     info.appendChild(el('b', 'cal-name', ev.name));        /* 申請者入力 → textContent */
