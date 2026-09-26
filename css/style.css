@@ -958,9 +958,8 @@ a.cal-row:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .cal-done>summary span{margin-left:4px;font-weight:700;color:rgba(255,255,255,.42)}
 .cal-done .cal{margin-top:6px;padding-bottom:6px}
 
-/* calendar.html：ヘッダとリンク（トップと違いJSを積まないため素のリンクで組む） */
+/* calendar.html：ヘッダのロゴ（トップと違いJSを積まないため素のリンクで組む） */
 a.logo{text-decoration:none}
-a.back{text-decoration:none}
 
 @media(max-width:760px){
   /* スマホ幅：期間は2段（開始日＋曜日／〜終了日＋曜日）にして日付枠を縮める。
