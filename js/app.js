@@ -34,16 +34,93 @@
   function showGallery(){document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0)}
   function scrollTo2(id){showTop();setTimeout(()=>document.getElementById(id).scrollIntoView({behavior:'smooth'}),50)}
 
-  // ===== 一覧グリッド生成 =====
+  // ===== イラスト一覧（#galleryPage） =====
+  // 公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）を読んで描画する。
+  // 上の artists はトップのスライドショー（サンプル表示）専用で、一覧では使わない。
+  // - 表示順は読み込みごとにシャッフル（掲載の間で露出に偏りを作らないため）
+  // - url・image が http(s) 以外の作品は表示しない
+  // - 申請由来の文字列は textContent / プロパティで入れる（innerHTML に展開しない）
+  // - 0件・読み込み失敗はどちらも「まだ掲載はありません」
+  const GALLERY_URL = 'https://media.ura-ten.jp/gallery/gallery.json';
   const grid = document.getElementById('galleryGrid');
-  keys.forEach(k=>{
-    const a=artists[k];
-    const el=document.createElement('div');
-    el.className='card';el.onclick=()=>openModal(k);
-    el.innerHTML=`<div class="card-art ${a.g}"><span class="mini">ART</span></div><div class="card-foot"><b>${a.n}</b><span>${a.h}</span></div>`;
-    paintArt(el.querySelector(".card-art"), a, true);
-    grid.appendChild(el);
-  });
+  const galleryEmpty = document.getElementById('galleryEmpty');
+
+  function isHttp(u){ return typeof u === 'string' && /^https?:\/\//i.test(u); }
+  function posInt(v){ return (Number.isInteger(v) && v > 0) ? v : 0; }
+
+  function shuffle(list){
+    for(let i = list.length - 1; i > 0; i--){
+      const r = Math.floor(Math.random() * (i + 1));
+      [list[i], list[r]] = [list[r], list[i]];
+    }
+    return list;
+  }
+
+  function workImg(w, lazy){
+    const img = document.createElement('img');
+    img.className = 'work-img';
+    img.alt = w.name + 'のイラスト';
+    if(w.w && w.h){ img.width = w.w; img.height = w.h; }
+    if(lazy) img.loading = 'lazy';
+    img.decoding = 'async';
+    img.src = w.image;
+    return img;
+  }
+
+  function renderGallery(items){
+    grid.textContent = '';
+    if(!items.length){
+      galleryEmpty.textContent = 'まだ掲載はありません';
+      galleryEmpty.hidden = false;
+      return;
+    }
+    galleryEmpty.hidden = true;
+    items.forEach(w=>{
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.onclick = ()=>openWork(w);
+      const art = document.createElement('div');
+      art.className = 'card-art work-art';
+      art.appendChild(workImg(w, true));
+      const foot = document.createElement('div');
+      foot.className = 'card-foot';
+      const name = document.createElement('b');
+      name.textContent = w.name;
+      foot.appendChild(name);
+      el.appendChild(art);
+      el.appendChild(foot);
+      grid.appendChild(el);
+    });
+  }
+
+  fetch(GALLERY_URL, { cache: 'no-store' })
+    .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(data=>{
+      const src = (data && Array.isArray(data.items)) ? data.items : [];
+      const items = src
+        .filter(it=>it && isHttp(it.url) && isHttp(it.image))
+        .map(it=>({
+          name:  (typeof it.name === 'string') ? it.name : '',
+          url:   it.url,
+          image: it.image,
+          w:     posInt(it.w),
+          h:     posInt(it.h)
+        }));
+      renderGallery(shuffle(items));
+    })
+    .catch(()=>renderGallery([]));
+
+  // --- 作品モーダル ---
+  const workModal = document.getElementById('workModal');
+  function openWork(w){
+    const art = document.getElementById('wArt');
+    art.textContent = '';
+    art.appendChild(workImg(w, false));
+    document.getElementById('wName').textContent = w.name;
+    document.getElementById('wLink').href = w.url;
+    workModal.classList.add('open');
+  }
+  function closeWork(){ workModal.classList.remove('open'); }
 
   // ===== 巡回スライドショー（順送り・全員一巡） =====
   // 4秒ごとに innerHTML でサブツリーを作り直すと、切替のたびにスタイル再計算・
@@ -220,7 +297,7 @@
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSched();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWork();closeSched();closeMenu()}});
 
 
 // ===== ハンバーガーメニュー =====

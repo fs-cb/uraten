@@ -108,8 +108,9 @@
       <div class="sec-title">イラスト</div>
       <a class="sec-link" href="./menu.html" target="_blank" rel="noopener noreferrer">URATEN にイラストを投稿する →</a>
     </div>
-    <p class="page-intro">URATENに参加している絵師の一覧です。サムネをタップすると、自己紹介と各種リンク（X／pixiv／Discord）が開きます。気になった絵師はそのまま依頼へ。テーマは自由、既存作品でOK。</p>
+    <p class="page-intro">URATENに参加している絵師の作品です。サムネをタップすると作品が大きく開き、「推す」から絵師の紹介ページ（X／pixiv など）へ移動できます。気になった絵師はそのまま依頼へ。</p>
     <div class="grid" id="galleryGrid"></div>
+    <p class="gallery-empty" id="galleryEmpty">読み込んでいます…</p>
     <div class="back" onclick="showTop()">← トップに戻る</div>
   </section>
 </div>
@@ -138,6 +139,20 @@
       <div class="modal-actions">
         <button class="btn btn-push">♥ 推す</button>
         <a class="btn btn-x">リンク</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- イラスト一覧の作品モーダル（gallery.json 由来。自己紹介・ハンドルは持たない） -->
+<div class="modal" id="workModal" onclick="if(event.target===this)closeWork()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeWork()">×</button>
+    <div class="modal-art work-art" id="wArt"></div>
+    <div class="modal-body">
+      <div class="modal-name" id="wName"></div>
+      <div class="modal-actions">
+        <a class="btn btn-push" id="wLink" target="_blank" rel="noopener noreferrer">♥ 推す</a>
       </div>
     </div>
   </div>

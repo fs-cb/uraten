@@ -990,3 +990,31 @@ a.logo{text-decoration:none}
   .cal-all{font-size:14px;padding:15px 18px}
   .cal-head{font-size:14px}
 }
+
+
+/* =========================================================
+   イラスト一覧（#galleryPage）の作品表示
+   gallery.json の作品は比率がまちまちなので、トリミングせず contain で収める。
+   一覧カードは 16:9 の枠（上の既定比率）に収め、余白は暗いパネル色で埋める。
+   モーダルは枠の比率を外し、縦長の作品でも全体が見える高さまで伸ばす。
+   トップのスライドショー（サンプル表示・.art-img / #showArt）には影響しない。
+========================================================= */
+.work-art{background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.05),transparent 70%),var(--bg2)}
+.work-art::before,
+.work-art::after{display:none}
+.card-art.work-art .work-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;object-position:center;display:block;
+}
+.modal-art.work-art{
+  aspect-ratio:auto;height:auto;min-height:0;
+  display:flex;align-items:center;justify-content:center;
+  padding:18px 18px 0;background:transparent;
+}
+.modal-art.work-art .work-img{
+  display:block;width:auto;height:auto;
+  max-width:100%;max-height:min(62vh,640px);
+  object-fit:contain;border-radius:6px;
+}
+.gallery-empty{font-size:13px;color:var(--dim);text-align:center;padding:36px 0 12px}
+.gallery-empty[hidden]{display:none}

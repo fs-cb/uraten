@@ -17,7 +17,7 @@
    - Google Sheets には未審査の申請・運営メモが含まれる。ブラウザ（公開サイト）から Sheets を直接読む実装（「ウェブに公開」CSV / gviz / API直叩き等）は、どんなに効率的でも**絶対に採用しない**。
    - 公開サイトが読んでよいデータは、審査・承認を経て公開されたものに限る。具体的には次の2つのみ。
      - リポジトリ内の静的 JSON（`data/*.json`）
-     - 運営パイプライン（`uraten-ops`）が R2 `uraten-media` に置いた公開 JSON（`https://media.ura-ten.jp/` 配下。現状は `calendar/calendar.json` のみ）
+     - 運営パイプライン（`uraten-ops`）が R2 `uraten-media` に置いた公開 JSON（`https://media.ura-ten.jp/` 配下。現状は `calendar/calendar.json` と `gallery/gallery.json`）
    - 上記以外の読み込み先（外部 API 等）を足す場合は、実装前に運営者へ確認を返す。
 
 2. **状態を持たない。サイトは静的が原則。**
@@ -51,7 +51,7 @@
 - **service account の鍵 JSON をリポジトリに絶対に入れない。** 鍵はリポジトリ外に置き、パスは環境変数か設定ファイル（gitignore 対象）で渡す。`.gitignore` に鍵ファイルのパターンを必ず入れる。
 - **合言葉・シークレットをリポジトリに入れない。** BGMダウンロードの合言葉は Cloudflare の Secret に保管する（`wrangler secret put`）。`wrangler.toml`・HTML・JavaScript のいずれにも平文で書かない。ダッシュボードで値を変更するだけで反映される状態を維持する（再デプロイを要する実装にしない）。
 - **Worker 側リポジトリの `.gitignore` に `node_modules/` `.wrangler/` `.dev.vars` を必ず含める。**
-- **公開 JSON（`data/*.json` および R2 の `calendar/calendar.json`）に運営用情報を出さない。** 審査メモ・主催者の氏名や連絡先・誓約チェックの生データ・Tally の内部 ID（Submission ID・受付ID を含む）等は Sheets に留める。公開 JSON に載せてよいのは公開表示に必要な項目のみ。
+- **公開 JSON（`data/*.json` および R2 の `calendar/calendar.json`・`gallery/gallery.json`）に運営用情報を出さない。** 審査メモ・主催者の氏名や連絡先・誓約チェックの生データ・Tally の内部 ID（Submission ID・受付ID を含む）等は Sheets に留める。公開 JSON に載せてよいのは公開表示に必要な項目のみ。
 - **公開 JSON に非公開リソースの所在を書かない。** BGM原本のパスを `bgm.json` に持たせないのはこのため。原本のキーは ID から機械的に導く。
 - **R2 の非公開バケット（`uraten-bgm-master`）を公開しない。** カスタムドメインも `r2.dev` も接続しない。Worker のバインディング経由でのみ読む。
 - **利用者入力を R2 のキーとしてそのまま使わない。** ID は形式（`URT-B-(CM|TK)-\d{3}`）とカタログ掲載の両方で検証してから使う。
@@ -182,6 +182,38 @@ CLAUDE.md           … 本ファイル
 - 絞り込みロジック：**同一グループ内は OR、グループをまたぐと AND。** 雰囲気タグは1件につき1〜2個しか付かないため、同グループを AND にするとほぼ 0 件になる。
 - **選択中のカテゴリで 0 件になるタグはボタンを表示しない。**
 - タグ語彙は運用しながら増減しうる。このファイルの差し替えだけで反映される構造を保つ。
+
+### 4-4. イラスト一覧 `https://media.ura-ten.jp/gallery/gallery.json`
+
+`uraten-ops` が承認済みの掲載だけを R2 に置き、`js/app.js` が読んで `index.html` のイラスト一覧（`#galleryPage`）に表示する。このリポジトリは読み手であり、生成側のコードは持たない。スキーマ変更は両者の合意で行う。CORS は `https://ura-ten.jp` のみ許可（プレビュー環境では読めない）。
+
+```json
+{
+  "generated_at": "2026-09-28T12:00:00+09:00",
+  "items": [
+    {
+      "name":  "掲載名",
+      "url":   "紹介リンク（http/https のみ）",
+      "image": "サムネ画像のURL（http/https のみ）",
+      "w":     1600,
+      "h":     900
+    }
+  ]
+}
+```
+
+- `w` / `h` は画像のピクセル寸法。`<img>` の `width` / `height` に入れる（レイアウトのずれ防止）。
+- 無料枠は作品＋紹介リンク1件のみ。自己紹介・ハンドル・複数リンクは持たない。
+- 未知のフィールドが増えても無視して動くこと。
+
+**フロント側仕様：**
+
+- 表示順は読み込むたびにシャッフルする（掲載の間で露出に偏りを作らないため）。
+- サムネは 16:9 の枠に `object-fit: contain` で収める（トリミングしない）。`loading="lazy"`、alt は「{name}のイラスト」。
+- タップでモーダル：画像（縦長でも全体を表示）・掲載名・「推す」ボタン1つ（`url` を `target="_blank" rel="noopener noreferrer"` で開く）。
+- `url`・`image` が http/https 以外の作品は表示しない。文字は `textContent` で入れる。
+- 0件・読み込み失敗はどちらも「まだ掲載はありません」。
+- トップのスライドショーは現状サンプル表示（`js/app.js` の `artists`）で、この JSON は読まない。
 
 ## 5. データパイプライン
 
