@@ -1,52 +1,24 @@
-  const artists = {
-    a1:{n:"あおい かな",h:"@aoi_kana_art",g:"g1",img:"./images/sample-01.webp",bio:"天神を拠点に、ネオン街と猫をよく描いています。\nアイコン・配信素材・ジャケットなどお気軽に。\n作業中はいつもURATEN流してます。"},
-    a2:{n:"みなと れい",h:"@minato_rei",g:"g2",img:"./images/sample-02.webp",bio:"女の子をイラストを描いています。\nVTuberの立ち絵・ロゴまわりよくやってます。"},
-    a3:{n:"しおり",h:"@shiori_draws",g:"g3",img:"./images/sample-03.webp",bio:"ダークなイラストがメインです。\n漫画も大好きです。"},
-    a4:{n:"クロ",h:"@kuro_ill",g:"g4",img:"./images/sample-04.webp",bio:"色々描いてます。最近は和服が好きです。\nCDジャケットやフライヤーのご相談どうぞ。"},
-    a5:{n:"ゆの",h:"@yuno_art",g:"g5",img:"./images/sample-05.webp",bio:"メカ・ロボット系。\nスタンプ・グッズ向けの絵も。"},
-    a6:{n:"はる",h:"@haru_paint",g:"g6",img:"./images/sample-06.webp",bio:"ファンタジーとかゲームとか。\nトレカのイラストもやってます。"},
-    a7:{n:"ねむ",h:"@nemu_doodle",g:"g7",img:"./images/sample-07.webp",bio:"ポップで落書きみたいな勢い重視の絵。\n配信のサムネとかよく描きます。"},
-    a8:{n:"そら",h:"@sora_canvas",g:"g8",img:"./images/sample-08.webp",bio:"水彩画風にハマってます。\n是非ギャラリーも見てください。"},
-  };
-  const keys = Object.keys(artists);
-
-  // ===== 作品画像の敷き込み =====
-  // img があれば実画像を敷く。無い／読み込めない絵師は従来のダミー塗り（.g1〜）のまま。
-  // パスは src プロパティ経由で入れる（innerHTML へ展開しない）。
-  function paintArt(el, a, lazy){
-    if(!el) return;
-    el.querySelectorAll('.art-img').forEach(n=>n.remove());
-    el.classList.remove('has-img');
-    if(!a || !a.img) return;
-    const img=document.createElement('img');
-    img.className='art-img';
-    img.alt='';
-    if(lazy) img.loading="lazy";   // 一覧のカードのみ遅延。大枠・モーダルは即読み込み（切替時の空白を避ける）
-    img.decoding='async';
-    img.addEventListener('error',()=>{img.remove();el.classList.remove('has-img')});
-    img.src=a.img;
-    el.prepend(img);
-    el.classList.add('has-img');
-  }
-
   // ===== ページ切替 =====
   function showTop(){document.getElementById('topPage').classList.add('active');document.getElementById('galleryPage').classList.remove('active');window.scrollTo(0,0)}
-  function showGallery(){document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0)}
+  // ギャラリーは絞り込みオフで開く（「スライドショー」の絞り込みは一覧の中のボタンでだけ切り替える）
+  function showGallery(){galleryFilterOn=false;document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0);renderGallery()}
   function scrollTo2(id){showTop();setTimeout(()=>document.getElementById(id).scrollIntoView({behavior:'smooth'}),50)}
 
-  // ===== イラスト一覧（#galleryPage） =====
-  // 公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）を読んで描画する。
-  // 上の artists はトップのスライドショー（サンプル表示）専用で、一覧では使わない。
-  // - 表示順は読み込みごとにシャッフル（掲載の間で露出に偏りを作らないため）
-  // - url・image が http(s) 以外の作品は表示しない
+  // ===== イラスト（トップのスライドショー・#galleryPage の一覧） =====
+  // データは公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）1ファイルだけ。
+  // ページを開いたときに1回だけ読み、トップと一覧で同じデータを使う。
+  //   items     … 一覧に出す作品（1人1点）
+  //   slideshow … 今トップのスライドショーに出す作品（掲載が古い順。この順番のまま使う）
+  // - url・image が http(s) 以外の作品は出さない。url2 も http(s) のときだけリンクにする
   // - 申請由来の文字列は textContent / プロパティで入れる（innerHTML に展開しない）
-  // - 0件・読み込み失敗はどちらも「まだ掲載はありません」
   const GALLERY_URL = 'https://media.ura-ten.jp/gallery/gallery.json';
-  const grid = document.getElementById('galleryGrid');
-  const galleryEmpty = document.getElementById('galleryEmpty');
 
   function isHttp(u){ return typeof u === 'string' && /^https?:\/\//i.test(u); }
   function posInt(v){ return (Number.isInteger(v) && v > 0) ? v : 0; }
+  // 2つ目のボタンの文言（リンク先のホスト名。先頭の www. は外す）
+  function hostLabel(u){
+    try{ return new URL(u).hostname.replace(/^www\./i, ''); }catch(e){ return ''; }
+  }
 
   function shuffle(list){
     for(let i = list.length - 1; i > 0; i--){
@@ -56,26 +28,81 @@
     return list;
   }
 
+  function normWorks(src){
+    if(!Array.isArray(src)) return [];
+    return src
+      .filter(it=>it && isHttp(it.url) && isHttp(it.image))
+      .map(it=>({
+        name:  (typeof it.name === 'string') ? it.name : '',
+        url:   it.url,
+        url2:  (isHttp(it.url2) && hostLabel(it.url2)) ? it.url2 : null,
+        bio:   (typeof it.bio === 'string' && it.bio.trim()) ? it.bio : null,
+        image: it.image,
+        w:     posInt(it.w),
+        h:     posInt(it.h)
+      }));
+  }
+
+  function setImg(img, w){
+    img.alt = w.name + 'のイラスト';
+    if(w.w && w.h){ img.width = w.w; img.height = w.h; }
+    else { img.removeAttribute('width'); img.removeAttribute('height'); }
+    img.src = w.image;
+  }
   function workImg(w, lazy){
     const img = document.createElement('img');
     img.className = 'work-img';
-    img.alt = w.name + 'のイラスト';
-    if(w.w && w.h){ img.width = w.w; img.height = w.h; }
     if(lazy) img.loading = 'lazy';
     img.decoding = 'async';
-    img.src = w.image;
+    setImg(img, w);
     return img;
   }
 
-  function renderGallery(items){
+  // 自己紹介・2つ目のリンクは、あるときだけ欄ごと出す（トップの大枠とモーダルで共用）
+  function fillExtras(bioEl, link2El, w){
+    bioEl.textContent = w.bio || '';
+    bioEl.hidden = !w.bio;
+    if(w.url2){
+      link2El.href = w.url2;
+      link2El.textContent = hostLabel(w.url2);
+      link2El.hidden = false;
+    }else{
+      link2El.removeAttribute('href');
+      link2El.textContent = '';
+      link2El.hidden = true;
+    }
+  }
+
+  let galleryItems = null;      // 読み込み前は null。一覧用にシャッフル済み
+  let slides = [];              // slideshow（並びはそのまま）
+  let galleryFilterOn = false;
+
+  // --- 一覧（#galleryPage） ---
+  // 一覧の画像はトップを開いた時点では読ませたくないので、ギャラリーを開いたときに初めて描く。
+  // - オフ：items を読み込みごとにシャッフルした順（掲載の間で露出に偏りを作らないため）
+  // - オン：slideshow をそのままの順
+  // - カードは掲載名だけ（有料・無料で見た目に差を付けない）
+  // - 0件・読み込み失敗はどちらも「まだ掲載はありません」
+  const grid = document.getElementById('galleryGrid');
+  const galleryEmpty = document.getElementById('galleryEmpty');
+  const galleryFilterBtn = document.getElementById('galleryFilter');
+
+  function renderGallery(){
+    if(galleryItems === null) return;                     // 読み込み中は「読み込んでいます…」のまま
+    if(!document.getElementById('galleryPage').classList.contains('active')) return;
+    galleryFilterBtn.hidden = !slides.length;
+    if(!slides.length) galleryFilterOn = false;
+    galleryFilterBtn.setAttribute('aria-pressed', galleryFilterOn ? 'true' : 'false');
+
+    const list = galleryFilterOn ? slides : galleryItems;
     grid.textContent = '';
-    if(!items.length){
+    if(!list.length){
       galleryEmpty.textContent = 'まだ掲載はありません';
       galleryEmpty.hidden = false;
       return;
     }
     galleryEmpty.hidden = true;
-    items.forEach(w=>{
+    list.forEach(w=>{
       const el = document.createElement('div');
       el.className = 'card';
       el.onclick = ()=>openWork(w);
@@ -92,25 +119,12 @@
       grid.appendChild(el);
     });
   }
+  function toggleGalleryFilter(){
+    galleryFilterOn = !galleryFilterOn;
+    renderGallery();
+  }
 
-  fetch(GALLERY_URL, { cache: 'no-store' })
-    .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-    .then(data=>{
-      const src = (data && Array.isArray(data.items)) ? data.items : [];
-      const items = src
-        .filter(it=>it && isHttp(it.url) && isHttp(it.image))
-        .map(it=>({
-          name:  (typeof it.name === 'string') ? it.name : '',
-          url:   it.url,
-          image: it.image,
-          w:     posInt(it.w),
-          h:     posInt(it.h)
-        }));
-      renderGallery(shuffle(items));
-    })
-    .catch(()=>renderGallery([]));
-
-  // --- 作品モーダル ---
+  // --- 作品の詳細モーダル（大枠・一覧で共用） ---
   const workModal = document.getElementById('workModal');
   function openWork(w){
     const art = document.getElementById('wArt');
@@ -118,160 +132,126 @@
     art.appendChild(workImg(w, false));
     document.getElementById('wName').textContent = w.name;
     document.getElementById('wLink').href = w.url;
+    fillExtras(document.getElementById('wBio'), document.getElementById('wLink2'), w);
     workModal.classList.add('open');
   }
   function closeWork(){ workModal.classList.remove('open'); }
 
-  // ===== 巡回スライドショー（順送り・全員一巡） =====
-  // 4秒ごとに innerHTML でサブツリーを作り直すと、切替のたびにスタイル再計算・
-  // レイアウト・画像デコードがメインスレッドで走り、旧端末ではスクロール中の
-  // カクつきになる。そこで
-  //   (1) 中身は初回に1回だけ組み立てて使い回す（以降 innerHTML を使わない）
-  //   (2) 画像は A/B の2枚を重ねて常設し、次の画像は表示中の4秒間に先読み＋
-  //       decode() まで済ませておく。切替時は class の付け替えだけにする
-  //   (3) 見えていない間（画面外・裏タブ・ギャラリーページ表示中）は止める
-  // 見た目は従来どおり。フェードは付けない（瞬間切替のまま）。
-  const showOrder = [...keys];   // 登録順で全員を巡回
-  const SHOW_DOT_MAX = 8;        // ドットの表示上限（従来どおり）
-  const SHOW_MS = 4000;
-  let showIdx = 0;
+  // --- トップのスライドショー ---
+  // 1枚6秒。表示する番号は時計で決める（Math.floor(Date.now()/6000) % 件数）。
+  // 誰がいつ開いても同じ時刻には同じ作品が出るので、「いつも最初に出る人」がいない。
+  // 重さ対策：
+  //   - 画像は A/B の2枚だけを重ねて常設し、読み込むのは「今の1枚」と「次の1枚」だけ
+  //   - 次の1枚は切り替えの少し前に先読み＋decode() しておき、切替時は class の付け替えだけにする
+  //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
+  const SHOW_MS = 6000;
+  const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
 
-  const showArtEl  = document.getElementById('showArt');
-  const showNameEl = document.getElementById('showName');
-  const showHandEl = document.getElementById('showHandle');
-  const showBioEl  = document.getElementById('showBio');
+  const showEl       = document.getElementById('show');
+  const showStatusEl = document.getElementById('showStatus');
+  const showWantedEl = document.getElementById('showWanted');
+  const showArtEl    = document.getElementById('showArt');
+  const showNameEl   = document.getElementById('showName');
+  const showBioEl    = document.getElementById('showBio');
+  const showLinkEl   = document.getElementById('showLink');
+  const showLink2El  = document.getElementById('showLink2');
 
-  // --- 中身の組み立て（初回のみ） ---
-  showArtEl.textContent = '';
-  // 画像は2枚（A/B）を重ねて置き、表示側にだけ .on を付ける。
-  const showImgs = [0,1].map(()=>{
-    const img = document.createElement('img');
-    img.className = 'art-img';
-    img.alt = '';
-    img.decoding = 'async';
-    showArtEl.appendChild(img);
-    return img;
-  });
-  // 画像より後ろに追加することで、従来（画像を prepend）と同じ重なり順を保つ。
-  const showFrameEl = document.createElement('div');
-  showFrameEl.className = 'show-frame';
-  showArtEl.appendChild(showFrameEl);
-  const showNoteEl = document.createElement('div');
-  showNoteEl.className = 'ph-note';
-  showNoteEl.textContent = 'ILLUSTRATION';
-  showArtEl.appendChild(showNoteEl);
-  const showDotsBox = document.createElement('div');
-  showDotsBox.className = 'dots';
-  showDotsBox.id = 'dots';
-  showArtEl.appendChild(showDotsBox);
-  const showDotEls = showOrder.slice(0,SHOW_DOT_MAX).map(()=>{
-    const d = document.createElement('i');
-    showDotsBox.appendChild(d);
-    return d;
-  });
-  // 初回に ILLUSTRATION 枠が一瞬見えないよう先に付けておく
-  // （従来も paintArt が src セット直後に has-img を付けていた）。
-  if(artists[showOrder[0]] && artists[showOrder[0]].img) showArtEl.classList.add('has-img');
-
+  const showImgs = [];
   let showLive = 0;              // いま表示している showImgs のインデックス
-  let showBusy = false;          // 切替の多重発火よけ
-  const showFailed = new Set();  // 読み込みに失敗した絵師キー
+  let showCur = -1;              // いま表示している slides のインデックス
+  let showToken = 0;             // 追い越された切替を捨てるための番号
+  let showTimers = [];
+  let showOnScreen = true;       // IntersectionObserver 未対応なら常時 true 扱い
 
-  // 待機側スロットに画像を読み込み、デコードまで終わらせる。
-  // 戻り値: 表示できるなら true ／ 画像なし・失敗なら false（従来のダミー塗りに戻す）
-  async function showPreload(slot, key){
-    const a = artists[key];
+  function showClockIdx(){ return Math.floor(Date.now() / SHOW_MS) % slides.length; }
+
+  // 指定スロットに slides[idx] を読み込み、デコードまで済ませる。表示できるなら true。
+  function showLoad(slot, idx){
     const img = showImgs[slot];
-    if(!a || !a.img || showFailed.has(key)) return false;
-    if(img.dataset.key === key && img.dataset.ready === '1') return true;
-    img.dataset.key = key;
-    img.dataset.ready = '';
-    img.src = a.img;
-    try{
-      // 表示する「前に」オフスレッドでデコードを終わらせるのが目的。
-      // decode() 未対応のブラウザでは従来どおりブラウザ任せにする。
-      if(typeof img.decode === 'function') await img.decode();
-      if(img.dataset.key !== key) return false;   // 途中で次の画像に追い越された
-      img.dataset.ready = '1';
-      return true;
-    }catch(e){
-      // 追い越しによる中断は失敗として数えない。
-      if(img.dataset.key === key) showFailed.add(key);
-      return false;
-    }
+    if(img.dataset.idx === String(idx)) return img._ready;
+    img.dataset.idx = String(idx);
+    setImg(img, slides[idx]);
+    img._ready = (typeof img.decode === 'function' ? img.decode() : Promise.resolve())
+      .then(()=>img.dataset.idx === String(idx), ()=>false);
+    return img._ready;
   }
 
   async function showGoTo(idx){
-    if(showBusy) return;
-    showBusy = true;
-    try{
-      const key = showOrder[idx];
-      const a   = artists[key];
-      const standby = 1 - showLive;
+    if(idx === showCur) return;
+    const token = ++showToken;
+    const standby = 1 - showLive;
+    const ok = await showLoad(standby, idx);   // この間、表示中の作品はそのまま出ている
+    if(token !== showToken) return;
+    const w = slides[idx];
+    showImgs[showLive].classList.remove('on');
+    showImgs[standby].classList.toggle('on', ok);
+    showLive = standby;
+    showCur = idx;
+    showNameEl.textContent = w.name;
+    showLinkEl.href = w.url;
+    fillExtras(showBioEl, showLink2El, w);
+  }
 
-      // 読み込み＋デコードを先に済ませる（この間、表示中の画像はそのまま出ている）
-      const ok = await showPreload(standby, key);
-
-      // ここから先は class とテキストの付け替えだけ（デコードを伴わない）
-      showIdx = idx;
-      showArtEl.className = 'show-art ' + a.g + (ok ? ' has-img' : '');
-      showImgs[showLive].classList.remove('on');
-      if(ok){
-        showImgs[standby].classList.add('on');
-        showLive = standby;
-      }
-      showDotEls.forEach((d,i)=>{ d.className = (i === idx % SHOW_DOT_MAX) ? 'on' : ''; });
-      showNameEl.textContent = a.n;
-      showHandEl.textContent = a.h;
-      showBioEl.textContent  = a.bio.replace(/\n/g,' ');
-
-      // 次の画像を、この4秒の間に先読みしておく（次の切替の作業をゼロにする）
-      showPreload(1 - showLive, showOrder[(idx + 1) % showOrder.length]);
-    }finally{
-      showBusy = false;
+  function showClear(){
+    showTimers.forEach(clearTimeout);
+    showTimers = [];
+  }
+  function showSchedule(){
+    showClear();
+    if(slides.length < 2) return;              // 1件だけのときは切り替えない
+    const now = Date.now();
+    const next = (Math.floor(now / SHOW_MS) + 1) * SHOW_MS;
+    const nextIdx = Math.floor(next / SHOW_MS) % slides.length;
+    showTimers.push(setTimeout(()=>showLoad(1 - showLive, nextIdx), Math.max(0, next - SHOW_PRELOAD_MS - now)));
+    showTimers.push(setTimeout(()=>{ showGoTo(nextIdx); showSchedule(); }, next - now + 20));
+  }
+  function showUpdate(){
+    if(!slides.length) return;
+    if(showOnScreen && !document.hidden){
+      showGoTo(showClockIdx());
+      showSchedule();
+    }else{
+      showClear();
     }
   }
+  function openShowWork(){ if(showCur >= 0) openWork(slides[showCur]); }
 
-  // --- タイマー：見えていない間は止める ---
-  let showTimer = null;
-  let showOnScreen = true;       // IntersectionObserver 未対応なら常時 true 扱い
+  function startShow(){
+    showStatusEl.hidden = true;
+    if(!slides.length){
+      // 空の枠やサンプルは出さず、募集の案内だけを出す
+      showWantedEl.hidden = false;
+      return;
+    }
+    for(let i = 0; i < 2; i++){
+      const img = document.createElement('img');
+      img.className = 'work-img';
+      img.decoding = 'async';
+      showArtEl.appendChild(img);
+      showImgs.push(img);
+    }
+    showEl.hidden = false;
+    if('IntersectionObserver' in window){
+      // #topPage が display:none のとき（ギャラリー表示中）も交差しないので止まる。
+      new IntersectionObserver(es=>{
+        showOnScreen = es[es.length-1].isIntersecting;
+        showUpdate();
+      },{rootMargin:'120px'}).observe(showArtEl);
+    }else{
+      showUpdate();
+    }
+    document.addEventListener('visibilitychange', showUpdate);
+  }
 
-  function showShouldRun(){ return showOnScreen && !document.hidden; }
-  function showStart(){
-    if(showTimer || !showShouldRun()) return;
-    showTimer = setInterval(()=>showGoTo((showIdx + 1) % showOrder.length), SHOW_MS);
-  }
-  function showStop(){
-    if(showTimer){ clearInterval(showTimer); showTimer = null; }
-  }
-  function showUpdateTimer(){
-    if(showShouldRun()) showStart(); else showStop();
-  }
-
-  if('IntersectionObserver' in window){
-    // #topPage が display:none のとき（ギャラリー表示中）も交差しないので止まる。
-    new IntersectionObserver(es=>{
-      showOnScreen = es[es.length-1].isIntersecting;
-      showUpdateTimer();
-    },{rootMargin:'120px'}).observe(showArtEl);
-  }
-  document.addEventListener('visibilitychange', showUpdateTimer);
-
-  showGoTo(0);
-  showUpdateTimer();
-
-  // ===== モーダル =====
-  const modal=document.getElementById('modal');
-  function openModal(key){
-    const a=artists[key];if(!a)return;
-    document.getElementById('mName').textContent=a.n;
-    document.getElementById('mHandle').textContent=a.h;
-    document.getElementById('mBio').textContent=a.bio;
-    document.getElementById('mArt').className='modal-art '+a.g;
-    paintArt(document.getElementById("mArt"), a);
-    modal.classList.add('open');
-  }
-  function closeModal(){modal.classList.remove('open')}
+  // --- 読み込み（1回だけ） ---
+  fetch(GALLERY_URL, { cache: 'no-store' })
+    .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(data=>{
+      galleryItems = shuffle(normWorks(data && data.items));
+      slides = normWorks(data && data.slideshow);
+    })
+    .catch(()=>{ galleryItems = []; slides = []; })
+    .then(()=>{ startShow(); renderGallery(); });
 
   // ===== スケジュール =====
   const sched=[
@@ -297,7 +277,7 @@
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeWork();closeSched();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeMenu()}});
 
 
 // ===== ハンバーガーメニュー =====

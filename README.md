@@ -2,11 +2,12 @@
 
 静的サイト。このリポジトリへの git push が公開トリガー。
 
-データの読み先は2つある。
+データの読み先は2種類ある。
 
 - リポジトリ内の静的 JSON（`data/bgm.json` / `data/bgm-tags.json`）… 手で更新して push する
-- R2 の公開 JSON（`https://media.ura-ten.jp/calendar/calendar.json`）… イベントカレンダー。
-  `uraten-ops` の変換スクリプトが承認済みデータだけを cron で置く。このリポジトリは読み手であり、生成側のコードは持たない
+- R2 の公開 JSON … `uraten-ops` の変換スクリプトが承認済みデータだけを置く。このリポジトリは読み手であり、生成側のコードは持たない
+  - `https://media.ura-ten.jp/calendar/calendar.json` … イベントカレンダー（トップ直近5件・`calendar.html`）
+  - `https://media.ura-ten.jp/gallery/gallery.json` … イラスト（トップのスライドショーとイラスト一覧の両方。`slideshow.json` は無い）
 
 ## 構成
 
@@ -42,6 +43,8 @@ Git接続のPagesにはアップロードを除外する仕組み（`.cfignore` 
 
 `index.html` をダブルクリックで開くと **fetch が失敗しカレンダー・BGM一覧が表示されない**（`file://` ではJSONを読めない）。必ずローカルサーバー経由で見ること。
 
+なお R2 の公開 JSON（`calendar.json`・`gallery.json`）は CORS で `https://ura-ten.jp` からの GET しか許可していない。ローカルサーバーや Pages のプレビュー環境からは読めず、カレンダーは読み込みエラー、スライドショーは「掲載募集中」、イラスト一覧は「まだ掲載はありません」の表示になる。実データでの表示確認は本番で行う。
+
 ```
 python -m http.server 8000
 # → http://localhost:8000
@@ -54,5 +57,6 @@ python -m http.server 8000
 - 4-1 … イベントカレンダー（`calendar/calendar.json`。生成は `uraten-ops`）
 - 4-2 … `data/bgm.json`
 - 4-3 … `data/bgm-tags.json`
+- 4-4 … イラスト（`gallery/gallery.json`。`items` と `slideshow` の2配列。生成は `uraten-ops`）
 
 審査メモ・主催者の連絡先など運営用の情報は、**どの公開JSONにも絶対に入れない**（Sheetsに留める）。
