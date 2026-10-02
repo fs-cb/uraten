@@ -41,7 +41,10 @@
           <div class="onair-time" id="npTime" hidden></div>
           <div class="prog" id="npTitle">URATEN</div>
           <div class="cast" id="npArtist"></div>
-          <a class="cast-link" id="npLink" target="_blank" rel="noopener" hidden></a>
+          <div class="cast-link-row">
+            <a class="cast-link" id="npLink" target="_blank" rel="noopener" hidden></a>
+            <button class="cast-link" id="npSongs" type="button" onclick="openSongs()" hidden></button>
+          </div>
         </div>
         <button class="play-btn" id="playBtn" aria-label="再生" aria-pressed="false"><span></span></button>
       </div>
@@ -51,7 +54,7 @@
       <div class="up"><span class="up-name">読み込んでいます…</span></div>
     </div>
     <div class="sched-link" onclick="openSched()">本日の放送スケジュールを見る →</div>
-    <a class="sched-link" href="./schedule.html" target="_blank" rel="noopener">7日分の放送予定を見る →</a>
+    <a class="sched-link" href="./schedule.html" target="_blank" rel="noopener">今後の放送予定を見る →</a>
   </div>
 
   <!-- 巡回スライドショー（イラストの大枠。gallery.json の slideshow を時計で巡回） -->
@@ -143,6 +146,18 @@
         <a class="btn btn-push" id="wLink" target="_blank" rel="noopener noreferrer">♥ 推す</a>
         <a class="btn btn-x" id="wLink2" target="_blank" rel="noopener noreferrer" hidden></a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 歌い手枠の曲目モーダル（トップのプレーヤーから開く） -->
+<div class="modal" id="songsModal" onclick="if(event.target===this)closeSongs()">
+  <div class="modal-card" style="max-width:460px">
+    <button class="modal-close" onclick="closeSongs()">×</button>
+    <div class="modal-body" style="padding:26px">
+      <span class="eyebrow">SONGS</span>
+      <div class="modal-name" id="songsTitle" style="margin:8px 0 16px;font-size:20px"></div>
+      <div id="songsList"></div>
     </div>
   </div>
 </div>

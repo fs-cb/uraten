@@ -1130,3 +1130,65 @@ a.sched-link{display:block;text-decoration:none}
   .oa-title{font-size:14px}
   .oa-cast,.oa-summary,.oa-song{font-size:12px}
 }
+
+/* =========================================================
+   プレーヤーの行の位置を固定し、はみ出す行は横に往復させる
+
+   内容の有無（BGM／番組、紹介URLの有無、アーティスト空）で
+   「時間・番組名・出演者・詳細を見る」の4行の位置が動かないよう、
+   それぞれ高さを確保して常に1行に保つ。
+
+   1行に収めると長い名前が読めなくなるので、はみ出した行だけ
+   transform で左右に往復させる（はみ出しの判定は js/app.js が幅を測る）。
+   動かすのは transform だけなので GPU 合成で済む。
+========================================================= */
+
+/* 4行すべて1行に固定する。スマホ側の white-space:normal 等を打ち消す */
+.onair-time,
+.prog,
+.cast{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+}
+
+/* 空のときも行を残す（em 指定なので文字サイズが変わっても追従する） */
+.onair-time{min-height:1.45em}
+.prog{min-height:1.35em}
+.cast{min-height:1.55em}
+
+/* 「詳細を見る」の行。リンク／曲目ボタンの有無で下がずれないよう枠の高さを固定 */
+.cast-link-row{margin-top:7px;min-height:29px}
+.cast-link-row .cast-link{margin-top:0}
+
+/* button を <a class="cast-link"> と同じ見た目にする */
+button.cast-link{font:inherit;font-size:11px;font-weight:700;line-height:1.2}
+
+/* --- 横スクロール（はみ出す行だけ） --- */
+.mq-in{display:inline-block;white-space:nowrap}
+.is-scrolling > .mq-in{
+  animation:mqScroll var(--mq-dur,8s) linear infinite;
+}
+/* 左端で止まる → 右端まで流れる → 右端で止まる → 左に戻ってやり直す（往復しない）。
+   100% から 0% へ戻るときに一瞬で左へ戻る。
+   15%〜85%（＝0.70）が流れている区間で、js/app.js の MQ_TRAVEL と対応している */
+@keyframes mqScroll{
+  0%,  15%{transform:translateX(0)}
+  85%,100%{transform:translateX(var(--mq-shift,0))}
+}
+
+/* 動きを抑える設定の端末では止める（長い行は切れたままになる） */
+@media (prefers-reduced-motion: reduce){
+  .is-scrolling > .mq-in{animation:none}
+}
+
+@media(max-width:760px){
+  .cast-link-row{min-height:28px}
+  button.cast-link{font-size:10.5px}
+}
+
+/* 360px 以下は .player-info が中央寄せになるので、行の中身も中央に寄せる */
+@media(max-width:360px){
+  .mq-in{display:block}
+  .is-scrolling > .mq-in{display:inline-block}
+}

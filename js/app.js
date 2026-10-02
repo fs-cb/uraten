@@ -265,12 +265,30 @@
   }
   function closeSched(){document.getElementById('schedModal').classList.remove('open')}
 
+  // ===== 歌い手枠の曲目モーダル（プレーヤーの「詳細を見る」から開く） =====
+  // 放送中の回の歌い手名・曲名・作詞／作曲だけを出す。描画は js/onair.js の
+  // fillSongs に任せる（当日のスケジュールと同じ songsEl を通すので見た目が一致する）。
+  let songsModalId = '';   // 放送中の歌い手枠の放送回ID（initRadio が入れる）
+  function openSongs(){
+    const oa = window.uratenOnair;
+    if(!songsModalId || !oa || !oa.fillSongs) return;
+    const p = oa.findById(songsModalId);
+    const t = document.getElementById('songsTitle');
+    if(t) t.textContent = (p && p.title) || '';
+    if(!oa.fillSongs(document.getElementById('songsList'), songsModalId)) return;  // 曲目が無ければ開かない
+    document.getElementById('songsModal').classList.add('open');
+  }
+  function closeSongs(){
+    const m = document.getElementById('songsModal');
+    if(m) m.classList.remove('open');
+  }
+
   // ===== イベントカレンダー =====
   // 読み込み・日付判定・描画は js/calendar.js（calendar.html と共用）に置いてある。
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeSongs();closeMenu()}});
 
 
 // ===== ハンバーガーメニュー =====
@@ -348,6 +366,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   const artistEl = document.getElementById('npArtist');
   const timeEl   = document.getElementById('npTime');
   const npLinkEl = document.getElementById('npLink');
+  const npSongsEl= document.getElementById('npSongs');
   const artEl    = document.getElementById('npArt');
   const vinylEl  = document.getElementById('npVinyl');
   const onairEl  = document.getElementById('npOnair');
@@ -387,34 +406,69 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     return p ? rangeLabel(p.start, p.end) : '';
   }
 
+  // --- 1行に収めつつ、はみ出す分だけ横に往復させる ---
+  // CSS だけでは「はみ出しているか」を判定できないため、幅を測って
+  // はみ出す行にだけ .is-scrolling を付ける。動かすのは transform のみ
+  // （GPU 合成で済む）。prefers-reduced-motion の端末では CSS 側で止める。
+  const MQ_SPEED  = 25;    // px/秒。流れる速さ
+  // 1周のうち流れている割合。残りは左端と右端で止まる時間になる。
+  // style.css の @keyframes mqScroll の 15%〜85%（＝0.70）と対応させる
+  const MQ_TRAVEL = 0.70;
+  function setLine(el, text){
+    if(!el) return;
+    let inner = el.firstElementChild;
+    if(!inner || !inner.classList.contains('mq-in')){
+      el.textContent = '';
+      inner = document.createElement('span');
+      inner.className = 'mq-in';
+      el.appendChild(inner);
+    }
+    inner.textContent = text || '';
+    measureLine(el);
+  }
+  function measureLine(el){
+    const inner = el && el.firstElementChild;
+    if(!inner) return;
+    // 測る前に一度止める（前回の transform が残っていると幅を誤る）
+    el.classList.remove('is-scrolling');
+    const over = inner.scrollWidth - el.clientWidth;
+    if(el.clientWidth <= 0 || over <= 1) return;   // 非表示中や収まっているときは動かさない
+    el.style.setProperty('--mq-shift', (-over) + 'px');
+    el.style.setProperty('--mq-dur', ((over / MQ_SPEED) / MQ_TRAVEL).toFixed(2) + 's');
+    el.classList.add('is-scrolling');
+  }
+  // 幅が変わると収まり方も変わるので測り直す
+  let mqTimer = null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(mqTimer);
+    mqTimer = setTimeout(()=>{ measureLine(titleEl); measureLine(artistEl); }, 200);
+  });
+
   // --- 表示反映 ---
-  // v = {mode:'program'|'bgm'|'offline', title, cast, url, art, time}
+  // v = {mode:'program'|'bgm'|'offline', title, cast, url, songsId, art, time}
   function render(v){
     const offline = v.mode === 'offline';
     if(onairEl)  onairEl.classList.toggle('is-offline', offline);
     if(onairTxt) onairTxt.textContent = offline ? 'OFF AIR' : 'ON AIR';
 
-    titleEl.textContent = offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE);
+    setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
 
-    if(artistEl){
-      artistEl.textContent = v.cast || '';
-      artistEl.hidden = !v.cast;
-    }
+    // 出演者は空でも行を残す（.cast-link-row と同じく位置を固定するため）
+    setLine(artistEl, v.cast || '');
     // 番組なら放送時間、BGM なら「URATEN ミュージック」をこの行に出す
-    if(timeEl){
-      timeEl.textContent = v.time || '';
-      timeEl.hidden = !v.time;
-    }
+    if(timeEl) timeEl.textContent = v.time || '';
+    // 紹介URLがあれば外部リンク、無くて曲目があれば曲目モーダルのボタン。
+    // 歌い手枠は url が null なので、曲目モーダル側が出る。
+    songsModalId = v.songsId || '';
     if(npLinkEl){
-      if(v.url){
-        npLinkEl.href = v.url;
-        npLinkEl.textContent = LINK_TEXT;
-        npLinkEl.hidden = false;
-      }else{
-        npLinkEl.removeAttribute('href');
-        npLinkEl.textContent = '';
-        npLinkEl.hidden = true;
-      }
+      npLinkEl.hidden = !v.url;
+      if(v.url){ npLinkEl.href = v.url; npLinkEl.textContent = LINK_TEXT; }
+      else { npLinkEl.removeAttribute('href'); npLinkEl.textContent = ''; }
+    }
+    if(npSongsEl){
+      const showSongs = !v.url && !!v.songsId;
+      npSongsEl.hidden = !showSongs;
+      npSongsEl.textContent = showSongs ? LINK_TEXT : '';
     }
     setArt(v.art);
 
@@ -458,7 +512,11 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 
     if(oaId){
       curOaId = oaId;
-      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), art, time:programTime(oaId)});
+      // 歌い手枠は紹介URLが無い代わりに曲目を持つ。あれば曲目モーダルを出せるようにする
+      const prog = (window.uratenOnair && window.uratenOnair.findById) ? window.uratenOnair.findById(oaId) : null;
+      const hasSongs = !!(prog && prog.songs && prog.songs.length);
+      render({mode:'program', title, cast:artist, url:httpUrl(cf.url),
+              songsId: hasSongs ? oaId : '', art, time:programTime(oaId)});
     }else{
       curOaId = '';
       render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:BGM_LABEL});

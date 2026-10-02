@@ -448,6 +448,18 @@
     if (document.getElementById('schedList')) renderToday();
   }
 
+  /* 指定した放送回の曲目を box に描く。曲目が無ければ何も描かず false を返す。
+     トップのプレーヤーの「詳細を見る」から曲目モーダルを開くために app.js が使う。
+     当日のスケジュールと同じ songsEl() を通すので、見た目は一致する */
+  function fillSongs(box, id) {
+    if (!box) return false;
+    box.textContent = '';
+    var p = findById(id);
+    if (!p || !p.songs.length) return false;
+    box.appendChild(songsEl(p.songs));
+    return true;
+  }
+
   /* oa_id から番組を引く。AzuraCast のスケジュールAPIに is_now が無いときの
      放送時間のフォールバックに使う */
   function findById(id) {
@@ -467,6 +479,7 @@
     renderFull: renderFull,
     setNowId: setNowId,
     findById: findById,
+    fillSongs: fillSongs,
     currentDay: function () { return broadcastDay(new Date()); },
     timeRange: timeRange
   };
