@@ -388,6 +388,15 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   const safe = s => { const v = clean(s); return looksInternal(v) ? '' : v; };
   const httpUrl = s => { const v = clean(s); return /^https?:\/\//i.test(v) ? v : ''; };
 
+  // AzuraCast のアートワークURLは、音源に画像が埋まっているときだけ
+  //   /art/{id}-{更新時刻}.jpg
+  // の形になる。画像が無い音源は /art/{id} になり、ステーションの既定画像
+  // （中身が全曲で同じ画像）が返ってくる。既定画像はサイトの見た目に合わないので、
+  // この形のときはアートを出さず、CSS のレコード盤（.vinyl）に落とす。
+  // 判定は保守的にし、URL の形が変わったときは「画像あり」として従来どおり表示する。
+  const DEFAULT_ART = /\/art\/[0-9a-f]{8,}(\?|$)/i;
+  const songArt = s => { const u = httpUrl(s); return (u && DEFAULT_ART.test(u)) ? '' : u; };
+
   // --- 放送時間（番組のときだけ） ---
   function rangeLabel(startIso, endIso){
     const oa = window.uratenOnair;
@@ -508,7 +517,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     const oaId   = clean(cf.oa_id);
     const title  = safe(song.title);
     const artist = safe(song.artist);
-    const art    = httpUrl(song.art);
+    const art    = songArt(song.art);
 
     if(oaId){
       curOaId = oaId;
