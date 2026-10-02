@@ -141,7 +141,7 @@
       cast:    str(src.cast),
       url:     httpUrl(src.url),
       summary: str(src.summary),
-      image:   httpUrl(src.image),
+      image:   httpUrl(src.image),   // 現在どこにも表示していない（programRow のコメント参照）
       songs:   normSongs(src.songs)
     };
   }
@@ -245,24 +245,15 @@
   }
 
   /* 1番組。イベントカレンダー（.cal-row）と同じく、左に時刻・右に中身を置く。
-     時刻は開始のみ（終了時刻は出さない） */
+     時刻は開始のみ（終了時刻は出さない）。
+     サムネイルは出さない。画像のある行だけ本文が右にずれて、行ごとに
+     番組名の開始位置が変わってしまうため（プレーヤーは1件なのでそちらは出す） */
   function programRow(p, dayKey, nowMs) {
     var row = el('div', 'oa-row');
     if (p.id && p.id === nowId) row.classList.add('is-now');
     else if (p.end && new Date(p.end).getTime() <= nowMs) row.classList.add('is-done');
 
     row.appendChild(el('span', 'oa-time', hhmm(p.start, dayKey)));
-
-    var main = el('div', 'oa-main');
-    if (p.image) {
-      var img = el('img', 'oa-thumb');
-      img.src = p.image;
-      img.alt = '';
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.addEventListener('error', function () { img.remove(); });
-      main.appendChild(img);
-    }
 
     var body = el('div', 'oa-body');
     var titleLine = el('div', 'oa-titleline');
@@ -275,9 +266,8 @@
     if (p.summary) body.appendChild(summaryEl(p.summary));
     if (p.songs.length) body.appendChild(songsEl(p.songs));
     if (p.url) body.appendChild(linkEl(p.url, '番組の紹介を見る →', 'oa-link'));
-    main.appendChild(body);
 
-    row.appendChild(main);
+    row.appendChild(body);
     return row;
   }
 
