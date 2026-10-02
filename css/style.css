@@ -1192,3 +1192,10 @@ button.cast-link{font:inherit;font-size:11px;font-weight:700;line-height:1.2}
   .mq-in{display:block}
   .is-scrolling > .mq-in{display:inline-block}
 }
+
+/* 「このあと」の行。文字が空でも行の高さを保つ */
+.up-name{min-height:1.5em}
+
+/* 当日の放送が全部終わったあと：NEXT の行だけ残し、時刻・サムネ・文字は空にする。
+   サムネは visibility で消して場所だけ残し、NEXT の位置が通常の行と揃うようにする */
+.up.is-blank .up-thumb{visibility:hidden}

@@ -30,7 +30,6 @@
   var MSG = {
     loading:   '読み込んでいます…',
     error:     '放送予定を読み込めませんでした。時間をおいて再度お試しください。',
-    todayEnd:  '本日の放送は終了しました',
     dayEmpty:  '放送予定はまだありません',
     more:      '続きを読む',
     less:      '閉じる',
@@ -309,8 +308,8 @@
     if (!box) return;
     box.textContent = '';
 
-    if (loadState === 'loading') { box.appendChild(upRow('', MSG.loading, '')); return; }
-    if (loadState === 'error')   { box.appendChild(upRow('', MSG.error, '')); return; }
+    if (loadState === 'loading') { box.appendChild(upNote(MSG.loading)); return; }
+    if (loadState === 'error')   { box.appendChild(upNote(MSG.error)); return; }
 
     var now = Date.now();
     var dayKey = broadcastDay(new Date());
@@ -322,7 +321,13 @@
       next.push(p);
     }
 
-    if (!next.length) { box.appendChild(upRow('', MSG.todayEnd, '')); return; }
+    if (!next.length) {
+      // 当日の放送が全部終わったあと。NEXT の行は残し、時刻・サムネ・文字は空にする
+      var blank = upRow('', '', 'NEXT');
+      blank.classList.add('is-blank');
+      box.appendChild(blank);
+      return;
+    }
     for (var j = 0; j < next.length; j++) {
       box.appendChild(upRow(
         hhmm(next[j].start, dayKey),
@@ -335,12 +340,17 @@
   /* 既存のプレーヤーの見た目（.up / .up-time / .up-thumb / .up-name / .up-label）に合わせる */
   function upRow(time, name, label) {
     var row = el('div', 'up');
-    if (time) {
-      row.appendChild(el('span', 'up-time', time));
-      row.appendChild(el('span', 'up-thumb'));
-    }
+    row.appendChild(el('span', 'up-time', time));
+    row.appendChild(el('span', 'up-thumb'));
     row.appendChild(el('span', 'up-name', name));
-    if (label) row.appendChild(el('span', 'up-label', label));
+    row.appendChild(el('span', 'up-label', label));
+    return row;
+  }
+
+  /* 読み込み中・エラーのお知らせ。番組の行とは別の形にする */
+  function upNote(text) {
+    var row = el('div', 'up');
+    row.appendChild(el('span', 'up-name', text));
     return row;
   }
 
