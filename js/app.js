@@ -307,7 +307,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 // - 「放送中」の表示は AzuraCast から取る（いま放送中API ＋ スケジュールAPI）。
 //   番組かどうかは song.custom_fields.oa_id の有無で判定する。
 //     oa_id あり → 番組：放送時間・番組タイトル・出演者・紹介URL
-//     oa_id なし → BGM：「URATEN ミュージック」・曲名・アーティスト
+//     oa_id なし → BGM：「URATEN ミュージック」・曲名・アーティスト・音源の紹介URL
 //   運営が手で入れた番組は oa_id が無く BGM と同じ出方になる。それでよい。
 // - 放送時間はスケジュールAPIの is_now の start〜end を使う（played_at/duration は
 //   実ファイルの長さで枠より短いため使わない）。is_now が無いときは
@@ -333,7 +333,8 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   const FALLBACK_TITLE = 'URATEN';
   const BGM_LABEL      = 'URATEN ミュージック';
   const OFFLINE_TEXT   = 'ただいま放送の情報を取得できません';
-  const LINK_TEXT      = '番組の紹介を見る →';
+  const LINK_PROGRAM   = '番組の紹介を見る →';
+  const LINK_BGM       = '詳細を見る →';
 
   const audio    = document.getElementById('radioAudio');
   const playBtn  = document.getElementById('playBtn');
@@ -381,7 +382,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   }
 
   // --- 表示反映 ---
-  // v = {mode:'program'|'bgm'|'offline', title, cast, url, art, time}
+  // v = {mode:'program'|'bgm'|'offline', title, cast, url, linkText, art, time}
   function render(v){
     const offline = v.mode === 'offline';
     if(onairEl)  onairEl.classList.toggle('is-offline', offline);
@@ -401,7 +402,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     if(npLinkEl){
       if(v.url){
         npLinkEl.href = v.url;
-        npLinkEl.textContent = LINK_TEXT;
+        npLinkEl.textContent = v.linkText || LINK_PROGRAM;
         npLinkEl.hidden = false;
       }else{
         npLinkEl.removeAttribute('href');
@@ -451,10 +452,10 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 
     if(oaId){
       curOaId = oaId;
-      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), art, time:programTime(oaId)});
+      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), linkText:LINK_PROGRAM, art, time:programTime(oaId)});
     }else{
       curOaId = '';
-      render({mode:'bgm', title, cast:artist, url:'', art, time:BGM_LABEL});
+      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), linkText:LINK_BGM, art, time:BGM_LABEL});
     }
   }
 

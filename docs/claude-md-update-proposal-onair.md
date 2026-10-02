@@ -29,7 +29,8 @@ VPS 側（`onair_plan.py` / `onair_render.py`）の対応により、AzuraCast �
 > 表示の取得元は2つある。**同じ欄を2つのソースが書かない**ように、担当を分ける。
 >
 > - **「放送中」（トップのプレーヤー）**：**AzuraCast**。いま放送中 API（`api/nowplaying/{局}`）を20秒ポーリングし、スケジュール API（`api/station/{局}/schedule`）を同じ間隔で読む。
->   - **番組かどうかは `song.custom_fields.oa_id` の有無で判定する。** 値があれば番組（放送時間・番組タイトル・出演者・紹介URL）、null・空・項目なしなら BGM（曲名・アーティスト）。`song.custom_fields?.oa_id` のように、項目が無くても落ちないように読む。
+>   - **番組かどうかは `song.custom_fields.oa_id` の有無で判定する。** 値があれば番組（放送時間・番組タイトル・出演者・紹介URL）、null・空・項目なしなら BGM（「URATEN ミュージック」・曲名・アーティスト・音源の紹介URL）。`song.custom_fields?.oa_id` のように、項目が無くても落ちないように読む。
+>   - **`custom_fields.url` は番組・BGM の両方で読む。** 本番局では BGM にも URL が入っている（NEON GROOVE のチャンネル）。リンクの文言は番組が「番組の紹介を見る →」、BGM が「詳細を見る →」。値が無いときはリンクを出さない。
 >   - **放送時間はスケジュール API の `is_now` の `start`〜`end` を使う。** `played_at` と `duration` は実ファイルの長さで枠より短いため使わない。`is_now` の要素が無いときは `programs.json` の同じ `id` から拾う。
 >   - `is_online` が false、エラー、タイムアウトのときは「放送中」を出さない（案内文に差し替える）。
 >   - **運営が手で入れた番組は `oa_id` が入らず BGM と同じ出方になる。それでよい。**
