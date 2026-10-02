@@ -989,3 +989,147 @@ a.btn-push{text-decoration:none}
 .gallery-filter[aria-pressed="true"]{color:#07070e;background:linear-gradient(135deg,var(--gold),var(--lime));border-color:transparent}
 .gallery-filter[aria-pressed="true"]::before{background:currentColor}
 .gallery-filter:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* =========================================================
+   放送予定（index.html の「このあと」とモーダル／schedule.html）
+   js/onair.js が組み立てる。プレーヤー本体の見た目は変えていない。
+   1番組の並びは、イベントカレンダー（.cal-row）に合わせて
+   「左に開始時刻・右に中身」。終了時刻は出さない。
+========================================================= */
+
+/* hidden を効かせる。display を持つ要素は作者スタイルが
+   UA の [hidden]{display:none} に勝ってしまうため、ここで上書きする */
+.onair-time[hidden],
+.cast[hidden],
+.cast-link[hidden]{display:none}
+
+/* 放送が止まっている／情報が取れないとき。通常時の見た目は変えない */
+.onair.is-offline{color:var(--dim);text-shadow:none}
+.onair.is-offline i{background:var(--dim);box-shadow:none;animation:none}
+
+/* プレーヤー下の導線。既存の .sched-link（div）と同じ行に見せる */
+a.sched-link{display:block;text-decoration:none}
+
+/* 読み込み中・0件・エラー */
+.oa-empty{padding:18px 2px;font-size:13px;color:var(--dim);line-height:1.9}
+
+/* 開始時刻が目安であることの注釈（一覧の末尾） */
+.oa-foot{
+  margin-top:14px;padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:11px;color:var(--dim);line-height:1.8;
+}
+
+/* モーダル：放送日の見出し */
+.oa-dayline{
+  margin:0 0 6px;
+  font-size:12px;font-weight:900;letter-spacing:.1em;
+  color:var(--gold);text-shadow:0 0 14px rgba(246,217,139,.25);
+}
+
+/* schedule.html：放送日ごとのまとまり */
+.oa-day{margin-top:30px}
+.oa-day:first-child{margin-top:8px}
+.oa-day-head{
+  display:flex;align-items:center;gap:10px;
+  margin:0 0 10px;padding-bottom:9px;
+  border-bottom:1px solid var(--line);
+  font-size:15px;font-weight:900;letter-spacing:.04em;
+}
+.oa-day-tag{
+  flex:none;font-size:10.5px;font-weight:900;letter-spacing:.08em;
+  padding:3px 9px;border-radius:999px;color:#07070e;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+}
+
+/* 1番組：左に開始時刻、右に中身 */
+.oa-row{
+  display:grid;grid-template-columns:3.5em minmax(0,1fr);
+  gap:0 14px;align-items:start;
+  padding:13px 0;border-bottom:1px dashed rgba(255,255,255,.08);
+}
+.oa-row:last-child{border-bottom:0}
+
+/* 開始時刻。番組名より少し大きく出す */
+.oa-time{
+  font-size:19px;font-weight:900;line-height:1.25;letter-spacing:.01em;
+  color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+
+.oa-main{display:flex;gap:11px;align-items:flex-start;min-width:0}
+.oa-thumb{
+  flex:none;width:72px;height:41px;border-radius:6px;object-fit:cover;display:block;
+  border:1px solid rgba(246,217,139,.24);background:rgba(255,255,255,.04);
+}
+.oa-body{flex:1;min-width:0}
+
+.oa-titleline{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.oa-title{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.5}
+.oa-cast{margin-top:3px;font-size:12.5px;color:var(--dim);line-height:1.6}
+
+.oa-badge{
+  flex:none;font-size:9.5px;font-weight:900;letter-spacing:.1em;
+  padding:3px 8px;border-radius:999px;
+  color:#fff;background:var(--pink);box-shadow:0 0 12px rgba(255,45,149,.45);
+}
+.oa-badge.is-rerun{
+  color:var(--dim);background:transparent;box-shadow:none;
+  border:1px solid rgba(255,255,255,.18);
+}
+
+/* 番組内容。改行は JSON のまま出す。畳んだ状態は2行 */
+.oa-summary-wrap{margin-top:6px}
+.oa-summary{
+  font-size:12.5px;color:rgba(251,247,255,.78);line-height:1.8;
+  white-space:pre-line;overflow-wrap:anywhere;
+}
+.oa-summary.is-clamped{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;
+}
+.oa-more{
+  margin-top:3px;padding:0;border:0;background:none;cursor:pointer;
+  font:inherit;font-size:11.5px;font-weight:700;color:var(--cyan);
+}
+.oa-more:hover{color:var(--ink)}
+.oa-more:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
+
+/* 歌い手枠の曲目 */
+.oa-songs{list-style:none;margin:8px 0 0;padding:0}
+.oa-song{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;
+  padding:5px 0 5px 10px;
+  border-left:2px solid rgba(246,217,139,.3);
+  font-size:12.5px;line-height:1.6;
+}
+.oa-song + .oa-song{margin-top:2px}
+.oa-song-singer{flex:none;font-weight:700;color:var(--cyan)}
+.oa-song-title{color:var(--ink)}
+.oa-song-title.is-link{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.oa-song-title.is-link:hover{color:var(--cyan)}
+.oa-song-credit{font-size:11px;color:var(--dim)}
+
+/* 番組の紹介URL */
+.oa-link{
+  display:inline-block;margin-top:8px;
+  font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:8px;
+  color:var(--dim);text-decoration:none;
+  border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.035);
+}
+.oa-link:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* 放送中・終了済み */
+.oa-row.is-now .oa-title{color:#fff}
+.oa-row.is-now .oa-time{color:var(--pink);text-shadow:0 0 12px rgba(255,45,149,.36)}
+.oa-row.is-done{opacity:.55}
+.oa-row.is-done .oa-time{color:var(--dim);text-shadow:none}
+
+@media(max-width:760px){
+  .oa-day{margin-top:24px}
+  .oa-day-head{font-size:14px}
+  .oa-row{grid-template-columns:3.3em minmax(0,1fr);gap:0 11px}
+  .oa-time{font-size:17px}
+  .oa-thumb{width:60px;height:34px}
+  .oa-title{font-size:14px}
+  .oa-cast,.oa-summary,.oa-song{font-size:12px}
+}

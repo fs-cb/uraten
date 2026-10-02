@@ -31,27 +31,27 @@
   <!-- 放送プレイヤー -->
   <div class="player">
     <div class="player-top">
-      <div class="onair"><i></i>ON AIR</div>
+      <div class="onair" id="npOnair"><i></i><span id="npOnairLabel">ON AIR</span></div>
       <div class="player-row">
         <div class="thumb">
           <div class="vinyl" id="npVinyl"></div>
           <img class="thumb-art" id="npArt" alt="" hidden>
         </div>
         <div class="player-info">
-          <div class="onair-time">22:00 - 23:00</div>
+          <div class="onair-time" id="npTime" hidden></div>
           <div class="prog" id="npTitle">URATEN</div>
           <div class="cast" id="npArtist"></div>
-          <a class="cast-link" href="https://www.youtube.com/@neongroove-music" target="_blank" rel="noopener noreferrer">詳細を見る →</a>
+          <a class="cast-link" id="npLink" target="_blank" rel="noopener" hidden></a>
         </div>
         <button class="play-btn" id="playBtn" aria-label="再生" aria-pressed="false"><span></span></button>
       </div>
     </div>
     <audio id="radioAudio" preload="none"></audio>
-    <div class="upnext">
-      <div class="up"><span class="up-time">23:00</span><span class="up-thumb"></span><span class="up-name">天神トラックメイカー集会</span><span class="up-label">NEXT</span></div>
-      <div class="up"><span class="up-time">23:30</span><span class="up-thumb"></span><span class="up-name">深夜の作業用BGM</span><span class="up-label">その次</span></div>
+    <div class="upnext" id="upNext">
+      <div class="up"><span class="up-name">読み込んでいます…</span></div>
     </div>
-    <div class="sched-link" onclick="openSched()">放送スケジュールを見る →</div>
+    <div class="sched-link" onclick="openSched()">本日の放送スケジュールを見る →</div>
+    <a class="sched-link" href="./schedule.html" target="_blank" rel="noopener">7日分の放送予定を見る →</a>
   </div>
 
   <!-- 巡回スライドショー（イラストの大枠。gallery.json の slideshow を時計で巡回） -->
@@ -89,7 +89,7 @@
       <div class="cal-empty">イベント情報を読み込んでいます…</div>
     </div>
     <p class="cal-rest" id="calRest" hidden></p>
-    <a class="cal-all" href="./calendar.html" target="_blank" rel="noopener">カレンダーでぜんぶ見る<span aria-hidden="true">→</span></a>
+    <a class="cal-all" href="./calendar.html" target="_blank" rel="noopener">イベントをぜんぶ見る<span aria-hidden="true">→</span></a>
   </section>
 
   <footer>
@@ -160,6 +160,7 @@
 </div>
 
 <script src="./js/calendar.js"></script>
+<script src="./js/onair.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>

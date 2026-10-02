@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放送予定｜URATEN</title>
+<meta name="description" content="URATEN Radio の放送予定を7日分まとめています。番組タイトル・出演者・番組内容・歌い手枠の曲目まで、放送日ごとにご覧いただけます。">
+
+<!-- SNS シェア用（OGP）。放送予定は毎日変わるため、静的に入れられる範囲だけを書いている -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="URATEN">
+<meta property="og:url" content="https://ura-ten.jp/schedule.html">
+<meta property="og:title" content="放送予定｜URATEN">
+<meta property="og:description" content="URATEN Radio の放送予定を7日分まとめています。番組タイトル・出演者・番組内容・歌い手枠の曲目まで、放送日ごとにご覧いただけます。">
+<!-- TODO: og:image は画像を用意してから入れる（1200×630 推奨）。入れる場所はここ。
+     <meta property="og:image" content="https://ura-ten.jp/images/og-schedule.png"> -->
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="lux-lines" aria-hidden="true"></div>
+
+<header>
+  <a class="logo" href="./index.html">URATEN</a>
+</header>
+
+<div class="wrap">
+  <section class="sec" style="margin-top:30px">
+    <div class="sec-head">
+      <div class="sec-title">放送予定</div>
+    </div>
+    <p class="page-intro">URATEN Radio の放送予定です。放送日ごとに、これから7日分を並べています。時刻はいずれも予定で、編成の都合で前後します。毎日 5:00〜5:30 はメンテナンスのため番組を入れず、BGM のみをお流しします。</p>
+
+    <div id="onairDays">
+      <p class="oa-empty">読み込んでいます…</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="legal-links">
+      <a href="./terms.html">利用規約</a>
+      <a href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a href="./refund.html">返金・キャンセルポリシー</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+    </div>
+  </footer>
+</div>
+
+<script src="./js/onair.js"></script>
+<script>
+  uratenOnair.renderFull();
+</script>
+</body>
+</html>

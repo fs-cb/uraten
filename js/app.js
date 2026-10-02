@@ -253,23 +253,16 @@
     .catch(()=>{ galleryItems = []; slides = []; })
     .then(()=>{ startShow(); renderGallery(); });
 
-  // ===== スケジュール =====
-  const sched=[
-    ["20:00","夕方のゆるトーク",""],["21:00","天神シンガーズ",""],
-    ["22:00","深夜のうたい場","ON AIR"],["23:00","天神トラックメイカー集会","NEXT"],
-    ["23:30","深夜の作業用BGM",""],["24:00","ナイトラジオ URATEN",""],
-  ];
-  const sl=document.getElementById('schedList');
-  sched.forEach(s=>{
-    const live=s[2]==='ON AIR';const nx=s[2]==='NEXT';
-    const row=document.createElement('div');
-    row.style.cssText="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px";
-    row.innerHTML=`<b style="color:${live?'var(--pink)':'var(--cyan)'};font-variant-numeric:tabular-nums;min-width:48px">${s[0]}</b>
-      <span style="flex:1;color:${live?'var(--ink)':'var(--dim)'}">${s[1]}</span>
-      ${s[2]?`<span style="font-size:10px;font-weight:800;color:${live?'var(--pink)':'var(--violet)'}">${s[2]}</span>`:''}`;
-    sl.appendChild(row);
-  });
-  function openSched(){document.getElementById('schedModal').classList.add('open')}
+  // ===== 放送予定（このあと・当日のスケジュール） =====
+  // 読み込み・放送日の判定・描画は js/onair.js（schedule.html と共用）に置いてある。
+  // ここでは読み込みを始め、モーダルの開閉だけを持つ。
+  if(window.uratenOnair) window.uratenOnair.start();
+
+  function openSched(){
+    // 開くたびに描き直して、放送中の印と終了済みの表示を最新にする
+    if(window.uratenOnair) window.uratenOnair.renderToday();
+    document.getElementById('schedModal').classList.add('open');
+  }
   function closeSched(){document.getElementById('schedModal').classList.remove('open')}
 
   // ===== イベントカレンダー =====
@@ -308,40 +301,122 @@ document.addEventListener('click',e=>{
 document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',closeMenu));
 
 
-// ===== 放送プレイヤー（ストリーム再生 + nowplaying メタ取得） =====
+// ===== 放送プレイヤー（ストリーム再生 + 放送中メタの取得） =====
 // - 素のJSのみ・ストレージ不使用・外部ライブラリなし
 // - 再生はユーザーのタップ起点のみ（オートプレイなし）
-// - メタはベストエフォート：取得失敗や内部ファイル名っぽい値は表示しない
+// - 「放送中」の表示は AzuraCast から取る（いま放送中API ＋ スケジュールAPI）。
+//   番組かどうかは song.custom_fields.oa_id の有無で判定する。
+//     oa_id あり → 番組：放送時間・番組タイトル・出演者・紹介URL
+//     oa_id なし → BGM：「URATEN ミュージック」・曲名・アーティスト
+//   運営が手で入れた番組は oa_id が無く BGM と同じ出方になる。それでよい。
+// - 放送時間はスケジュールAPIの is_now の start〜end を使う（played_at/duration は
+//   実ファイルの長さで枠より短いため使わない）。is_now が無いときは
+//   programs.json の同じ id から拾う（js/onair.js の findById）
+// - 取得できない・is_online が false のときは「放送中」を出さず、その旨を出す。
+//   「このあと」は programs.json 側（js/onair.js）が独立に出す
 (function initRadio(){
-  const STREAM_URL = 'https://radio.ura-ten.jp/listen/uraten/radio.mp3';
-  const NP_API     = 'https://radio.ura-ten.jp/api/nowplaying/uraten';
-  const POLL_MS    = 20000; // 15〜30秒の範囲
-  const FALLBACK_TITLE = 'URATEN';
+  // ステーション。開局時に本番へ切り替える。
+  // 既定は本番。URL に ?station=uraten-test を付けたときだけテスト局を見る。
+  const STATION_PROD = 'uraten';
+  const STATION_TEST = 'uraten-test';
+  const STATION = (function(){
+    try{
+      const q = new URLSearchParams(location.search).get('station');
+      return q === STATION_TEST ? STATION_TEST : STATION_PROD;
+    }catch(e){ return STATION_PROD; }
+  })();
 
-  const audio   = document.getElementById('radioAudio');
-  const playBtn = document.getElementById('playBtn');
-  const titleEl = document.getElementById('npTitle');
-  const artistEl= document.getElementById('npArtist');
-  const artEl   = document.getElementById('npArt');
-  const vinylEl = document.getElementById('npVinyl');
+  const STREAM_URL   = 'https://radio.ura-ten.jp/listen/' + STATION + '/radio.mp3';
+  const NP_API       = 'https://radio.ura-ten.jp/api/nowplaying/' + STATION;
+  const SCHEDULE_API = 'https://radio.ura-ten.jp/api/station/' + STATION + '/schedule';
+  const POLL_MS      = 20000; // 15〜30秒の範囲
+  const FALLBACK_TITLE = 'URATEN';
+  const BGM_LABEL      = 'URATEN ミュージック';
+  const OFFLINE_TEXT   = 'ただいま放送の情報を取得できません';
+  const LINK_TEXT      = '番組の紹介を見る →';
+
+  const audio    = document.getElementById('radioAudio');
+  const playBtn  = document.getElementById('playBtn');
+  const titleEl  = document.getElementById('npTitle');
+  const artistEl = document.getElementById('npArtist');
+  const timeEl   = document.getElementById('npTime');
+  const npLinkEl = document.getElementById('npLink');
+  const artEl    = document.getElementById('npArt');
+  const vinylEl  = document.getElementById('npVinyl');
+  const onairEl  = document.getElementById('npOnair');
+  const onairTxt = document.getElementById('npOnairLabel');
   if(!audio || !playBtn) return;
 
   let wantPlaying = false;          // ユーザーの再生意図
   let reconnectTimer = null;
   let backoff = 2000;               // 再接続の待ち時間（指数バックオフ）
   let pollTimer = null;             // メタ取得ポーリングの interval
+  let schedule = [];                // スケジュールAPIの配列
+  let curOaId = '';                 // 放送中の放送回ID（無ければ空＝BGM）
   let curMeta = {title:FALLBACK_TITLE, artist:'', art:''};
 
-  // --- メタの検証：値が無い / 内部ファイル名っぽい / artist空 は不採用 ---
+  // --- 表示ガード：値が無い / 内部ファイル名っぽい値は表示しない ---
   const FILE_EXT = /\.(mp3|m4a|aac|ogg|oga|flac|wav|wma|opus|aif|aiff|alac|webm)\b/i;
   const clean = s => (typeof s === 'string' ? s.trim() : '');
   const looksInternal = s => FILE_EXT.test(s);
+  const safe = s => { const v = clean(s); return looksInternal(v) ? '' : v; };
+  const httpUrl = s => { const v = clean(s); return /^https?:\/\//i.test(v) ? v : ''; };
+
+  // --- 放送時間（番組のときだけ） ---
+  function rangeLabel(startIso, endIso){
+    const oa = window.uratenOnair;
+    if(!oa || !oa.timeRange) return '';
+    return oa.timeRange(startIso, endIso, oa.currentDay());
+  }
+  function programTime(oaId){
+    // スケジュールAPIの is_now が番組の枠の時間
+    for(let i = 0; i < schedule.length; i++){
+      const s = schedule[i];
+      if(s && s.is_now) return rangeLabel(s.start, s.end);
+    }
+    // is_now が無いときは番組表の JSON から同じ id を引く
+    const oa = window.uratenOnair;
+    const p = oa && oa.findById ? oa.findById(oaId) : null;
+    return p ? rangeLabel(p.start, p.end) : '';
+  }
 
   // --- 表示反映 ---
-  function renderMeta(title, artist, art){
-    curMeta = { title: title || FALLBACK_TITLE, artist: artist || '', art: art || '' };
-    titleEl.textContent  = curMeta.title;
-    artistEl.textContent = curMeta.artist;
+  // v = {mode:'program'|'bgm'|'offline', title, cast, url, art, time}
+  function render(v){
+    const offline = v.mode === 'offline';
+    if(onairEl)  onairEl.classList.toggle('is-offline', offline);
+    if(onairTxt) onairTxt.textContent = offline ? 'OFF AIR' : 'ON AIR';
+
+    titleEl.textContent = offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE);
+
+    if(artistEl){
+      artistEl.textContent = v.cast || '';
+      artistEl.hidden = !v.cast;
+    }
+    // 番組なら放送時間、BGM なら「URATEN ミュージック」をこの行に出す
+    if(timeEl){
+      timeEl.textContent = v.time || '';
+      timeEl.hidden = !v.time;
+    }
+    if(npLinkEl){
+      if(v.url){
+        npLinkEl.href = v.url;
+        npLinkEl.textContent = LINK_TEXT;
+        npLinkEl.hidden = false;
+      }else{
+        npLinkEl.removeAttribute('href');
+        npLinkEl.textContent = '';
+        npLinkEl.hidden = true;
+      }
+    }
+    setArt(v.art);
+
+    curMeta = {title: v.title || FALLBACK_TITLE, artist: v.cast || '', art: v.art || ''};
+    setMediaMetadata();
+  }
+
+  function setArt(art){
+    if(!artEl) return;
     if(art){
       artEl.src = art;
       artEl.hidden = false;
@@ -351,7 +426,6 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
       artEl.removeAttribute('src');
       if(vinylEl) vinylEl.style.display = '';
     }
-    setMediaMetadata();
   }
   // アート読み込み失敗時は盤面へフォールバック
   if(artEl){
@@ -363,29 +437,49 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   }
 
   function applyNowPlaying(np){
-    let title = '', artist = '', art = '';
-    try{
-      const song = np && np.now_playing && np.now_playing.song;
-      if(song){
-        const t = clean(song.title), a = clean(song.artist), ar = clean(song.art);
-        const valid = t && a && !looksInternal(t) && !looksInternal(a);
-        if(valid){
-          title = t;
-          artist = a;
-          if(/^https?:\/\//i.test(ar)) art = ar;
-        }
-      }
-    }catch(e){ /* 壊れたJSONは黙って空扱い */ }
-    renderMeta(title, artist, art);
+    // is_online が無いレスポンスは online 扱い（項目が増減しても落ちないように）
+    if(np && np.is_online === false){ curOaId = ''; render({mode:'offline'}); return; }
+
+    const song = np && np.now_playing && np.now_playing.song;
+    if(!song){ curOaId = ''; render({mode:'offline'}); return; }
+
+    const cf     = song.custom_fields || {};
+    const oaId   = clean(cf.oa_id);
+    const title  = safe(song.title);
+    const artist = safe(song.artist);
+    const art    = httpUrl(song.art);
+
+    if(oaId){
+      curOaId = oaId;
+      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), art, time:programTime(oaId)});
+    }else{
+      curOaId = '';
+      render({mode:'bgm', title, cast:artist, url:'', art, time:BGM_LABEL});
+    }
   }
 
   async function poll(){
+    let np = null, sc = null;
     try{
       const res = await fetch(NP_API, {cache:'no-store'});
-      if(!res.ok) return;                 // 404等は黙って据え置き
-      applyNowPlaying(await res.json());
-    }catch(e){ /* ネットワーク/CORS失敗も黙って空扱い（プレイヤーは動き続ける） */ }
+      if(res.ok) np = await res.json();
+    }catch(e){ /* ネットワーク/CORS失敗は offline 扱い */ }
+    try{
+      const res = await fetch(SCHEDULE_API, {cache:'no-store'});
+      if(res.ok){
+        const j = await res.json();
+        if(j && typeof j.length === 'number') sc = j;
+      }
+    }catch(e){ /* スケジュールが取れなくても番組表の JSON で代替する */ }
+
+    schedule = sc || [];              // programTime より先に入れる
+    if(np) applyNowPlaying(np);
+    else { curOaId = ''; render({mode:'offline'}); }
+
+    // 「このあと」から放送中の番組を外し、当日スケジュールに ON AIR の印を付ける
+    if(window.uratenOnair) window.uratenOnair.setNowId(curOaId);
   }
+
   // ポーリングは「表示中」または「再生中」のときだけ回す。
   // 非表示かつ停止中は無駄な取得を止める。
   function shouldPoll(){ return !document.hidden || wantPlaying; }
@@ -495,7 +589,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   // 表示状態が変わったらポーリングの要否を見直す
   document.addEventListener('visibilitychange', updatePolling);
 
-  // 読み込み時からメタを取得（放送中の曲は再生前でも「取れたら出す」）
+  // 読み込み時から取得する（放送中の番組・曲は再生前でも「取れたら出す」）
   // ※非表示で開かれた場合は shouldPoll() が false になり取得しない
   updatePolling();
 })();
