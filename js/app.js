@@ -315,15 +315,22 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 // - 取得できない・is_online が false のときは「放送中」を出さず、その旨を出す。
 //   「このあと」は programs.json 側（js/onair.js）が独立に出す
 (function initRadio(){
-  // ステーション。開局時に本番へ切り替える。
-  // 既定は本番。URL に ?station=uraten-test を付けたときだけテスト局を見る。
+  // ステーション。js/env.js の window.URATEN_ENV.station で切り替える。
+  // URL に ?station=uraten / ?station=uraten-test を付けた場合はそれを優先する
+  // （その表示だけの一時的な切り替え）。どちらも無効なら本番にする。
   const STATION_PROD = 'uraten';
   const STATION_TEST = 'uraten-test';
   const STATION = (function(){
+    const allow = [STATION_PROD, STATION_TEST];
     try{
       const q = new URLSearchParams(location.search).get('station');
-      return q === STATION_TEST ? STATION_TEST : STATION_PROD;
-    }catch(e){ return STATION_PROD; }
+      if(allow.indexOf(q) >= 0) return q;
+    }catch(e){ /* URLSearchParams が無い環境は無視して env.js を見る */ }
+    try{
+      const env = window.URATEN_ENV;
+      if(env && allow.indexOf(env.station) >= 0) return env.station;
+    }catch(e){ /* env.js が無い・壊れている */ }
+    return STATION_PROD;
   })();
 
   const STREAM_URL   = 'https://radio.ura-ten.jp/listen/' + STATION + '/radio.mp3';
