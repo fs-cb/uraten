@@ -1098,7 +1098,10 @@ a.sched-link{display:block;text-decoration:none}
   font-size:12.5px;line-height:1.6;
 }
 .oa-song + .oa-song{margin-top:2px}
+/* 紹介リンクは歌い手名に貼る（歌い手名が無いときだけ曲名に貼る） */
 .oa-song-singer{flex:none;font-weight:700;color:var(--cyan)}
+.oa-song-singer.is-link{text-decoration:underline;text-underline-offset:2px}
+.oa-song-singer.is-link:hover{color:#fff}
 .oa-song-title{color:var(--ink)}
 .oa-song-title.is-link{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 .oa-song-title.is-link:hover{color:var(--cyan)}

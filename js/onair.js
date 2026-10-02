@@ -37,6 +37,9 @@
     timeNote:  '※ 開始時刻は目安です。編成の都合で前後します。'
   };
 
+  /* 紹介URLのリンク文言。トップのプレーヤー（js/app.js）と同じにする */
+  var LINK_TEXT = '詳細を見る →';
+
   var data      = null;      // 正規化した programs.json
   var loadState = 'loading'; // 'loading' | 'ok' | 'error'
   var nowId     = '';        // 放送中の放送回ID（app.js の initRadio が渡す）
@@ -232,9 +235,15 @@
     for (var i = 0; i < songs.length; i++) {
       var s = songs[i];
       var li = el('li', 'oa-song');
-      if (s.singer) li.appendChild(el('b', 'oa-song-singer', s.singer));
+      // リンクは歌い手名に貼る。歌い手名が無いときだけ曲名に貼って、url を落とさない
+      var onSinger = !!(s.url && s.singer);
+      if (s.singer) {
+        li.appendChild(onSinger
+          ? linkEl(s.url, s.singer, 'oa-song-singer is-link')
+          : el('b', 'oa-song-singer', s.singer));
+      }
       if (s.title) {
-        li.appendChild(s.url
+        li.appendChild(s.url && !onSinger
           ? linkEl(s.url, s.title, 'oa-song-title is-link')
           : el('span', 'oa-song-title', s.title));
       }
@@ -265,7 +274,7 @@
     if (p.cast) body.appendChild(el('div', 'oa-cast', p.cast));
     if (p.summary) body.appendChild(summaryEl(p.summary));
     if (p.songs.length) body.appendChild(songsEl(p.songs));
-    if (p.url) body.appendChild(linkEl(p.url, '番組の紹介を見る →', 'oa-link'));
+    if (p.url) body.appendChild(linkEl(p.url, LINK_TEXT, 'oa-link'));
 
     row.appendChild(body);
     return row;

@@ -333,8 +333,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   const FALLBACK_TITLE = 'URATEN';
   const BGM_LABEL      = 'URATEN ミュージック';
   const OFFLINE_TEXT   = 'ただいま放送の情報を取得できません';
-  const LINK_PROGRAM   = '番組の紹介を見る →';
-  const LINK_BGM       = '詳細を見る →';
+  const LINK_TEXT      = '詳細を見る →';
 
   const audio    = document.getElementById('radioAudio');
   const playBtn  = document.getElementById('playBtn');
@@ -382,7 +381,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   }
 
   // --- 表示反映 ---
-  // v = {mode:'program'|'bgm'|'offline', title, cast, url, linkText, art, time}
+  // v = {mode:'program'|'bgm'|'offline', title, cast, url, art, time}
   function render(v){
     const offline = v.mode === 'offline';
     if(onairEl)  onairEl.classList.toggle('is-offline', offline);
@@ -402,7 +401,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     if(npLinkEl){
       if(v.url){
         npLinkEl.href = v.url;
-        npLinkEl.textContent = v.linkText || LINK_PROGRAM;
+        npLinkEl.textContent = LINK_TEXT;
         npLinkEl.hidden = false;
       }else{
         npLinkEl.removeAttribute('href');
@@ -452,10 +451,10 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 
     if(oaId){
       curOaId = oaId;
-      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), linkText:LINK_PROGRAM, art, time:programTime(oaId)});
+      render({mode:'program', title, cast:artist, url:httpUrl(cf.url), art, time:programTime(oaId)});
     }else{
       curOaId = '';
-      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), linkText:LINK_BGM, art, time:BGM_LABEL});
+      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:BGM_LABEL});
     }
   }
 
