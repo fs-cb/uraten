@@ -419,10 +419,16 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   // CSS だけでは「はみ出しているか」を判定できないため、幅を測って
   // はみ出す行にだけ .is-scrolling を付ける。動かすのは transform のみ
   // （GPU 合成で済む）。prefers-reduced-motion の端末では CSS 側で止める。
-  const MQ_SPEED  = 25;    // px/秒。流れる速さ
-  // 1周のうち流れている割合。残りは左端と右端で止まる時間になる。
-  // style.css の @keyframes mqScroll の 15%〜85%（＝0.70）と対応させる
-  const MQ_TRAVEL = 0.70;
+  const MQ_SPEED = 25;   // px/秒。流れる速さ
+  const MQ_HOLD  = 3;    // 左端・右端でそれぞれ止まる秒数
+
+  // 止まる時間を「秒」で揃えるには、はみ出し量ごとにキーフレームの % を変える必要がある
+  // （@keyframes の % は var() にできない）。そのため要素ごとの定義をここで書き出し、
+  // animation は内側の span にインラインで指定する。対象は番組名と出演者の2行だけ。
+  const mqStyle = document.createElement('style');
+  document.head.appendChild(mqStyle);
+  const mqRules = {};
+  let mqSeq = 0;
   function setLine(el, text){
     if(!el) return;
     let inner = el.firstElementChild;
@@ -440,10 +446,21 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     if(!inner) return;
     // 測る前に一度止める（前回の transform が残っていると幅を誤る）
     el.classList.remove('is-scrolling');
+    inner.style.animation = '';
     const over = inner.scrollWidth - el.clientWidth;
     if(el.clientWidth <= 0 || over <= 1) return;   // 非表示中や収まっているときは動かさない
-    el.style.setProperty('--mq-shift', (-over) + 'px');
-    el.style.setProperty('--mq-dur', ((over / MQ_SPEED) / MQ_TRAVEL).toFixed(2) + 's');
+
+    // 左端で MQ_HOLD 秒 → 流れる → 右端で MQ_HOLD 秒 → 先頭へ戻る、を繰り返す。
+    // 止まる時間が常に MQ_HOLD 秒になるよう、全体の長さから % を計算する。
+    // 名前は要素ごとに固定する。id が無くても他の行と衝突しないようにする
+    const name = el._mqName || (el._mqName = 'mq-' + (el.id || 'line' + (++mqSeq)));
+    const dur  = MQ_HOLD * 2 + over / MQ_SPEED;
+    const hold = MQ_HOLD / dur * 100;
+    mqRules[name] = '@keyframes ' + name + '{'
+      + '0%,' + hold.toFixed(3) + '%{transform:translateX(0)}'
+      + (100 - hold).toFixed(3) + '%,100%{transform:translateX(' + (-over) + 'px)}}';
+    mqStyle.textContent = Object.keys(mqRules).map(k => mqRules[k]).join('\n');
+    inner.style.animation = name + ' ' + dur.toFixed(2) + 's linear infinite';
     el.classList.add('is-scrolling');
   }
   // 幅が変わると収まり方も変わるので測り直す
