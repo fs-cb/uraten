@@ -11,7 +11,7 @@
 
 ## 構成
 
-ファイル一覧と各ファイルの役割は `CLAUDE.md` の3章にまとめてある（正本）。
+ファイル一覧と各ファイルの役割は `CLAUDE.md` の3章にまとめてある（正本）。`CLAUDE.md` と作業記録（旧 `docs/`）は、公開されないようにリポジトリの外に置いている（下の配置図）。
 
 ## デプロイ手順（初回のみ）
 
@@ -31,6 +31,8 @@
 
 ```
 uraten-site/
+├ CLAUDE.md                … 実装の前提と制約（公開しない）
+├ notes/                   … 作業記録・影響一覧など（公開しない）
 ├ uraten/                  … このリポジトリ（＝Pagesの公開対象。ルートがそのまま配信される）
 └ uraten-bgm-dl-worker/    … Worker一式（index.js / wrangler.toml / README.md）
 ```
