@@ -47,9 +47,6 @@
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function ymd(s) { return { y: +s.slice(0, 4), m: +s.slice(5, 7), d: +s.slice(8, 10) }; }
 
-  /* 「10/9」。年は出さない */
-  function monthDay(s) { var p = ymd(s); return p.m + '/' + p.d; }
-
   /* 曜日は英語3文字。数値から組み立てるので閲覧者のタイムゾーンに影響されない */
   function weekday(s) { var p = ymd(s); return WDAY[new Date(p.y, p.m - 1, p.d).getDay()]; }
 
@@ -141,16 +138,20 @@
       row.rel = 'noopener noreferrer';
     }
 
-    /* 日付枠は2行×（1列 or 3列）のグリッド。上段が日付、下段が曜日。
-       期間は「開始 〜 終了」の3列にして、曜日をそれぞれの日付の真下に置く */
-    var date = el('div', 'cal-date' + (ev.end ? ' is-range' : ''));
-    date.appendChild(el('b', null, monthDay(ev.start)));
-    if (ev.end) {
-      date.appendChild(el('i', null, '〜'));
-      date.appendChild(el('b', null, monthDay(ev.end)));
+    /* 日付枠は3段。上に月（「10.」）、その下に日付を大きく、いちばん下に曜日。
+       期間は日付を「13 - 14」、曜日を「TUE - WED」にする。
+       月をまたぐ期間だけ、月を「10. - 11.」にする */
+    var s = ymd(ev.start);
+    var e = ev.end ? ymd(ev.end) : null;
+    var date = el('div', 'cal-date');
+    date.appendChild(el('span', 'cal-mon', s.m + '.' + (e && e.m !== s.m ? ' - ' + e.m + '.' : '')));
+    var day = el('b', 'cal-day' + (e ? ' is-range' : ''), String(s.d));
+    if (e) {
+      day.appendChild(el('i', null, '-'));
+      day.appendChild(document.createTextNode(String(e.d)));
     }
-    date.appendChild(el('span', null, weekday(ev.start)));
-    if (ev.end) date.appendChild(el('span', null, weekday(ev.end)));
+    date.appendChild(day);
+    date.appendChild(el('span', 'cal-wd', weekday(ev.start) + (e ? ' - ' + weekday(ev.end) : '')));
 
     var info = el('div', 'cal-info');
     info.appendChild(el('b', 'cal-name', ev.name));        /* 申請者入力 → textContent */

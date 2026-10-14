@@ -6,112 +6,164 @@
 <title>URATEN Radio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="./css/style.css">
 </head>
-<body>
-<div class="lux-lines" aria-hidden="true"></div>
+<body class="has-tabbar">
 
-<header>
-  <div class="logo" onclick="showTop();closeMenu()">URATEN</div>
-  <button class="menu-toggle" type="button" aria-label="メニューを開く" aria-expanded="false" onclick="toggleMenu()">
-    <span></span><span></span><span></span>
-  </button>
-  <nav class="nav" id="globalNav">
-    <a onclick="showTop()">放送</a>
-    <a onclick="showGallery()">イラスト</a>
-    <a onclick="scrollTo2('cal')">イベント</a>
-    <a>メニュー</a>
-    <a href="./rights.html" target="_blank" rel="noopener noreferrer">権利について</a>
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="./index.html" aria-label="URATEN トップ" onclick="goSec('player');return false">
+      <span class="logo-row">
+        <span class="logo-word">URATEN</span>
+        <svg class="logo-pulse" viewBox="0 0 60 22" fill="none" aria-hidden="true">
+          <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#ff3ea5" stop-opacity=".2"/><stop offset=".5" stop-color="#ff3ea5"/><stop offset="1" stop-color="#8b6cff" stop-opacity=".2"/></linearGradient></defs>
+          <path d="M0 11h16l3-5 3 11 4-16 4 18 3-12 2 4h25" stroke="url(#pg)" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+    <nav class="gnav" aria-label="メイン">
+      <a href="#" onclick="openAbout();return false"><b>URATENとは</b><small>ABOUT</small></a>
+      <a class="is-active" href="#player" onclick="goSec('player');return false"><b>放送</b><small>ON AIR</small></a>
+      <a href="#showcase" onclick="goSec('showcase');return false"><b>ショーケース</b><small>SHOWCASE</small></a>
+      <a href="#profile" onclick="goSec('profile');return false"><b>プロフィール</b><small>PROFILE</small></a>
+      <a href="#event" onclick="goSec('event');return false"><b>イベント</b><small>EVENT</small></a>
+    </nav>
+    <div class="hd-side">
+      <a class="join join--dc" href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4a18 18 0 0 0-4.5-1.4l-.2.4A12 12 0 0 1 18 4.5 17 17 0 0 0 6 4.5a12 12 0 0 1 2.7-1.1l-.2-.4A18 18 0 0 0 4 4 18 18 0 0 0 1 17a18 18 0 0 0 5.5 2.8l.4-.6a12 12 0 0 1-1.9-.9l.5-.4a13 13 0 0 0 11 0l.5.4a12 12 0 0 1-1.9.9l.4.6A18 18 0 0 0 23 17 18 18 0 0 0 20 4ZM8.4 14.3c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm7.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z"/></svg>
+        参加する
+      </a>
+      <a class="join" href="./menu.html" target="_blank" rel="noopener noreferrer">＋ 参加する</a>
+    </div>
+    <button class="menu-btn" type="button" id="menuBtn" aria-label="メニューを開く" aria-expanded="false" aria-controls="drawer" onclick="toggleMenu()">
+      <i></i><i></i><i></i><small>MENU</small>
+    </button>
+  </div>
+  <nav class="drawer" id="drawer" aria-label="メニュー">
+    <a href="#" onclick="openAbout();return false">URATENとは<small>ABOUT</small></a>
+    <a href="#showcase" onclick="goSec('showcase');return false">ショーケース<small>SHOWCASE</small></a>
+    <a href="#profile" onclick="goSec('profile');return false">プロフィール<small>PROFILE</small></a>
+    <a href="#event" onclick="goSec('event');return false">イベント<small>EVENT</small></a>
+    <a href="./menu.html" target="_blank" rel="noopener noreferrer">メニュー<small>MENU</small></a>
+    <a href="./calendar.html" target="_blank" rel="noopener">イベントカレンダー<small>CALENDAR</small></a>
+    <a href="./rights.html" target="_blank" rel="noopener noreferrer">権利について<small>RIGHTS</small></a>
+    <a href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">Discord に参加する<small>DISCORD</small></a>
   </nav>
 </header>
 
 <!-- ============ トップページ ============ -->
-<div class="wrap page active" id="topPage">
+<main class="wrap page active" id="topPage">
 
-  <!-- 放送プレイヤー -->
-  <div class="player">
-    <div class="player-top">
-      <div class="onair" id="npOnair"><i></i><span id="npOnairLabel">ON AIR</span></div>
-      <div class="player-row">
-        <div class="thumb">
-          <div class="vinyl" id="npVinyl"></div>
-          <img class="thumb-art" id="npArt" alt="" hidden>
+  <!-- 放送プレイヤー（中身は js/app.js の initRadio。「このあと」は js/onair.js） -->
+  <section class="player" id="player" aria-label="放送中の番組">
+    <div class="pl-head">
+      <div class="pl-onair" id="npOnair"><i></i><span id="npOnairLabel">ON AIR</span></div>
+      <div class="pl-station">URATEN RADIO</div>
+      <div class="pl-links">
+        <a href="#" onclick="openSched();return false">本日のスケジュール →</a>
+        <a href="./schedule.html" target="_blank" rel="noopener">今後の放送予定 →</a>
+      </div>
+    </div>
+    <div class="pl-main">
+      <div class="pl-art">
+        <div class="pl-disc" id="npVinyl"></div>
+        <img class="pl-art-img" id="npArt" alt="" hidden>
+      </div>
+      <div class="pl-info">
+        <div class="pl-time" id="npTime"></div>
+        <div class="pl-title" id="npTitle">URATEN</div>
+        <div class="pl-cast" id="npArtist"></div>
+        <div class="pl-detail-row">
+          <a class="pl-detail" id="npLink" target="_blank" rel="noopener" hidden></a>
+          <button class="pl-detail" id="npSongs" type="button" onclick="openSongs()" hidden></button>
         </div>
-        <div class="player-info">
-          <div class="onair-time" id="npTime"></div>
-          <div class="prog" id="npTitle">URATEN</div>
-          <div class="cast" id="npArtist"></div>
-          <div class="cast-link-row">
-            <a class="cast-link" id="npLink" target="_blank" rel="noopener" hidden></a>
-            <button class="cast-link" id="npSongs" type="button" onclick="openSongs()" hidden></button>
-          </div>
+      </div>
+      <div class="pl-playbox">
+        <button class="pl-play" id="playBtn" type="button" aria-label="再生" aria-pressed="false">
+          <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+          <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <span class="pl-play-label"><span class="pl-live" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="playLabel">LISTEN</span></span>
+      </div>
+      <div class="pl-next">
+        <span class="pl-next-h">NEXT</span>
+        <div class="pl-up" id="upNext">
+          <div class="up"><span class="up-name">読み込んでいます…</span></div>
         </div>
-        <button class="play-btn" id="playBtn" aria-label="再生" aria-pressed="false"><span></span></button>
+        <a class="pl-next-more" href="./schedule.html" target="_blank" rel="noopener">放送予定 →</a>
       </div>
     </div>
     <audio id="radioAudio" preload="none"></audio>
-    <div class="upnext" id="upNext">
-      <div class="up"><span class="up-name">読み込んでいます…</span></div>
-    </div>
-    <div class="sched-link" onclick="openSched()">本日の放送スケジュールを見る →</div>
-    <a class="sched-link" href="./schedule.html" target="_blank" rel="noopener">今後の放送予定を見る →</a>
-  </div>
-
-  <!-- 巡回スライドショー（イラストの大枠。gallery.json の slideshow を時計で巡回） -->
-  <section class="sec">
-    <div class="sec-head">
-      <div class="sec-title">URATEN ギャラリー</div>
-      <a class="sec-link" onclick="showGallery()">イラストをもっと見る →</a>
-    </div>
-    <p class="show-status" id="showStatus">読み込んでいます…</p>
-    <div class="show" id="show" hidden onclick="openShowWork()">
-      <div class="show-art work-art" id="showArt"></div>
-      <div class="show-body">
-        <span class="eyebrow">NOW SHOWING</span>
-        <div class="artist-name" id="showName" style="margin-top:8px"></div>
-        <div class="artist-bio" id="showBio" hidden></div>
-        <div class="push-row">
-          <a class="btn-push" id="showLink" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">♥ 推す</a>
-          <a class="tag-link" id="showLink2" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" hidden></a>
-        </div>
-      </div>
-    </div>
-    <a class="show-wanted" id="showWanted" href="./menu.html#illust" target="_blank" rel="noopener noreferrer" hidden>
-      <span class="eyebrow">SLIDESHOW</span>
-      <b>スライドショー枠 掲載募集中</b>
-      <span class="show-wanted-sub">この場所で、あなたの作品を紹介しませんか。詳しくはメニューのイラスト枠へ →</span>
-    </a>
   </section>
 
-  <!-- イベント -->
-  <section class="sec" id="cal">
+  <!-- SHOWCASE：大・小・小の3枠（ILLUSTRATION / PHOTO / INFO）。js/app.js の startShow が組み立てる -->
+  <div class="sec sec-head" id="showcase">
+    <h2 class="sec-title" id="showcaseTitle">SHOWCASE</h2>
+    <span class="sec-ja">ショーケース</span>
+    <span class="sec-line"></span>
+  </div>
+  <section class="visual" id="visual" aria-labelledby="showcaseTitle">
+    <p class="show-status" id="showStatus">読み込んでいます…</p>
+  </section>
+  <nav class="gallery-links" aria-label="ギャラリー">
+    <a class="gl-btn" data-cat="illust" href="#" onclick="showGallery();return false">
+      <span class="gl-text"><small>ILLUSTRATION</small><b>イラストギャラリーを見る</b></span>
+      <span class="gl-arrow" aria-hidden="true">→</span>
+    </a>
+    <div class="gl-btn is-soon" data-cat="photo" aria-disabled="true">
+      <span class="gl-text"><small>PHOTO</small><b>フォトギャラリー</b></span>
+      <span class="gl-soon">準備中</span>
+    </div>
+  </nav>
+
+  <!-- PROFILE（準備中） -->
+  <section class="sec" id="profile">
     <div class="sec-head">
-      <div class="sec-title">イベント情報</div>
+      <h2 class="sec-title">PROFILE</h2>
+      <span class="sec-ja">プロフィール</span>
+      <span class="sec-line"></span>
+    </div>
+    <div class="soon">
+      <b>COMING SOON</b>
+      <span>このコーナーは準備中です。公開まで、もうしばらくお待ちください。</span>
+    </div>
+  </section>
+
+  <!-- イベント（直近5件。js/calendar.js の renderTop） -->
+  <section class="sec" id="event">
+    <div class="sec-head">
+      <h2 class="sec-title">EVENT</h2>
+      <span class="sec-ja">イベント</span>
+      <span class="sec-line"></span>
+      <a class="sec-more" href="./calendar.html" target="_blank" rel="noopener">VIEW ALL →</a>
     </div>
     <div class="cal" id="calList">
       <div class="cal-empty">イベント情報を読み込んでいます…</div>
     </div>
     <p class="cal-rest" id="calRest" hidden></p>
-    <a class="cal-all" href="./calendar.html" target="_blank" rel="noopener">イベントをぜんぶ見る<span aria-hidden="true">→</span></a>
   </section>
 
-  <footer>
-    <div class="legal-links">
+  <footer class="ft">
+    <div class="ft-logo">URATEN</div>
+    <div class="ft-links">
       <a href="./terms.html" target="_blank">利用規約</a>
       <a href="./tokushoho.html" target="_blank">特定商取引法に基づく表記</a>
       <a href="./refund.html" target="_blank">返金・キャンセルポリシー</a>
       <a href="./privacy.html" target="_blank">プライバシーポリシー</a>
+      <a href="./rights.html" target="_blank" rel="noopener noreferrer">権利について</a>
     </div>
   </footer>
-</div>
+</main>
 
 <!-- ============ イラスト一覧ページ ============ -->
 <div class="wrap page" id="galleryPage">
-  <section class="sec" style="margin-top:30px">
+  <section class="sec">
     <div class="sec-head">
-      <div class="sec-title">イラスト</div>
-      <a class="sec-link" href="./menu.html" target="_blank" rel="noopener noreferrer">URATEN にイラストを投稿する →</a>
+      <h2 class="sec-title">ILLUSTRATION</h2>
+      <span class="sec-ja">イラストギャラリー</span>
+      <span class="sec-line"></span>
+      <a class="sec-more" href="./menu.html" target="_blank" rel="noopener noreferrer">投稿する →</a>
     </div>
     <p class="page-intro">URATENに参加している絵師の作品です。サムネをタップすると作品が大きく開き、「推す」から絵師の紹介ページ（X／pixiv など）へ移動できます。気になった絵師はそのまま依頼へ。</p>
     <div class="gallery-tools">
@@ -119,28 +171,26 @@
     </div>
     <div class="grid" id="galleryGrid"></div>
     <p class="gallery-empty" id="galleryEmpty">読み込んでいます…</p>
-    <div class="back" onclick="showTop()">← トップに戻る</div>
+    <a class="back" href="#" onclick="showTop();return false">← トップに戻る</a>
   </section>
 </div>
 
-<!-- フローティング -->
-<div class="float">
-  <a class="fab fab-apply" href="./menu.html" target="_blank" rel="noopener noreferrer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-    URATEN Radio に参加する
-  </a>
-  <a class="fab fab-dc" href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">
-    <svg viewBox="0 0 24 24" fill="#fff"><path d="M20 4a18 18 0 0 0-4.5-1.4l-.2.4A12 12 0 0 1 18 4.5 17 17 0 0 0 6 4.5a12 12 0 0 1 2.7-1.1l-.2-.4A18 18 0 0 0 4 4 18 18 0 0 0 1 17a18 18 0 0 0 5.5 2.8l.4-.6a12 12 0 0 1-1.9-.9l.5-.4a13 13 0 0 0 11 0l.5.4a12 12 0 0 1-1.9.9l.4.6A18 18 0 0 0 23 17 18 18 0 0 0 20 4ZM8.4 14.3c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm7.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z"/></svg>
-    Discord に参加する
-  </a>
-</div>
+<!-- スマホ下部タブ -->
+<nav class="tabbar" aria-label="タブ">
+  <a class="is-active" href="#player" onclick="goSec('player');return false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/></svg>ホーム</a>
+  <a href="#player" onclick="goSec('player');return false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>放送</a>
+  <a href="#showcase" onclick="goSec('showcase');return false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>ショーケース</a>
+  <a href="#event" onclick="goSec('event');return false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>イベント</a>
+  <a href="./menu.html" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>参加</a>
+</nav>
 
-<!-- 作品の詳細モーダル（トップの大枠・イラスト一覧で共用。gallery.json 由来） -->
+<!-- 作品の詳細モーダル（SHOWCASE のイラスト枠・イラスト一覧で共用。gallery.json 由来） -->
 <div class="modal" id="workModal" onclick="if(event.target===this)closeWork()">
-  <div class="modal-card">
-    <button class="modal-close" onclick="closeWork()">×</button>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wName">
+    <button class="modal-close" type="button" onclick="closeWork()" aria-label="閉じる">×</button>
     <div class="modal-art work-art" id="wArt"></div>
     <div class="modal-body">
+      <span class="modal-cat">ILLUSTRATION</span>
       <div class="modal-name" id="wName"></div>
       <div class="modal-bio" id="wBio" hidden></div>
       <div class="modal-actions">
@@ -151,26 +201,39 @@
   </div>
 </div>
 
-<!-- 歌い手枠の曲目モーダル（トップのプレーヤーから開く） -->
+<!-- 歌い手枠の曲目モーダル（プレーヤーの「詳細を見る」から開く） -->
 <div class="modal" id="songsModal" onclick="if(event.target===this)closeSongs()">
-  <div class="modal-card" style="max-width:460px">
-    <button class="modal-close" onclick="closeSongs()">×</button>
+  <div class="modal-card is-narrow" role="dialog" aria-modal="true" aria-labelledby="songsTitle">
+    <button class="modal-close" type="button" onclick="closeSongs()" aria-label="閉じる">×</button>
     <div class="modal-body" style="padding:26px">
-      <span class="eyebrow">SONGS</span>
-      <div class="modal-name" id="songsTitle" style="margin:8px 0 16px;font-size:20px"></div>
+      <span class="modal-cat">SONGS</span>
+      <div class="modal-head" id="songsTitle"></div>
       <div id="songsList"></div>
     </div>
   </div>
 </div>
 
-<!-- スケジュールモーダル -->
+<!-- 当日のスケジュールモーダル -->
 <div class="modal" id="schedModal" onclick="if(event.target===this)closeSched()">
-  <div class="modal-card" style="max-width:460px">
-    <button class="modal-close" onclick="closeSched()">×</button>
+  <div class="modal-card is-narrow" role="dialog" aria-modal="true" aria-labelledby="schedTitle">
+    <button class="modal-close" type="button" onclick="closeSched()" aria-label="閉じる">×</button>
     <div class="modal-body" style="padding:26px">
-      <span class="eyebrow">SCHEDULE</span>
-      <div class="modal-name" style="margin:8px 0 16px;font-size:20px">本日の放送</div>
+      <span class="modal-cat">SCHEDULE</span>
+      <div class="modal-head" id="schedTitle">本日の放送</div>
       <div id="schedList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- URATENとは（説明は準備中） -->
+<div class="modal" id="aboutModal" onclick="if(event.target===this)closeAbout()">
+  <div class="modal-card about-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <button class="modal-close" type="button" onclick="closeAbout()" aria-label="閉じる">×</button>
+    <div class="about-body">
+      <span class="modal-cat">ABOUT</span>
+      <div class="about-logo">URATEN</div>
+      <h2 class="about-title" id="aboutTitle">URATENとは</h2>
+      <p class="about-ph">URATEN の紹介は準備中です。<br>公開まで、もうしばらくお待ちください。</p>
     </div>
   </div>
 </div>

@@ -2,7 +2,18 @@
   function showTop(){document.getElementById('topPage').classList.add('active');document.getElementById('galleryPage').classList.remove('active');window.scrollTo(0,0)}
   // ギャラリーは絞り込みオフで開く（「スライドショー」の絞り込みは一覧の中のボタンでだけ切り替える）
   function showGallery(){galleryFilterOn=false;document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0);renderGallery()}
-  function scrollTo2(id){showTop();setTimeout(()=>document.getElementById(id).scrollIntoView({behavior:'smooth'}),50)}
+  // ヘッダー・タブ・メニューのページ内リンク。イラスト一覧を開いているときはトップに戻してから移動する
+  function goSec(id){
+    closeMenu();
+    const onTop = document.getElementById('topPage').classList.contains('active');
+    if(!onTop) showTop();
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior: onTop ? 'smooth' : 'auto', block:'start'});
+  }
+
+  // ===== URATENとは（モーダル。説明は準備中） =====
+  function openAbout(){ closeMenu(); document.getElementById('aboutModal').classList.add('open'); }
+  function closeAbout(){ const m = document.getElementById('aboutModal'); if(m) m.classList.remove('open'); }
 
   // ===== イラスト（トップのスライドショー・#galleryPage の一覧） =====
   // データは公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）1ファイルだけ。
@@ -137,110 +148,227 @@
   }
   function closeWork(){ workModal.classList.remove('open'); }
 
-  // --- トップのスライドショー ---
-  // 1枚6秒。表示する番号は時計で決める（Math.floor(Date.now()/6000) % 件数）。
+  // --- トップの SHOWCASE（ILLUSTRATION / PHOTO / INFO の3枠） ---
+  // 3枠はそれぞれ独立したスライドショー。大・小・小のどこに入るかは、ページを開くたびにランダムで決める。
+  // 1枚12秒。表示する番号は時計で決める（Math.floor((Date.now() + offset) / 12000) % 件数）。
   // 誰がいつ開いても同じ時刻には同じ作品が出るので、「いつも最初に出る人」がいない。
-  // 重さ対策：
-  //   - 画像は A/B の2枚だけを重ねて常設し、読み込むのは「今の1枚」と「次の1枚」だけ
+  // offset を枠ごとに4秒ずつずらし、3枠が同時に切り替わらないようにする。
+  // 重さ対策（枠ごと）：
+  //   - 画像は A/B の2組だけを重ねて常設し、読み込むのは「今の1枚」と「次の1枚」だけ
+  //     （ぼかした背景は同じ画像なので、通信は1枚分で済む）
   //   - 次の1枚は切り替えの少し前に先読み＋decode() しておき、切替時は class の付け替えだけにする
   //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
-  const SHOW_MS = 6000;
+  // PHOTO・INFO はまだ公開データが無いので、募集の案内だけを出す（画像は読まない）。
+  const SHOW_MS = 12000;
   const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
+  const SHOWCASE = {
+    illust: { en:'ILLUSTRATION', ja:'イラストレーション', offset:0,    wanted:'イラスト枠 掲載募集中', href:'./menu.html#illust' },
+    photo:  { en:'PHOTO',        ja:'フォト',             offset:4000, wanted:'フォト枠 掲載募集中',   href:'./menu.html' },
+    info:   { en:'INFO',         ja:'イベント告知',       offset:8000, wanted:'告知枠 掲載募集中',     href:'./menu.html' }
+  };
+  const SHOW_DOTS_MAX = 8;
+  const ICON_HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2 0 3.4 1.1 4.4 2.5C12 6.1 13.4 5 15.4 5 19 5 21 8.6 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>';
+  const ICON_GO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
 
-  const showEl       = document.getElementById('show');
-  const showStatusEl = document.getElementById('showStatus');
-  const showWantedEl = document.getElementById('showWanted');
-  const showArtEl    = document.getElementById('showArt');
-  const showNameEl   = document.getElementById('showName');
-  const showBioEl    = document.getElementById('showBio');
-  const showLinkEl   = document.getElementById('showLink');
-  const showLink2El  = document.getElementById('showLink2');
+  function mk(tag, cls, text){
+    const n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(text != null) n.textContent = text;
+    return n;
+  }
+  // 固定の SVG だけを入れる（申請由来の文字列は入れない）
+  function mkIcon(cls, svg){
+    const n = mk('span', cls);
+    n.innerHTML = svg;
+    return n;
+  }
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
-  const showImgs = [];
-  let showLive = 0;              // いま表示している showImgs のインデックス
-  let showCur = -1;              // いま表示している slides のインデックス
-  let showToken = 0;             // 追い越された切替を捨てるための番号
-  let showTimers = [];
-  let showOnScreen = true;       // IntersectionObserver 未対応なら常時 true 扱い
+  // 1枠分を組み立てる。list が空なら募集の案内だけを出す
+  function makeSlot(key, size, list){
+    const cat = SHOWCASE[key];
+    const root = mk('article', 'vcard vcard--' + size);
+    root.dataset.cat = key;
 
-  function showClockIdx(){ return Math.floor(Date.now() / SHOW_MS) % slides.length; }
+    const head = mk('div', 'vc-head');
+    const label = mk('div');
+    label.appendChild(mk('h3', 'vc-cat', cat.en));
+    label.appendChild(mk('span', 'vc-ja', cat.ja));
+    const count = mk('div', 'vc-count');
+    head.appendChild(label);
+    head.appendChild(count);
 
-  // 指定スロットに slides[idx] を読み込み、デコードまで済ませる。表示できるなら true。
-  function showLoad(slot, idx){
-    const img = showImgs[slot];
-    if(img.dataset.idx === String(idx)) return img._ready;
-    img.dataset.idx = String(idx);
-    setImg(img, slides[idx]);
-    img._ready = (typeof img.decode === 'function' ? img.decode() : Promise.resolve())
-      .then(()=>img.dataset.idx === String(idx), ()=>false);
-    return img._ready;
+    const s = { key, root, list, offset:cat.offset, count,
+                layers:[], live:0, cur:-1, token:0, timers:[], onScreen:true };
+
+    if(!list.length){
+      const a = mk('a', 'vc-wanted');
+      a.href = cat.href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.appendChild(mk('b', null, cat.wanted));
+      a.appendChild(mk('span', null, 'この場所で、あなたの作品を紹介しませんか →'));
+      root.appendChild(head);
+      root.appendChild(a);
+      return s;
+    }
+
+    for(let i = 0; i < 2; i++){
+      const box = mk('div', 'vc-layer');
+      const blur = mk('img', 'vc-blur');
+      blur.alt = '';
+      blur.setAttribute('aria-hidden', 'true');
+      blur.decoding = 'async';
+      const img = mk('img', 'vc-img');
+      img.decoding = 'async';
+      box.appendChild(blur);
+      box.appendChild(img);
+      root.appendChild(box);
+      s.layers.push({ box, blur, img, idx:-1, ready:null });
+    }
+
+    const foot = mk('div', 'vc-foot');
+    s.text = mk('div', 'vc-text');
+    s.name = mk('div', 'vc-name');
+    s.bio  = mk('p', 'vc-bio');
+    s.bio.hidden = true;
+    s.text.appendChild(mk('span', 'vc-eyebrow', 'NOW SHOWING'));
+    s.text.appendChild(s.name);
+    s.text.appendChild(s.bio);
+    s.btn = mk('a', 'vc-btn');
+    s.btn.target = '_blank';
+    s.btn.rel = 'noopener noreferrer';
+    s.btn.appendChild(mkIcon('', ICON_HEART).firstChild);
+    s.btn.appendChild(document.createTextNode('推す'));
+    s.btn.addEventListener('click', e=>e.stopPropagation());
+    foot.appendChild(s.text);
+    foot.appendChild(s.btn);
+    foot.appendChild(mkIcon('vc-go', ICON_GO));
+
+    const prog = mk('div', 'vc-prog');
+    s.prog = mk('i');
+    prog.appendChild(s.prog);
+    s.dots = mk('div', 'vc-dots');
+    for(let i = 0; i < Math.min(list.length, SHOW_DOTS_MAX); i++) s.dots.appendChild(mk('i'));
+    if(list.length < 2){ prog.hidden = true; s.dots.hidden = true; }
+
+    root.appendChild(head);
+    root.appendChild(foot);
+    root.appendChild(prog);
+    root.appendChild(s.dots);
+
+    // 枠を押すと作品の詳細モーダル（一覧と共用）
+    root.tabIndex = 0;
+    root.setAttribute('role', 'button');
+    const open = ()=>{ if(s.cur >= 0) openWork(s.list[s.cur]); };
+    root.addEventListener('click', open);
+    root.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+    });
+    return s;
   }
 
-  async function showGoTo(idx){
-    if(idx === showCur) return;
-    const token = ++showToken;
-    const standby = 1 - showLive;
-    const ok = await showLoad(standby, idx);   // この間、表示中の作品はそのまま出ている
-    if(token !== showToken) return;
-    const w = slides[idx];
-    showImgs[showLive].classList.remove('on');
-    showImgs[standby].classList.toggle('on', ok);
-    showLive = standby;
-    showCur = idx;
-    showNameEl.textContent = w.name;
-    showLinkEl.href = w.url;
-    fillExtras(showBioEl, showLink2El, w);
+  function slotClockIdx(s){ return Math.floor((Date.now() + s.offset) / SHOW_MS) % s.list.length; }
+
+  // 指定の組に list[idx] を読み込み、デコードまで済ませる。表示できるなら true。
+  function slotLoad(s, layer, idx){
+    const L = s.layers[layer];
+    if(L.idx === idx) return L.ready;
+    L.idx = idx;
+    const w = s.list[idx];
+    setImg(L.img, w);
+    L.blur.src = w.image;
+    L.ready = (typeof L.img.decode === 'function' ? L.img.decode() : Promise.resolve())
+      .then(()=>L.idx === idx, ()=>false);
+    return L.ready;
   }
 
-  function showClear(){
-    showTimers.forEach(clearTimeout);
-    showTimers = [];
+  async function slotGoTo(s, idx){
+    if(idx === s.cur) return;
+    const token = ++s.token;
+    const standby = 1 - s.live;
+    const ok = await slotLoad(s, standby, idx);   // この間、表示中の作品はそのまま出ている
+    if(token !== s.token) return;
+    const w = s.list[idx];
+    s.layers[s.live].box.classList.remove('on');
+    s.layers[standby].box.classList.toggle('on', ok);
+    s.live = standby;
+    s.cur = idx;
+
+    s.name.textContent = w.name;
+    s.bio.textContent = w.bio || '';
+    s.bio.hidden = !w.bio;
+    s.btn.href = w.url;
+    s.root.setAttribute('aria-label', w.name + 'のイラストを開く');
+    s.count.textContent = '';
+    s.count.appendChild(mk('b', null, pad2(idx + 1)));
+    s.count.appendChild(document.createTextNode(' / ' + pad2(s.list.length)));
+    const dots = s.dots.children;
+    for(let i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === idx % dots.length);
+    s.text.classList.remove('in');
+    void s.text.offsetWidth;          // アニメーションをかけ直す
+    s.text.classList.add('in');
   }
-  function showSchedule(){
-    showClear();
-    if(slides.length < 2) return;              // 1件だけのときは切り替えない
-    const now = Date.now();
+
+  // 進み具合のバー。時計から「今の1枚の経過時間」を出して途中から動かす
+  function slotProgress(s, running){
+    if(!s.prog || s.list.length < 2) return;
+    const p = s.prog;
+    if(!running){ p.style.animationPlayState = 'paused'; return; }
+    p.style.animation = 'none';
+    void p.offsetWidth;
+    p.style.animation = 'vcprog ' + SHOW_MS + 'ms linear ' + (-((Date.now() + s.offset) % SHOW_MS)) + 'ms forwards';
+  }
+
+  function slotClear(s){
+    s.timers.forEach(clearTimeout);
+    s.timers = [];
+  }
+  function slotSchedule(s){
+    slotClear(s);
+    if(s.list.length < 2) return;              // 1件だけのときは切り替えない
+    const now = Date.now() + s.offset;
     const next = (Math.floor(now / SHOW_MS) + 1) * SHOW_MS;
-    const nextIdx = Math.floor(next / SHOW_MS) % slides.length;
-    showTimers.push(setTimeout(()=>showLoad(1 - showLive, nextIdx), Math.max(0, next - SHOW_PRELOAD_MS - now)));
-    showTimers.push(setTimeout(()=>{ showGoTo(nextIdx); showSchedule(); }, next - now + 20));
+    const nextIdx = Math.floor(next / SHOW_MS) % s.list.length;
+    s.timers.push(setTimeout(()=>slotLoad(s, 1 - s.live, nextIdx), Math.max(0, next - SHOW_PRELOAD_MS - now)));
+    s.timers.push(setTimeout(()=>{ slotGoTo(s, nextIdx); slotSchedule(s); slotProgress(s, true); }, next - now + 20));
   }
-  function showUpdate(){
-    if(!slides.length) return;
-    if(showOnScreen && !document.hidden){
-      showGoTo(showClockIdx());
-      showSchedule();
+  function slotUpdate(s){
+    if(!s.list.length) return;
+    if(s.onScreen && !document.hidden){
+      slotGoTo(s, slotClockIdx(s));
+      slotSchedule(s);
+      slotProgress(s, true);
     }else{
-      showClear();
+      slotClear(s);
+      slotProgress(s, false);
     }
   }
-  function openShowWork(){ if(showCur >= 0) openWork(slides[showCur]); }
 
   function startShow(){
-    showStatusEl.hidden = true;
-    if(!slides.length){
-      // 空の枠やサンプルは出さず、募集の案内だけを出す
-      showWantedEl.hidden = false;
-      return;
-    }
-    for(let i = 0; i < 2; i++){
-      const img = document.createElement('img');
-      img.className = 'work-img';
-      img.decoding = 'async';
-      showArtEl.appendChild(img);
-      showImgs.push(img);
-    }
-    showEl.hidden = false;
+    const box = document.getElementById('visual');
+    box.textContent = '';
+    const data = { illust:slides, photo:[], info:[] };
+    const slots = shuffle(Object.keys(SHOWCASE)).map((key, i)=>makeSlot(key, i === 0 ? 'lg' : 'sm', data[key]));
+    slots.forEach(s=>box.appendChild(s.root));
+
+    const live = slots.filter(s=>s.list.length);
+    if(!live.length) return;
     if('IntersectionObserver' in window){
       // #topPage が display:none のとき（ギャラリー表示中）も交差しないので止まる。
-      new IntersectionObserver(es=>{
-        showOnScreen = es[es.length-1].isIntersecting;
-        showUpdate();
-      },{rootMargin:'120px'}).observe(showArtEl);
+      const io = new IntersectionObserver(es=>{
+        es.forEach(e=>{
+          const s = live.find(x=>x.root === e.target);
+          if(!s) return;
+          s.onScreen = e.isIntersecting;
+          slotUpdate(s);
+        });
+      },{rootMargin:'120px'});
+      live.forEach(s=>io.observe(s.root));
     }else{
-      showUpdate();
+      live.forEach(slotUpdate);
     }
-    document.addEventListener('visibilitychange', showUpdate);
+    document.addEventListener('visibilitychange', ()=>live.forEach(slotUpdate));
   }
 
   // --- 読み込み（1回だけ） ---
@@ -288,35 +416,29 @@
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeSongs();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeSongs();closeAbout();closeMenu()}});
 
 
-// ===== ハンバーガーメニュー =====
+// ===== 三本線のメニュー（画面幅が狭いとき） =====
 function closeMenu(){
-  const nav=document.getElementById('globalNav');
-  const btn=document.querySelector('.menu-toggle');
-  if(nav) nav.classList.remove('open');
-  if(btn){
-    btn.classList.remove('open');
-    btn.setAttribute('aria-expanded','false');
-  }
+  const drawer=document.getElementById('drawer');
+  const btn=document.getElementById('menuBtn');
+  if(drawer) drawer.classList.remove('open');
+  if(btn) btn.setAttribute('aria-expanded','false');
 }
 function toggleMenu(){
-  const nav=document.getElementById('globalNav');
-  const btn=document.querySelector('.menu-toggle');
-  if(!nav||!btn)return;
-  const open=nav.classList.toggle('open');
-  btn.classList.toggle('open',open);
+  const drawer=document.getElementById('drawer');
+  const btn=document.getElementById('menuBtn');
+  if(!drawer||!btn)return;
+  const open=drawer.classList.toggle('open');
   btn.setAttribute('aria-expanded',open?'true':'false');
 }
+// ヘッダーの外を押したら閉じる。メニューの項目を選んだときも閉じる
 document.addEventListener('click',e=>{
-  const nav=document.getElementById('globalNav');
-  const btn=document.querySelector('.menu-toggle');
-  if(!nav||!btn)return;
-  if(nav.contains(e.target)||btn.contains(e.target))return;
-  closeMenu();
+  const hd=document.querySelector('.hd');
+  if(hd && !hd.contains(e.target)) closeMenu();
 });
-document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',closeMenu));
+document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',closeMenu));
 
 
 // ===== 放送プレイヤー（ストリーム再生 + 放送中メタの取得） =====
@@ -371,6 +493,8 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   const vinylEl  = document.getElementById('npVinyl');
   const onairEl  = document.getElementById('npOnair');
   const onairTxt = document.getElementById('npOnairLabel');
+  const playerEl = document.getElementById('player');      // 再生中は .is-playing（盤が回る・波形が出る）
+  const playLabelEl = document.getElementById('playLabel'); // LISTEN ⇔ PLAYING
   if(!audio || !playBtn) return;
 
   let wantPlaying = false;          // ユーザーの再生意図
@@ -392,7 +516,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
   //   /art/{id}-{更新時刻}.jpg
   // の形になる。画像が無い音源は /art/{id} になり、ステーションの既定画像
   // （中身が全曲で同じ画像）が返ってくる。既定画像はサイトの見た目に合わないので、
-  // この形のときはアートを出さず、CSS のレコード盤（.vinyl）に落とす。
+  // この形のときはアートを出さず、CSS のレコード盤（#npVinyl / .pl-disc）に落とす。
   // 判定は保守的にし、URL の形が変わったときは「画像あり」として従来どおり表示する。
   const DEFAULT_ART = /\/art\/[0-9a-f]{8,}(\?|$)/i;
   const songArt = s => { const u = httpUrl(s); return (u && DEFAULT_ART.test(u)) ? '' : u; };
@@ -479,7 +603,7 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
 
     setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
 
-    // 出演者は空でも行を残す（.cast-link-row と同じく位置を固定するため）
+    // 出演者は空でも行を残す（.pl-detail-row と同じく位置を固定するため）
     setLine(artistEl, v.cast || '');
     // 番組なら放送時間、BGM なら「URATEN ミュージック」をこの行に出す
     if(timeEl) timeEl.textContent = v.time || '';
@@ -622,6 +746,8 @@ document.querySelectorAll('#globalNav a').forEach(a=>a.addEventListener('click',
     playBtn.classList.toggle('loading', !!loading && wantPlaying && audio.paused);
     playBtn.setAttribute('aria-pressed', playing ? 'true' : 'false');
     playBtn.setAttribute('aria-label', wantPlaying ? '停止' : '再生');
+    if(playerEl) playerEl.classList.toggle('is-playing', playing);
+    if(playLabelEl) playLabelEl.textContent = playing ? 'PLAYING' : 'LISTEN';
     setPlaybackState(playing ? 'playing' : 'paused');
   }
 
