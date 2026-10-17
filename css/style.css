@@ -213,6 +213,18 @@ button{font:inherit;color:inherit}
 /* 非表示・画面外では止める。最初の描画は遷移なしで出す */
 .pl-aura.is-paused *{animation-play-state:paused !important}
 .pl-aura.is-instant *{transition:none !important}
+/* 確認用パネル（?resonance=panel のときだけ js/app.js が出す） */
+.aura-panel{position:fixed;right:16px;bottom:16px;z-index:90;width:min(340px,calc(100vw - 32px));
+  border:1px solid var(--line2);border-radius:12px;background:rgba(8,8,18,.94);font-size:11.5px;color:var(--dim)}
+.aura-panel-h{display:block;width:100%;padding:8px 12px;border:0;background:none;text-align:left;cursor:pointer;
+  font-family:var(--display);font-weight:600;letter-spacing:.2em;color:var(--ink)}
+.aura-panel.is-closed .aura-panel-body{display:none}
+.aura-panel-body{padding:0 12px 10px}
+.aura-panel-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.aura-panel-k{width:62px;flex:none}
+.aura-panel-row button{padding:3px 8px;border:1px solid var(--line2);border-radius:99px;background:none;cursor:pointer;color:var(--dim)}
+.aura-panel-row button[aria-pressed="true"]{color:#fff;border-color:var(--pink);background:rgba(255,62,165,.22)}
+.aura-panel-now{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);color:var(--cyan)}
 
 /* =========================================================
    SHOWCASE（大・小・小の3枠）
@@ -588,6 +600,7 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .oa-cast,.oa-summary,.oa-song{font-size:12px}
 
   body.has-tabbar{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+  .aura-panel{bottom:calc(80px + env(safe-area-inset-bottom))}   /* 確認用パネルはタブバーの上に出す */
   .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;padding:6px 6px calc(6px + env(safe-area-inset-bottom));
     background:rgba(6,6,14,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line)}
   .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;font-size:10px;letter-spacing:.06em;color:var(--mute);cursor:pointer}

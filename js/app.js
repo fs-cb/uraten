@@ -826,7 +826,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
   try{
     let q;
     try{ q = new URLSearchParams(location.search); }catch(e){ return; }
-    const hasParam = ['level','pattern','presence','status'].some(k=>q.has(k));
+    const KEYS = ['level','pattern','presence','status'];
+    const usePanel = q.get('resonance') === 'panel';   // 確認用パネル（?resonance=panel）
+    const hasParam = usePanel || KEYS.some(k=>q.has(k));
     const env = window.URATEN_ENV || {};
     if(env.resonance !== true && !hasParam) return;   // フラグもパラメータも無ければ従来の見た目のまま
 
@@ -834,22 +836,26 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
     const FADE_MS  = 30000;           // 景色のクロスフェード（css の .aura-layer と合わせる）
     const TICK_MS  = 5000;            // 入力を見直す間隔（本番は resonance.json の取得間隔）
-    const t0 = Date.now();
+    let decayFrom = Date.now();
+
+    // 試作の入力の元。URL から作り、確認用パネルが書き換える
+    const params = {};
+    KEYS.forEach(k=>{ params[k] = q.get(k); });
 
     // --- 入力（試作）。{status, level, pattern, presence, generatedAt} を返す ---
     function readInput(){
       const now = Date.now();
-      const lv = q.get('level');
+      const lv = params.level;
       let level = 0;
-      if(lv === 'decay') level = Math.max(0, 3 - Math.floor((now - t0) / 40000));  // 3 から約2分で 0 へ
+      if(lv === 'decay') level = Math.max(0, 3 - Math.floor((now - decayFrom) / 40000));  // 3 から約2分で 0 へ
       else if(/^[0-3]$/.test(lv || '')) level = Number(lv);
-      let pattern = q.get('pattern') || 'ambient';
+      let pattern = params.pattern || 'ambient';
       if(pattern === 'cycle') pattern = PATTERNS[Math.floor(now / 60000) % PATTERNS.length];
-      const st = q.get('status');
+      const st = params.status;
       return {
         status: st === 'unknown' ? 'unknown' : 'ok',
         level, pattern,
-        presence: q.get('presence') === '1',
+        presence: params.presence === '1',
         generatedAt: st === 'stale' ? now - STALE_MS - 60000 : now
       };
     }
@@ -891,8 +897,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       curPattern = s.pattern;
     }
+    let onApplied = null;   // 確認用パネルが「いま描いている状態」を出すのに使う
     function tick(){
-      try{ apply(normalize(readInput())); }catch(e){ /* 演出の失敗は無視する（放送・閲覧を止めない） */ }
+      try{
+        const s = normalize(readInput());
+        apply(s);
+        if(onApplied) onApplied(s);
+      }catch(e){ /* 演出の失敗は無視する（放送・閲覧を止めない） */ }
     }
 
     // 最初の1回は遷移なしで描く（開いた瞬間に光が立ち上がって「今何か起きた」と見せないため）
@@ -901,6 +912,72 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     tick();
     void root.offsetWidth;
     root.classList.remove('is-instant');
+
+    // --- 確認用パネル（?resonance=panel のときだけ） ---
+    // 開き直さずに入力を切り替える。固定の文字だけを textContent で入れる
+    if(usePanel){
+      try{
+        let instantMode = false;
+        const ROWS = [
+          { key:'pattern',  label:'pattern',  opts:[['ambient','ambient'],['flow','flow'],['pulse','pulse'],['cycle','cycle']], def:'ambient' },
+          { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['decay','decay']], def:'0' },
+          { key:'presence', label:'presence', opts:[['0','off'],['1','on']], def:'0' },
+          { key:'status',   label:'status',   opts:[['ok','ok'],['unknown','unknown'],['stale','stale']], def:'ok' },
+          { key:'_speed',   label:'遷移',     opts:[['slow','ゆっくり'],['instant','即時']], def:'slow' }
+        ];
+        const el = (tag, cls, text)=>{
+          const n = document.createElement(tag);
+          if(cls) n.className = cls;
+          if(text != null) n.textContent = text;
+          return n;
+        };
+        const panel = el('div', 'aura-panel');
+        const head = el('button', 'aura-panel-h', 'RESONANCE');
+        head.type = 'button';
+        head.setAttribute('aria-expanded', 'true');
+        head.addEventListener('click', ()=>{
+          const open = panel.classList.toggle('is-closed') === false;
+          head.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        panel.appendChild(head);
+        const body = el('div', 'aura-panel-body');
+        ROWS.forEach(row=>{
+          const line = el('div', 'aura-panel-row');
+          line.appendChild(el('span', 'aura-panel-k', row.label));
+          const btns = [];
+          const cur = ()=> row.key === '_speed' ? (instantMode ? 'instant' : 'slow') : (params[row.key] || row.def);
+          const mark = ()=> btns.forEach(b=>b.setAttribute('aria-pressed', b.dataset.v === cur() ? 'true' : 'false'));
+          row.opts.forEach(([v, text])=>{
+            const b = el('button', null, text);
+            b.type = 'button';
+            b.dataset.v = v;
+            b.addEventListener('click', ()=>{
+              if(row.key === '_speed'){
+                instantMode = v === 'instant';
+                root.classList.toggle('is-instant', instantMode);
+              }else{
+                if(row.key === 'level' && v === 'decay') decayFrom = Date.now();   // 押した時点から下がり始める
+                params[row.key] = v;
+              }
+              mark();
+              tick();
+            });
+            btns.push(b);
+            line.appendChild(b);
+          });
+          mark();
+          body.appendChild(line);
+        });
+        const now = el('div', 'aura-panel-now');
+        body.appendChild(now);
+        panel.appendChild(body);
+        document.body.appendChild(panel);
+        onApplied = s=>{
+          now.textContent = '描画中：' + s.pattern + ' / level ' + s.level + ' / presence ' + (s.presence ? 'on' : 'off');
+        };
+        tick();
+      }catch(e){ /* パネルが作れなくても演出は続ける */ }
+    }
 
     // --- 見えている間だけ動かす（裏タブ・画面外・ギャラリー表示中は止める） ---
     let timer = null, onScreen = true;
