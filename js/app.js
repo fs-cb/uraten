@@ -813,8 +813,10 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
 
 // ===== 共鳴ビジュアル（試作） =====
-// 画面全体の canvas（#fxCanvas）に光の粒子を描く。CLAUDE.md 11章。
-// - LEVEL（0〜3・強さ）、Pattern（景色）、Presence（今ほかに聴いている人がいるか）を別々に扱う
+// 画面全体の canvas（#fxCanvas）に光を描く。CLAUDE.md 11章。
+// - LEVEL（0〜4）、Pattern（景色）、Presence（今ほかに聴いている人がいるか）を別々に扱う
+// - LEVEL 0 はデフォルト（元の背景のまま。何も描かず、描画も止める）。
+//   各景色は LEVEL 1〜4 で、段ごとに要素が加わって育つ
 // - 景色も強さもサイト全体で共通。本人の操作や再生状態では見え方を変えない
 // - 再生処理（initRadio）とは切り離す。audio・poll・render には触らない。ここが失敗しても放送は止めない
 // - 軽さ：毎秒30回まで・解像度を落とす・粒子の上限・重い端末では自動で減らす・
@@ -838,11 +840,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(!ctx) return;
 
     const PATTERNS = ['ambient','flow','pulse'];
+    const MAX_LV   = 4;
     const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
     const FADE_MS  = 30000;           // 景色のクロスフェード
     const TICK_MS  = 5000;            // 入力を見直す間隔（本番は resonance.json の取得間隔）
     const FRAME_MS = 1000 / 30;       // 描くのは毎秒30回まで
-    const CAPS     = [60, 150, 260, 400];   // LEVEL ごとの粒子数の上限（PC。スマホは半分）
+    const CAPS     = [0, 80, 160, 250, 340];   // LEVEL ごとの粒子数の上限（PC。スマホは半分）
     const SLOW_MS  = 12;              // 1フレームの描画がこれを超え続けたら粒子を減らす
     let decayFrom = Date.now();
     let instantMode = false;          // 確認用パネルの「即時」
@@ -856,8 +859,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       const now = Date.now();
       const lv = params.level;
       let level = 0;
-      if(lv === 'decay') level = Math.max(0, 3 - Math.floor((now - decayFrom) / 40000));  // 3 から約2分で 0 へ
-      else if(/^[0-3]$/.test(lv || '')) level = Number(lv);
+      if(lv === 'decay') level = Math.max(0, MAX_LV - Math.floor((now - decayFrom) / 40000));  // 4 から約2.5分で 0 へ
+      else if(/^[0-4]$/.test(lv || '')) level = Number(lv);
       let pattern = params.pattern || 'ambient';
       if(pattern === 'cycle') pattern = PATTERNS[Math.floor(now / 60000) % PATTERNS.length];
       const st = params.status;
@@ -870,73 +873,65 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
 
     // --- 受け取った値の扱い（CLAUDE.md 4-5 のフロント側仕様） ---
-    // 状態不明・古い値・壊れた値は level 0 / presence なし（誰かがいると偽らない）。
+    // 状態不明・古い値・壊れた値は level 0（デフォルト）/ presence なし（誰かがいると偽らない）。
     // 知らない pattern は ambient として描く
     function normalize(v){
       const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'ambient';
       const fresh = !!v && v.status === 'ok' && typeof v.generatedAt === 'number'
                     && Date.now() - v.generatedAt <= STALE_MS;
       if(!fresh) return { level:0, pattern, presence:false };
-      const level = (Number.isInteger(v.level) && v.level >= 0 && v.level <= 3) ? v.level : 0;
+      const level = (Number.isInteger(v.level) && v.level >= 0 && v.level <= MAX_LV) ? v.level : 0;
       return { level, pattern, presence: v.presence === true };
     }
 
     // ---------- 描画の下ごしらえ ----------
     const rand = (a, b)=> a + Math.random() * (b - a);
     const pick = list=> list[Math.floor(Math.random() * list.length)];
+    const smooth = x=> x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+    const TAU = Math.PI * 2;
     const COL = {
-      pink:[255,62,165], violet:[139,108,255], cyan:[63,227,255], white:[255,244,255], amber:[255,176,92]
+      pink:[255,62,165], violet:[139,108,255], cyan:[63,227,255], white:[246,240,255],
+      amber:[255,176,92], gold:[255,222,160]
     };
-    // 光の粒の画像を色ごとに1回だけ作る（中心が白く、外へぼける）。以後は drawImage で貼るだけ
+    // 光の画像を色ごとに1回だけ作る。以後は drawImage で貼るだけ
+    //   SPRITE … 芯のある光の粒   HAZE … 芯のない柔らかい光（もや・ヴェール・後光）
     const SPRITE = {}, HAZE = {};
+    function makeGlow(c, size, stops){
+      const s = document.createElement('canvas');
+      s.width = s.height = size;
+      const g = s.getContext('2d');
+      const r = size / 2;
+      const grd = g.createRadialGradient(r, r, 0, r, r, r);
+      stops.forEach(([at, rgb, a])=>grd.addColorStop(at, 'rgba(' + (rgb || c) + ',' + a + ')'));
+      g.fillStyle = grd;
+      g.fillRect(0, 0, size, size);
+      return s;
+    }
     Object.keys(COL).forEach(name=>{
       const c = COL[name];
-      const s = document.createElement('canvas');
-      s.width = s.height = 64;
-      const g = s.getContext('2d');
-      const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grd.addColorStop(0,   'rgba(255,255,255,1)');
-      grd.addColorStop(.2,  'rgba(' + c + ',1)');
-      grd.addColorStop(.5,  'rgba(' + c + ',.35)');
-      grd.addColorStop(1,   'rgba(' + c + ',0)');
-      g.fillStyle = grd;
-      g.fillRect(0, 0, 64, 64);
-      SPRITE[name] = s;
-      // 画面の色を作る大きなもや（芯のない柔らかい光）
-      const h = document.createElement('canvas');
-      h.width = h.height = 128;
-      const hg = h.getContext('2d');
-      const hgrd = hg.createRadialGradient(64, 64, 0, 64, 64, 64);
-      hgrd.addColorStop(0,  'rgba(' + c + ',.9)');
-      hgrd.addColorStop(.5, 'rgba(' + c + ',.3)');
-      hgrd.addColorStop(1,  'rgba(' + c + ',0)');
-      hg.fillStyle = hgrd;
-      hg.fillRect(0, 0, 128, 128);
-      HAZE[name] = h;
+      SPRITE[name] = makeGlow(c, 64, [[0,'255,255,255',1],[.2,null,1],[.5,null,.32],[1,null,0]]);
+      HAZE[name]   = makeGlow(c, 128, [[0,null,.85],[.45,null,.3],[1,null,0]]);
     });
     function dot(name, x, y, size, a){
       if(a <= 0.003 || size < 0.5) return;
       ctx.globalAlpha = a > 1 ? 1 : a;
       ctx.drawImage(SPRITE[name], x - size / 2, y - size / 2, size, size);
     }
-    // 景色ごとの色のもや。list の各要素 { col, x, y（画面に対する位置 0〜1）, r（大きさ）, s（揺れの速さ）, p, a（濃さ） }
-    function nebula(list, alpha, e, t){
+    function haze(name, x, y, w, h, a){
+      if(a <= 0.003) return;
+      ctx.globalAlpha = a > 1 ? 1 : a;
+      ctx.drawImage(HAZE[name], x - w / 2, y - h / 2, w, h);
+    }
+    // 景色ごとの色のもや。{ col, x, y（画面に対する位置 0〜1）, r（大きさ）, s（揺れの速さ）, p, a（濃さ） }
+    function nebula(list, k, alpha, e){
       const big = Math.max(W, H);
       for(let i = 0; i < list.length; i++){
         const n = list[i];
-        const x = W * (n.x + 0.08 * Math.sin(t * n.s + n.p));
-        const y = H * (n.y + 0.07 * Math.cos(t * n.s * 0.8 + n.p));
-        const size = big * n.r * (1 + 0.12 * e.lv);
-        ctx.globalAlpha = Math.min(1, (0.12 + 0.11 * e.lv) * (n.a || 1) * alpha * e.bright);
-        ctx.drawImage(HAZE[n.col], x - size / 2, y - size / 2, size, size);
+        const x = W * (n.x + 0.06 * Math.sin(e.t * n.s + n.p));
+        const y = H * (n.y + 0.05 * Math.cos(e.t * n.s * 0.8 + n.p));
+        const size = big * n.r;
+        haze(n.col, x, y, size, size, 0.22 * (n.a || 1) * k * alpha * e.bright);
       }
-    }
-    // LEVEL が上がるほど色の数が増える
-    function palette(lv, base){
-      const list = base.slice();
-      if(lv >= 1.5) list.push('pink');
-      if(lv >= 2.5) list.push('amber', 'white');
-      return list;
     }
 
     // canvas の大きさ。光はぼけているので、解像度を落として描く
@@ -955,150 +950,227 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     function settle(parts, want, spawn){
       let alive = 0;
       for(let i = 0; i < parts.length; i++) if(!parts[i].dying) alive++;
-      let add = Math.min(want - alive, 10);
+      let add = Math.min(want - alive, 8);
       while(add-- > 0) parts.push(spawn());
       for(let i = parts.length - 1; i >= 0 && alive > want; i--){
         if(!parts[i].dying){ parts[i].dying = true; alive--; }
       }
     }
     function fade(p, dt){
-      p.f = p.dying ? p.f - dt / 1.2 : Math.min(1, p.f + dt / 1.5);
+      p.f = p.dying ? p.f - dt / 2 : Math.min(1, p.f + dt / 2.5);
       return p.f > 0;
+    }
+    function sweep(parts, dt){
+      for(let i = parts.length - 1; i >= 0; i--) if(!fade(parts[i], dt)) parts.splice(i, 1);
     }
 
     // ---------- 景色 ----------
-    // どの景色も { pattern, update(dt, t, e), draw(alpha, e), count(), rescale(sx, sy) } を持つ。
-    // e … { lv（0〜3 の連続値）, want（この景色に割り当てた粒子数）, bright, speed }
+    // どの景色も { pattern, update(dt, e), draw(alpha, e), count(), rescale(sx, sy) } を持つ。
+    // e … { lv（0〜4 の連続値）, L[1..4]（各段の現れ具合 0〜1）, want（この景色に割り当てた粒子数）, bright, t }
+    // 段 k の要素は、lv が k-1 から k に上がる間にふわっと現れる
 
-    // Ambient「星屑の海」：奥行きのある粒子が漂い、瞬く。LEVEL 2 以上で大きなぼけた光の玉が加わる
-    // 星屑の海：深い青紫
-    const HAZE_AMBIENT = [
-      { col:'violet', x:0.22, y:0.28, r:0.9, s:0.05, p:0 },
-      { col:'cyan',   x:0.82, y:0.72, r:0.8, s:0.04, p:2, a:0.7 },
-      { col:'violet', x:0.7,  y:0.15, r:0.6, s:0.06, p:4, a:0.6 }
-    ];
+    // Ambient「星屑の海」
+    //   段1 まばらな星屑がゆっくり瞬く・青紫のもや
+    //   段2 奥行き（手前の大きな粒と奥の小さな粒が別の速さで漂う）・シアンのもや
+    //   段3 斜めに淡い天の川
+    //   段4 ときどき星がふわりと強く輝く・色が増える
+    const HAZE_AMBIENT1 = [ { col:'violet', x:0.25, y:0.3, r:0.95, s:0.04, p:0 },
+                            { col:'violet', x:0.75, y:0.8, r:0.7,  s:0.05, p:3, a:0.6 } ];
+    const HAZE_AMBIENT2 = [ { col:'cyan',   x:0.82, y:0.35, r:0.75, s:0.04, p:2, a:0.7 } ];
     function sceneAmbient(){
-      const parts = [];
-      let lvNow = 0;
+      const stars = [], band = [];
+      let warmCols = 0, bandOn = false;
       function spawn(){
-        const big = lvNow >= 1 && Math.random() < 0.06;
-        const z = big ? rand(0.6, 1) : Math.pow(Math.random(), 1.6);
-        return { x:rand(0, W), y:rand(0, H), z, big, f:0, dying:false,
-                 dx:rand(-0.5, 0.5), dy:rand(-1, -0.25), ph:rand(0, 6.3), tw:rand(0.6, 2.2),
-                 col: big ? pick(['violet','pink','cyan']) : pick(palette(lvNow, ['violet','cyan','white'])) };
+        return { x:rand(0, W), y:rand(0, H), z:Math.random(), f:0, dying:false,
+                 dx:rand(-0.6, 0.6), dy:rand(-1, -0.3), ph:rand(0, TAU), tw:rand(0.4, 1.6),
+                 col: Math.random() < warmCols ? pick(['pink','amber']) : pick(['violet','cyan','white','white']) };
       }
+      function makeBand(){
+        // 天の川：左下から右上へ斜めの帯。位置は固定で、瞬くだけ
+        band.length = 0;
+        const n = MOBILE ? 50 : 100;
+        for(let i = 0; i < n; i++){
+          const off = (Math.random() + Math.random() + Math.random() - 1.5) * 0.09;
+          band.push({ u:Math.random(), off, ph:rand(0, TAU), s:rand(0.5, 1.4) });
+        }
+      }
+      makeBand();
       return {
         pattern:'ambient',
-        count:()=>parts.length,
-        rescale(sx, sy){ parts.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
-        update(dt, t, e){
-          lvNow = e.lv;
-          settle(parts, e.want, spawn);
-          for(let i = parts.length - 1; i >= 0; i--){
-            const p = parts[i];
-            if(!fade(p, dt)){ parts.splice(i, 1); continue; }
-            const v = (6 + 22 * p.z) * K * e.speed * (p.big ? 0.4 : 1);
+        count:()=>stars.length + (bandOn ? band.length : 0),
+        rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); makeBand(); },
+        update(dt, e){
+          warmCols = 0.3 * e.L[4];
+          settle(stars, e.want, spawn);
+          sweep(stars, dt);
+          for(let i = 0; i < stars.length; i++){
+            const p = stars[i];
+            const v = (1.5 + (3 + 14 * p.z) * e.L[2]) * K;   // 段1 ではほとんど動かない
             p.x += p.dx * v * dt;
             p.y += p.dy * v * dt;
-            if(p.y < -40) p.y = H + 40;
-            if(p.x < -40) p.x = W + 40; else if(p.x > W + 40) p.x = -40;
+            if(p.y < -30) p.y = H + 30;
+            if(p.x < -30) p.x = W + 30; else if(p.x > W + 30) p.x = -30;
           }
         },
-        draw(alpha, e, t){
-          nebula(HAZE_AMBIENT, alpha, e, t);
-          for(let i = 0; i < parts.length; i++){
-            const p = parts[i];
-            if(p.big){
-              dot(p.col, p.x, p.y, (140 + 220 * p.z) * K, 0.16 * p.f * alpha * e.bright);
-            }else{
-              const tw = 0.55 + 0.45 * Math.sin(t * p.tw + p.ph);
-              dot(p.col, p.x, p.y, (4 + 38 * p.z * p.z) * K * (1 + e.lv * 0.15),
-                  (0.3 + 0.7 * p.z) * tw * p.f * alpha * e.bright);
+        draw(alpha, e){
+          const t = e.t, L = e.L;
+          nebula(HAZE_AMBIENT1, L[1], alpha, e);
+          nebula(HAZE_AMBIENT2, L[2], alpha, e);
+          // 天の川
+          bandOn = L[3] > 0.01;
+          if(bandOn){
+            const x0 = W * 0.05, y0 = H * 0.95, x1 = W * 0.95, y1 = H * 0.05;
+            const nx = -(y1 - y0), ny = x1 - x0, nl = Math.hypot(nx, ny);
+            const hs = Math.max(W, H) * 0.32;
+            for(let i = 0; i < 6; i++){
+              const u = (i + 0.5) / 6;
+              haze(i % 2 ? 'violet' : 'white', x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, hs, hs,
+                   0.09 * L[3] * alpha * e.bright);
             }
+            for(let i = 0; i < band.length; i++){
+              const b = band[i];
+              const x = x0 + (x1 - x0) * b.u + nx / nl * b.off * H;
+              const y = y0 + (y1 - y0) * b.u + ny / nl * b.off * H;
+              dot('white', x, y, 3.2 * K, (0.25 + 0.25 * Math.sin(t * b.s + b.ph)) * L[3] * alpha * e.bright);
+            }
+          }
+          // 星屑
+          for(let i = 0; i < stars.length; i++){
+            const p = stars[i];
+            const tw = 0.55 + 0.45 * Math.sin(t * p.tw + p.ph);
+            const depth = p.z * p.z * L[2];                     // 段2 で手前の粒が大きくなる
+            let size = (2.5 + 4 * p.z + 22 * depth) * K;
+            let a = (0.3 + 0.55 * p.z) * tw * p.f;
+            // 段4：ときどき星がふわりと強く輝く
+            const glint = Math.pow(Math.max(0, Math.sin(t * 0.3 + p.ph * 3)), 30) * L[4];
+            size *= 1 + 1.6 * glint;
+            a = Math.min(1, a + 0.6 * glint);
+            dot(p.col, p.x, p.y, size, a * L[1] * alpha * e.bright);
           }
         }
       };
     }
 
-    // Flow「光の川」：曲がりくねった流れに沿って粒子が横切り、尾を引く。LEVEL 2 以上で2本目の川
-    // 光の川：ピンクとシアン
-    const HAZE_FLOW = [
-      { col:'pink',   x:0.18, y:0.38, r:0.85, s:0.07, p:1 },
-      { col:'cyan',   x:0.85, y:0.7,  r:0.8,  s:0.06, p:3, a:0.8 },
-      { col:'violet', x:0.5,  y:0.1,  r:0.6,  s:0.05, p:5, a:0.6 }
+    // Flow「光のヴェール」（オーロラ）
+    //   段1 ゆるい流れに乗ってただよう小さな光の粒・ピンクのもや
+    //   段2 オーロラのヴェールが1枚、ゆっくりうねる
+    //   段3 ヴェールが2枚。粒がヴェールに沿って流れ、ごく淡い短い尾を引く
+    //   段4 ヴェールの中を明るさの波がゆっくり伝う・光の花びらが舞い落ちる
+    const HAZE_FLOW1 = [ { col:'pink',   x:0.2,  y:0.4, r:0.9, s:0.04, p:1, a:0.8 },
+                         { col:'violet', x:0.8,  y:0.2, r:0.7, s:0.05, p:4, a:0.6 } ];
+    const VEILS = [
+      { base:0.30, amp:0.10, freq:1.6, w:0.05,  ph:0,   cols:['pink','violet'] },
+      { base:0.62, amp:0.09, freq:2.2, w:-0.04, ph:2.4, cols:['cyan','violet'] }
     ];
     function sceneFlow(){
-      const parts = [];
-      let lvNow = 0;
-      const RIVERS = [
-        { base:0.36, amp:0.16, freq:2.2, w:0.22, ph:0,   cols:['pink','violet'] },
-        { base:0.70, amp:0.12, freq:3.1, w:-0.17, ph:2.1, cols:['cyan','violet'] }
-      ];
-      const riverY = (r, x, t)=> H * (r.base + r.amp * Math.sin((x / W) * r.freq * Math.PI + t * r.w + r.ph)
-                                      + 0.04 * Math.sin((x / W) * 7.3 + t * 0.5 + r.ph));
-      function spawn(fresh){
-        const second = lvNow >= 1.6 && Math.random() < Math.min(0.5, (lvNow - 1.6) * 0.6);
-        const r = second ? 1 : 0;
-        const x = fresh ? rand(-30, W) : -30;
-        return { r, x, off:(Math.random() + Math.random() + Math.random() - 1.5) * 0.66, f:0, dying:false,
-                 sp:rand(0.7, 1.3), size:rand(0.6, 1.4), trail:[],
-                 col:pick(palette(lvNow, RIVERS[r].cols)) };
+      const motes = [], petals = [];
+      const veilY = (v, x, t)=> H * (v.base + v.amp * Math.sin((x / W) * v.freq * Math.PI + t * v.w + v.ph)
+                                     + 0.025 * Math.sin((x / W) * 5.1 - t * 0.07 + v.ph));
+      function spawnMote(){
+        return { x:rand(0, W), y:rand(0, H), f:0, dying:false, ph:rand(0, TAU), sp:rand(0.6, 1.4),
+                 v:Math.random() < 0.5 ? 0 : 1, trail:[], col:pick(['pink','violet','white','cyan']) };
+      }
+      function spawnPetal(){
+        return { x:rand(0, W), y:rand(-20, H), f:0, dying:false, ph:rand(0, TAU), sw:rand(10, 26) * K,
+                 vy:rand(5, 10) * K, col:pick(['pink','white','pink']) };
       }
       return {
         pattern:'flow',
-        count:()=>parts.length,
-        rescale(sx, sy){ parts.forEach(p=>{ p.x *= sx; p.trail.length = 0; }); },
-        update(dt, t, e){
-          lvNow = e.lv;
-          settle(parts, e.want, ()=>spawn(true));
-          const width = H * 0.075 * (1 + e.lv * 0.3);
-          for(let i = parts.length - 1; i >= 0; i--){
-            const p = parts[i];
-            if(!fade(p, dt)){ parts.splice(i, 1); continue; }
-            p.x += W * 0.07 * p.sp * e.speed * dt;
-            if(p.x > W + 30){ Object.assign(p, spawn(false), { f:p.f, dying:p.dying }); continue; }
-            const y = riverY(RIVERS[p.r], p.x, t) + p.off * width + Math.sin(t * 1.7 + p.x * 0.02) * width * 0.15;
-            p.trail.push(p.x, y);
-            if(p.trail.length > 24) p.trail.splice(0, 2);   // 直前の12点だけ覚える
+        count:()=>motes.length + petals.length,
+        rescale(sx, sy){ motes.forEach(p=>{ p.x *= sx; p.y *= sy; p.trail.length = 0; });
+                         petals.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
+        update(dt, e){
+          const t = e.t, L = e.L;
+          settle(motes, e.want, spawnMote);
+          sweep(motes, dt);
+          settle(petals, Math.round((MOBILE ? 6 : 12) * L[4]), spawnPetal);
+          sweep(petals, dt);
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i];
+            // ゆるい流れ（右へ、少し上下にうねる）
+            const ang = 0.35 * Math.sin(p.y / H * 3 + t * 0.05) + 0.25 * Math.sin(p.x / W * 2 - t * 0.04);
+            const v = (6 + 10 * L[2]) * K * p.sp;
+            p.x += Math.cos(ang) * v * dt;
+            p.y += Math.sin(ang) * v * dt;
+            // 段3：近くのヴェールへゆっくり寄っていく
+            if(L[3] > 0){
+              const ty = veilY(VEILS[p.v], p.x, t);
+              p.y += (ty - p.y) * Math.min(1, dt * 0.15 * L[3]);
+            }
+            if(p.x > W + 20){ p.x = -20; p.y = rand(0, H); p.trail.length = 0; }
+            if(p.y < -20) p.y = H + 20; else if(p.y > H + 20) p.y = -20;
+            if(L[3] > 0.01){
+              p.trail.push(p.x, p.y);
+              if(p.trail.length > 10) p.trail.splice(0, 2);
+            }else if(p.trail.length) p.trail.length = 0;
+          }
+          for(let i = 0; i < petals.length; i++){
+            const p = petals[i];
+            p.y += p.vy * dt;
+            p.x += Math.sin(t * 0.6 + p.ph) * p.sw * dt;
+            if(p.y > H + 20){ p.y = -20; p.x = rand(0, W); }
           }
         },
-        draw(alpha, e, t){
-          nebula(HAZE_FLOW, alpha, e, t);
+        draw(alpha, e){
+          const t = e.t, L = e.L;
+          nebula(HAZE_FLOW1, L[1], alpha, e);
+          // ヴェール：縦長の柔らかい光を曲線に沿って並べる（カーテンのように見える）
+          for(let vi = 0; vi < VEILS.length; vi++){
+            const k = vi === 0 ? L[2] : L[3];
+            if(k <= 0.01) continue;
+            const v = VEILS[vi];
+            const n = MOBILE ? 12 : 18;
+            for(let i = 0; i <= n; i++){
+              const x = -W * 0.08 + (W * 1.16) * (i / n);
+              const y = veilY(v, x, t);
+              // 段4：明るさの波がヴェールの中をゆっくり伝う
+              const shimmer = 1 + 0.6 * L[4] * Math.sin((x / W) * 7 - t * 0.5 + vi);
+              haze(v.cols[i % 2], x, y - H * 0.16, W / n * 2.6, H * 0.85,
+                   0.27 * k * shimmer * alpha * e.bright);
+            }
+          }
+          // 粒（段3から、ごく淡い短い尾）
           ctx.lineCap = 'round';
-          for(let i = 0; i < parts.length; i++){
-            const p = parts[i], tr = p.trail, n = tr.length;
-            if(n < 4) continue;
-            const a = p.f * alpha * e.bright;
-            const c = COL[p.col];
-            ctx.globalAlpha = 0.5 * a;
-            ctx.strokeStyle = 'rgb(' + c + ')';
-            ctx.lineWidth = (2 + p.size * 2.4) * K * (1 + e.lv * 0.25);
-            ctx.beginPath();
-            ctx.moveTo(tr[0], tr[1]);
-            for(let j = 2; j < n; j += 2) ctx.lineTo(tr[j], tr[j + 1]);
-            ctx.stroke();
-            dot(p.col, tr[n - 2], tr[n - 1], (14 + 16 * p.size) * K * (1 + e.lv * 0.15), a);
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i], tr = p.trail, n = tr.length;
+            const a = p.f * L[1] * alpha * e.bright;
+            if(n >= 4){
+              ctx.globalAlpha = 0.12 * L[3] * a;
+              ctx.strokeStyle = 'rgb(' + COL[p.col] + ')';
+              ctx.lineWidth = 2 * K;
+              ctx.beginPath();
+              ctx.moveTo(tr[0], tr[1]);
+              for(let j = 2; j < n; j += 2) ctx.lineTo(tr[j], tr[j + 1]);
+              ctx.stroke();
+            }
+            const tw = 0.6 + 0.4 * Math.sin(t * 0.9 + p.ph);
+            dot(p.col, p.x, p.y, (4 + 3 * p.sp) * K, 0.6 * tw * a);
+          }
+          // 花びら
+          for(let i = 0; i < petals.length; i++){
+            const p = petals[i];
+            dot(p.col, p.x, p.y, 9 * K, 0.5 * p.f * L[4] * alpha * e.bright);
           }
         }
       };
     }
 
-    // Pulse「鼓動」：プレーヤーの中心から、一定のリズムで粒子の輪が広がる。背景の粒は拍に合わせて明るくなる
-    // 鼓動：暖色
-    const HAZE_PULSE = [
-      { col:'amber', x:0.85, y:0.75, r:0.75, s:0.05, p:0, a:0.8 },
-      { col:'pink',  x:0.15, y:0.8,  r:0.7,  s:0.06, p:2, a:0.7 }
-    ];
+    // Pulse「呼吸」（水面の波紋）
+    //   段1 プレーヤーの背後の光が、約7秒周期でゆっくり呼吸する・暖色のもや
+    //   段2 呼吸に合わせて、細く淡い波紋が1つずつ広がる
+    //   段3 周りの光の粒が、呼吸に合わせて外へ内へとゆらぐ。吸う時に明るくなる
+    //   段4 波紋が二重になり、色がピンクから琥珀へ移ろう。呼吸が少し深く速くなる（約5秒）
+    const HAZE_PULSE1 = [ { col:'amber', x:0.85, y:0.8,  r:0.75, s:0.04, p:0, a:0.6 },
+                          { col:'pink',  x:0.12, y:0.85, r:0.7,  s:0.05, p:2, a:0.6 } ];
     function scenePulse(){
-      const dots = [], rings = [], waves = [];
-      let lvNow = 0, beatAt = -10, nextBeat = 0, beatNo = 0, cx = 0, cy = 0, centerAt = -1;
-      const RING_COLS = ['pink','violet','cyan'];
-      function spawnDot(){
-        return { x:rand(0, W), y:rand(0, H), z:Math.random(), f:0, dying:false,
-                 col:pick(palette(lvNow, ['violet','cyan'])) };
+      const dust = [], ripples = [];
+      let phase = 0, breath = 0, cx = 0, cy = 0, centerAt = -1;
+      function spawnDust(){
+        return { r:rand(0.08, 0.6), a:rand(0, TAU), w:rand(-0.015, 0.015), f:0, dying:false,
+                 ph:rand(0, TAU), col:pick(['pink','amber','white']) };
       }
       function center(t){
-        if(t - centerAt < 0.25) return;   // プレーヤーの位置は 0.25 秒ごとに測り直す
+        if(centerAt >= 0 && t - centerAt < 0.25) return;   // プレーヤーの位置は 0.25 秒ごとに測り直す
         centerAt = t;
         const pl = document.getElementById('player');
         const r = pl && pl.offsetParent ? pl.getBoundingClientRect() : null;
@@ -1110,124 +1182,111 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       return {
         pattern:'pulse',
-        count:()=>dots.length + rings.length,
-        rescale(sx, sy){ dots.forEach(p=>{ p.x *= sx; p.y *= sy; }); rings.length = 0; waves.length = 0; },
-        update(dt, t, e){
-          lvNow = e.lv;
-          center(t);
-          // 輪の粒子は拍ごとに出るので、背景の粒には上限の6割を回す
-          settle(dots, Math.round(e.want * 0.6), spawnDot);
-          for(let i = dots.length - 1; i >= 0; i--) if(!fade(dots[i], dt)) dots.splice(i, 1);
-          const period = 60 / (54 + 14 * e.lv);   // 毎分54拍（LEVEL 0）〜96拍（LEVEL 3）
-          if(t >= nextBeat){
-            nextBeat = t + period;
-            beatAt = t;
-            const n = Math.round((12 + 12 * e.lv) * Math.min(1, e.want / 60 + 0.2));
-            const col = RING_COLS[beatNo++ % RING_COLS.length];
-            const v0 = (110 + 70 * e.lv) * K;
-            waves.push({ age:0, v0, col });
-            for(let i = 0; i < n; i++){
-              const ang = (i / n) * Math.PI * 2 + rand(-0.08, 0.08);
-              const v = v0 * rand(0.85, 1.15);
-              rings.push({ x:cx, y:cy, vx:Math.cos(ang) * v, vy:Math.sin(ang) * v, life:2.6, age:0, col });
+        count:()=>dust.length + ripples.length,
+        rescale(){ ripples.length = 0; centerAt = -1; },
+        update(dt, e){
+          const L = e.L;
+          center(e.t);
+          const period = 7 - 2 * L[4];                 // 約7秒（段4 で約5秒）
+          const before = Math.floor(phase);
+          phase += dt / period;
+          breath = 0.5 - 0.5 * Math.cos(phase * TAU);   // 0（吐き切り）〜1（吸い切り）
+          if(Math.floor(phase) !== before && L[2] > 0.01) ripples.push({ age:0 });
+          for(let i = ripples.length - 1; i >= 0; i--){
+            ripples[i].age += dt;
+            if(ripples[i].age >= 7) ripples.splice(i, 1);
+          }
+          settle(dust, Math.round(e.want * L[3]), spawnDust);
+          sweep(dust, dt);
+          for(let i = 0; i < dust.length; i++) dust[i].a += dust[i].w * dt;
+        },
+        draw(alpha, e){
+          const L = e.L, t = e.t;
+          const big = Math.max(W, H);
+          const b = breath;
+          // 段4：色がピンクから琥珀へゆっくり移ろう
+          const warm = 0.5 + 0.5 * Math.sin(t * 0.07);
+          const wb = L[4] * warm, wa = 1 - wb;
+          nebula(HAZE_PULSE1, L[1], alpha, e);
+          // 呼吸する光
+          const deep = 1 + 0.4 * L[4];
+          const gs = big * (0.42 + 0.08 * b * deep);
+          const ga = (0.2 + 0.22 * b * deep) * L[1] * alpha * e.bright;
+          haze('pink', cx, cy, gs, gs * 0.75, ga * wa);
+          haze('amber', cx, cy, gs, gs * 0.75, ga * wb);
+          haze('white', cx, cy, gs * 0.35, gs * 0.25, ga * 0.5);
+          // 波紋
+          if(L[2] > 0.01){
+            ctx.strokeStyle = 'rgb(' + (wb > wa ? COL.amber : COL.pink) + ')';
+            ctx.lineWidth = 2 * K;
+            for(let i = 0; i < ripples.length; i++){
+              const r = ripples[i];
+              const life = 1 - r.age / 7;
+              const rad = big * (0.08 + 0.05 * r.age);
+              ctx.globalAlpha = 0.2 * life * L[2] * alpha * e.bright;
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, rad, rad * 0.6, 0, 0, TAU);
+              ctx.stroke();
+              if(L[4] > 0.01){   // 段4：二重の波紋
+                ctx.globalAlpha = 0.13 * life * L[4] * alpha * e.bright;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, rad * 0.82, rad * 0.82 * 0.6, 0, 0, TAU);
+                ctx.stroke();
+              }
             }
           }
-          for(let i = rings.length - 1; i >= 0; i--){
-            const p = rings[i];
-            p.age += dt;
-            if(p.age >= p.life){ rings.splice(i, 1); continue; }
-            const damp = Math.exp(-dt * 0.9);
-            p.vx *= damp; p.vy *= damp;
-            p.x += p.vx * dt; p.y += p.vy * dt;
-          }
-          for(let i = waves.length - 1; i >= 0; i--){
-            waves[i].age += dt;
-            if(waves[i].age >= 2.6) waves.splice(i, 1);
-          }
-          this.flash = Math.exp(-(t - beatAt) * 3.5);
-        },
-        flash:0,
-        draw(alpha, e, t){
-          const fl = this.flash;
-          // 暖色のもや。中心のもやは拍に合わせて明るくなる
-          nebula(HAZE_PULSE, alpha, e, t);
-          const big = Math.max(W, H);
-          ctx.globalAlpha = Math.min(1, (0.18 + 0.1 * e.lv) * (0.5 + fl) * alpha * e.bright);
-          ctx.drawImage(HAZE.pink, cx - big * 0.35, cy - big * 0.35, big * 0.7, big * 0.7);
-          // 拍の瞬間に、中心がふわっと明るくなる
-          dot(RING_COLS[(beatNo + 2) % 3], cx, cy, (380 + 160 * e.lv) * K, 0.35 * fl * alpha * e.bright);
-          // 広がる光の輪
-          for(let i = 0; i < waves.length; i++){
-            const w = waves[i];
-            const life = 1 - w.age / 2.6;
-            const r = w.v0 * (1 - Math.exp(-0.9 * w.age)) / 0.9;
-            ctx.globalAlpha = 0.45 * life * life * alpha * e.bright;
-            ctx.strokeStyle = 'rgb(' + COL[w.col] + ')';
-            ctx.lineWidth = (2 + 4 * life) * K;
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-          for(let i = 0; i < dots.length; i++){
-            const p = dots[i];
-            dot(p.col, p.x, p.y, (4 + 10 * p.z) * K, (0.18 + 0.3 * p.z + 0.6 * fl * p.z) * p.f * alpha * e.bright);
-          }
-          for(let i = 0; i < rings.length; i++){
-            const p = rings[i];
-            const life = 1 - p.age / p.life;
-            dot(p.col, p.x, p.y, (16 + 8 * e.lv) * K, life * life * alpha * e.bright);
+          // 呼吸に合わせてゆらぐ光の粒
+          for(let i = 0; i < dust.length; i++){
+            const p = dust[i];
+            const rr = big * p.r * (1 + 0.07 * (b - 0.5) * deep);
+            const x = cx + Math.cos(p.a) * rr, y = cy + Math.sin(p.a) * rr * 0.6;
+            dot(p.col, x, y, 6 * K,
+                (0.2 + 0.45 * b) * (0.7 + 0.3 * Math.sin(t + p.ph)) * p.f * L[3] * alpha * e.bright);
           }
         }
       };
     }
     const MAKERS = { ambient:sceneAmbient, flow:sceneFlow, pulse:scenePulse };
 
-    // Presence「流れ星」：今ほかに聴いている人がいるときだけ、ときどき画面を横切る（景色とは別に描く）
-    const comets = [];
-    let nextComet = 0;
-    function updateComets(dt, t, on){
-      if(on && t >= nextComet){
-        nextComet = t + rand(6, 14);
-        const fromLeft = Math.random() < 0.5;
-        const ang = rand(0.25, 0.6) * (fromLeft ? 1 : -1);
-        const v = W * rand(0.55, 0.8);
-        comets.push({ x:fromLeft ? rand(-0.1, 0.4) * W : rand(0.6, 1.1) * W, y:rand(-0.05, 0.3) * H,
-                      vx:Math.cos(ang) * v * (fromLeft ? 1 : -1), vy:Math.abs(Math.sin(ang)) * v,
-                      age:0, life:rand(1.4, 2), trail:[] });
+    // Presence「浮遊する光の玉」：今ほかに聴いている人がいるときだけ、温かい光の玉がゆっくり浮かぶ。
+    // 同時に多くても3つ。人数とは結び付けない（1人＝1玉にしない）。presence が消えたら3秒で消える
+    const orbs = [];
+    let nextOrb = 0;
+    function updateOrbs(dt, t, on){
+      if(on && t >= nextOrb){
+        nextOrb = t + rand(8, 15);
+        if(orbs.filter(o=>!o.kill).length < 3){
+          orbs.push({ x:rand(0.1, 0.9) * W, y:rand(0.5, 0.95) * H, vy:-rand(6, 12) * K,
+                      sw:rand(10, 24) * K, swf:rand(0.1, 0.2), ph:rand(0, TAU),
+                      size:rand(34, 50) * K, age:0, life:rand(20, 30), kill:false, k:1 });
+        }
       }
-      if(!on && nextComet < t) nextComet = t + rand(2, 6);   // 戻ったときにすぐ出ないようにする
-      for(let i = comets.length - 1; i >= 0; i--){
-        const c = comets[i];
-        c.age += dt;
-        if(c.age >= c.life){ comets.splice(i, 1); continue; }
-        c.x += c.vx * dt; c.y += c.vy * dt;
-        c.trail.push(c.x, c.y);
-        if(c.trail.length > 36) c.trail.splice(0, 2);
+      if(!on && nextOrb < t) nextOrb = t + rand(1, 4);   // 戻ったときにほどなく出るようにする
+      for(let i = orbs.length - 1; i >= 0; i--){
+        const o = orbs[i];
+        o.age += dt;
+        if(!on) o.kill = true;
+        if(o.kill) o.k -= dt / 3;
+        if(o.age >= o.life || o.k <= 0){ orbs.splice(i, 1); continue; }
+        o.y += o.vy * dt;
       }
     }
-    function drawComets(){
-      for(let i = 0; i < comets.length; i++){
-        const c = comets[i], tr = c.trail, n = tr.length;
-        if(n < 4) continue;
-        const a = Math.sin(Math.PI * c.age / c.life);   // 現れて、消える
-        for(let j = 2; j < n; j += 2){
-          const k = j / n;
-          ctx.globalAlpha = a * k * 0.8;
-          ctx.strokeStyle = 'rgb(' + COL.cyan + ')';
-          ctx.lineWidth = 3.2 * K * k;
-          ctx.beginPath();
-          ctx.moveTo(tr[j - 2], tr[j - 1]);
-          ctx.lineTo(tr[j], tr[j + 1]);
-          ctx.stroke();
-        }
-        dot('white', tr[n - 2], tr[n - 1], 34 * K, a);
+    function drawOrbs(t){
+      for(let i = 0; i < orbs.length; i++){
+        const o = orbs[i];
+        const a = Math.sin(Math.PI * o.age / o.life) * Math.max(0, o.k);   // ゆっくり現れて、消える
+        const x = o.x + Math.sin(t * o.swf * TAU + o.ph) * o.sw;
+        const breath = 0.85 + 0.15 * Math.sin(t * 0.8 + o.ph);
+        haze('gold', x, o.y, o.size * 3.2, o.size * 3.2, 0.22 * a);
+        dot('gold', x, o.y, o.size * breath, 0.8 * a);
+        dot('white', x, o.y, o.size * 0.35, 0.6 * a);
       }
     }
 
     // ---------- 状態と更新 ----------
     let target = { level:0, pattern:'ambient', presence:false };
     let lv = 0;                       // 実際に描く強さ（target.level へゆっくり近づく）
-    const scenes = [];                // [{…景色, alpha, goal}]。切り替え中だけ2つになる
+    const scenes = [];                // 切り替え中だけ2つになる
     let quality = 1;                  // 自動で軽くするときの倍率（0.3〜1）
     let galleryOn = false, modalOpen = false;
     const reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -1244,12 +1303,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         scenes.forEach(o=>{ o.goal = 0; if(instantMode) o.alpha = 0; });
         scenes.push(sc);
         while(scenes.length > 2) scenes.shift();
-        if(first || instantMode) prefill();
       }
+      if(first || instantMode) prefill();
     }
     // 最初から粒子がそろった状態で描く（開いた瞬間に光が立ち上がって「今何か起きた」と見せないため）
     function prefill(){
-      for(let i = 0; i < 40; i++) step(0.25, true);
+      for(let i = 0; i < 50; i++) step(0.25, true);
     }
 
     // 時刻は描画側の時計で数える（端末やブラウザの時刻の基準に左右されないように）
@@ -1259,10 +1318,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       const t = clock;
       if(instantMode || warm) lv = target.level;
       else lv += (target.level - lv) * Math.min(1, dt / 2);   // 約6秒で目標の LEVEL に近づく
-      const useLv = galleryOn ? 0 : lv;
-      const cap = (CAPS[Math.floor(useLv)] + (CAPS[Math.min(3, Math.floor(useLv) + 1)] - CAPS[Math.floor(useLv)]) * (useLv % 1))
-                  * (MOBILE ? 0.5 : 1) * quality;
-      const e = { lv:useLv, bright:(0.7 + 0.1 * useLv) * (galleryOn ? 0.5 : 1), speed:1 + 0.35 * useLv, want:0, t };
+      if(Math.abs(target.level - lv) < 0.002) lv = target.level;
+      const useLv = galleryOn ? Math.min(lv, 1) : lv;          // イラスト一覧の間は控えめに
+      const lo = Math.floor(useLv), hi = Math.min(MAX_LV, lo + 1);
+      const cap = (CAPS[lo] + (CAPS[hi] - CAPS[lo]) * (useLv - lo)) * (MOBILE ? 0.5 : 1) * quality;
+      const e = { lv:useLv, L:[1, 0, 0, 0, 0], bright:galleryOn ? 0.5 : 1, want:0, t };
+      for(let k = 1; k <= MAX_LV; k++) e.L[k] = smooth(useLv - (k - 1));
       for(let i = scenes.length - 1; i >= 0; i--){
         const sc = scenes[i];
         const da = (instantMode || warm) ? 1 : dt / (FADE_MS / 1000);
@@ -1270,22 +1331,28 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         else if(sc.goal < sc.alpha) sc.alpha = Math.max(sc.goal, sc.alpha - da);
         if(sc.goal === 0 && sc.alpha <= 0){ scenes.splice(i, 1); continue; }
         e.want = Math.round(cap * sc.alpha);   // 切り替え中も合計が上限を超えないよう、不透明度で分け合う
-        sc.update(dt, t, e);
+        sc.update(dt, e);
       }
-      updateComets(dt, t, target.presence && !galleryOn);
+      updateOrbs(dt, t, target.presence && !galleryOn);
       return e;
     }
-    function draw(e){
-      const t = e.t;
+    function clearCanvas(){
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
       ctx.clearRect(0, 0, W, H);
+    }
+    function draw(e){
+      clearCanvas();
       ctx.globalCompositeOperation = 'lighter';   // 重なるほど明るくなる
-      scenes.forEach(sc=>sc.draw(sc.alpha, e, t));
-      drawComets();
+      if(e.lv > 0.001) scenes.forEach(sc=>sc.draw(sc.alpha, e));
+      drawOrbs(e.t);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
+    }
+    // デフォルト（LEVEL 0）に落ち着き、光の玉も無いとき。何も描かないので描画を止める
+    function resting(){
+      return target.level === 0 && lv === 0 && !target.presence && !orbs.length;
     }
 
     // ---------- ループ ----------
@@ -1299,6 +1366,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       const c0 = performance.now();
       try{
         lastE = step(dt, false);
+        if(resting()){ clearCanvas(); cancelAnimationFrame(raf); raf = 0; return; }
         draw(lastE);
       }catch(e){ shutdown(); return; }   // 描画で失敗したら止めて従来の見た目に戻す
       const cost = performance.now() - c0;
@@ -1313,7 +1381,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     function still(){
       // 動きを減らす設定：その時点の景色を1枚の止まった絵として描く
       for(let i = 0; i < 30; i++) lastE = step(0.1, true);
-      draw(lastE);
+      if(resting()) clearCanvas(); else draw(lastE);
     }
     function running(){ return !document.hidden && !modalOpen && !(reduced && reduced.matches); }
     function update(){
@@ -1321,11 +1389,11 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       cancelAnimationFrame(raf);
       raf = 0;
       if(reduced && reduced.matches){ still(); return; }
-      if(running()){
+      if(running() && !resting()){
         last = performance.now();
         costFrom = last;
         raf = requestAnimationFrame(frame);
-      }
+      }else if(resting()) clearCanvas();
     }
 
     // 入力の見直し（本番では resonance.json の取得）。表示中だけ回す
@@ -1336,16 +1404,16 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         setTarget(s);
         if(onApplied) onApplied(s);
         if(reduced && reduced.matches) still();
+        else if(!raf) update();   // デフォルトで止まっていたら、育ち始めたときに再開する
       }catch(e){ /* 入力の失敗は無視する（前の状態のまま描き続ける） */ }
     }
-    let tickTimer = null;
+    let tickTimer = null, watchTimer = null;
     function updateTick(){
       clearInterval(tickTimer);
       tickTimer = null;
       if(!document.hidden){ tick(); tickTimer = setInterval(tick, TICK_MS); }
     }
 
-    let watchTimer = null;
     shutdown = ()=>{
       cancelAnimationFrame(raf);
       clearInterval(tickTimer);
@@ -1382,7 +1450,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       try{
         const ROWS = [
           { key:'pattern',  label:'pattern',  opts:[['ambient','ambient'],['flow','flow'],['pulse','pulse'],['cycle','cycle']], def:'ambient' },
-          { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['decay','decay']], def:'0' },
+          { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['4','4'],['decay','decay']], def:'0' },
           { key:'presence', label:'presence', opts:[['0','off'],['1','on']], def:'0' },
           { key:'status',   label:'status',   opts:[['ok','ok'],['unknown','unknown'],['stale','stale']], def:'ok' },
           { key:'_speed',   label:'遷移',     opts:[['slow','ゆっくり'],['instant','即時']], def:'slow' }
@@ -1439,10 +1507,10 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         };
         // 実機での計測用：粒子の数・1フレームの描画時間・自動で減らした倍率
         setInterval(()=>{
-          let n = comets.length;
+          let n = orbs.length;
           scenes.forEach(sc=>{ n += sc.count(); });
-          perf.textContent = '粒子 ' + n + ' / 描画 ' + costAvg.toFixed(1) + 'ms / 品質 ' + Math.round(quality * 100) + '%'
-                             + (raf ? '' : ' / 停止中');
+          const state = raf > 0 ? '' : (resting() ? ' / 停止中（デフォルト）' : ' / 停止中');
+          perf.textContent = '粒子 ' + n + ' / 描画 ' + costAvg.toFixed(1) + 'ms / 品質 ' + Math.round(quality * 100) + '%' + state;
         }, 1000);
         tick();
       }catch(e){ /* パネルが作れなくても演出は続ける */ }
