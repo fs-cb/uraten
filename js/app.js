@@ -1354,6 +1354,15 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     function resting(){
       return target.level === 0 && lv === 0 && !target.presence && !orbs.length;
     }
+    // 見た目の切り替え：景色が見えている間だけ body.fx-on（パネルを透かす）。
+    // LEVEL 0 では公開中と同じ見た目にする。何も描かないときは canvas も隠す。変わったときだけ書き換える
+    let shownOn = null, shownCanvas = null;
+    function syncLook(){
+      const on = target.level > 0 || lv > 0;
+      if(on !== shownOn){ shownOn = on; document.body.classList.toggle('fx-on', on); }
+      const vis = !resting();
+      if(vis !== shownCanvas){ shownCanvas = vis; canvas.style.visibility = vis ? '' : 'hidden'; }
+    }
 
     // ---------- ループ ----------
     let raf = 0, last = 0, lastE = null;
@@ -1366,6 +1375,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       const c0 = performance.now();
       try{
         lastE = step(dt, false);
+        syncLook();
         if(resting()){ clearCanvas(); cancelAnimationFrame(raf); raf = 0; return; }
         draw(lastE);
       }catch(e){ shutdown(); return; }   // 描画で失敗したら止めて従来の見た目に戻す
@@ -1381,6 +1391,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     function still(){
       // 動きを減らす設定：その時点の景色を1枚の止まった絵として描く
       for(let i = 0; i < 30; i++) lastE = step(0.1, true);
+      syncLook();
       if(resting()) clearCanvas(); else draw(lastE);
     }
     function running(){ return !document.hidden && !modalOpen && !(reduced && reduced.matches); }
@@ -1394,6 +1405,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         costFrom = last;
         raf = requestAnimationFrame(frame);
       }else if(resting()) clearCanvas();
+      syncLook();
     }
 
     // 入力の見直し（本番では resonance.json の取得）。表示中だけ回す
@@ -1402,6 +1414,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       try{
         const s = normalize(readInput());
         setTarget(s);
+        syncLook();
         if(onApplied) onApplied(s);
         if(reduced && reduced.matches) still();
         else if(!raf) update();   // デフォルトで止まっていたら、育ち始めたときに再開する
@@ -1420,12 +1433,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       clearInterval(watchTimer);
       raf = -1;   // 以後 update() から再開させない
       canvas.hidden = true;
-      document.body.classList.remove('fx-on');
+      document.body.classList.remove('fx-ready', 'fx-on');
     };
 
     resize();
     canvas.hidden = false;
-    document.body.classList.add('fx-on');
+    document.body.classList.add('fx-ready');
     tick();
 
     let resizeTimer = null;
@@ -1519,6 +1532,6 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     update();
   }catch(e){
     if(shutdown) shutdown();   // 何かあれば従来の見た目に戻す
-    else{ canvas.hidden = true; document.body.classList.remove('fx-on'); }
+    else{ canvas.hidden = true; document.body.classList.remove('fx-ready', 'fx-on'); }
   }
 })();
