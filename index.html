@@ -57,6 +57,12 @@
 
   <!-- 放送プレイヤー（中身は js/app.js の initRadio。「このあと」は js/onair.js） -->
   <section class="player" id="player" aria-label="放送中の番組">
+    <!-- 共鳴ビジュアル（試作）。js/app.js の initResonance が動かす。フラグがオフのときは hidden のまま -->
+    <div class="pl-aura" id="plAura" aria-hidden="true" hidden>
+      <div class="aura-layer"><div class="aura-body"><i class="aura-a"></i><i class="aura-b"></i><i class="aura-c"></i></div></div>
+      <div class="aura-layer"><div class="aura-body"><i class="aura-a"></i><i class="aura-b"></i><i class="aura-c"></i></div></div>
+      <div class="aura-motes"><i></i><i></i><i></i></div>
+    </div>
     <div class="pl-head">
       <div class="pl-onair" id="npOnair"><i></i><span id="npOnairLabel">ON AIR</span></div>
       <div class="pl-station">URATEN RADIO</div>

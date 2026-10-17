@@ -164,6 +164,56 @@ button{font:inherit;color:inherit}
 .pl-next-more{display:none;font-size:12px;color:var(--dim);white-space:nowrap}
 .pl-next-more:hover{color:var(--cyan)}
 
+/* ---------- 共鳴ビジュアル（試作） ----------
+   js/app.js（initResonance）が動かす：
+     .pl-aura（data-level=0..3 / .has-presence / .is-paused / .is-instant）
+       .aura-layer（A/B の2組。表示側に .on、data-pattern=ambient|flow|pulse）
+         .aura-body > .aura-a / .aura-b / .aura-c（光）
+       .aura-motes > i（Presence の粒）
+   軽さのため、動かすのは opacity と transform だけ。光はグラデーションを敷いた要素で作り、
+   filter / box-shadow / blur は動かさない。描くのは .player の中だけ。 */
+.pl-aura{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.aura-layer{position:absolute;inset:0;opacity:0;transition:opacity 30s ease-in-out}
+.aura-layer.on{opacity:1}
+.aura-body{position:absolute;inset:0;transition:transform 8s ease-in-out}
+.aura-body i{position:absolute;display:block;opacity:0;transition:opacity 8s ease-in-out}
+.aura-a{left:-12%;top:-70%;width:62%;height:240%;background:radial-gradient(closest-side,rgba(255,62,165,.42),rgba(255,62,165,0))}
+.aura-b{left:38%;top:-90%;width:56%;height:230%;background:radial-gradient(closest-side,rgba(139,108,255,.40),rgba(139,108,255,0))}
+.aura-c{left:62%;top:-20%;width:50%;height:220%;background:radial-gradient(closest-side,rgba(63,227,255,.30),rgba(63,227,255,0))}
+/* LEVEL：光の量と奥行き。0 だけでも成り立つ見た目にする */
+.pl-aura[data-level="0"] .aura-a{opacity:.45}
+.pl-aura[data-level="1"] .aura-a{opacity:.65}
+.pl-aura[data-level="1"] .aura-b{opacity:.30}
+.pl-aura[data-level="2"] .aura-a{opacity:.80}
+.pl-aura[data-level="2"] .aura-b{opacity:.55}
+.pl-aura[data-level="2"] .aura-c{opacity:.30}
+.pl-aura[data-level="3"] .aura-a{opacity:1}
+.pl-aura[data-level="3"] .aura-b{opacity:.75}
+.pl-aura[data-level="3"] .aura-c{opacity:.55}
+.pl-aura[data-level="3"] .aura-body{transform:scale(1.08)}
+/* Ambient：ほぼ静止（LEVEL の切り替わりだけ） */
+/* Flow：光の層がゆっくり流れる */
+.aura-layer[data-pattern="flow"] .aura-a{animation:auraFlow 48s ease-in-out infinite alternate}
+.aura-layer[data-pattern="flow"] .aura-b{animation:auraFlow 62s ease-in-out -20s infinite alternate-reverse}
+.aura-layer[data-pattern="flow"] .aura-c{animation:auraFlow 55s ease-in-out -35s infinite alternate}
+@keyframes auraFlow{from{transform:translateX(-9%)}to{transform:translateX(9%)}}
+/* Pulse：光全体がゆっくり呼吸する（Presence の粒とは別物。形で見分けられるようにする） */
+.aura-layer[data-pattern="pulse"] .aura-body{animation:auraBreath 9s ease-in-out infinite}
+@keyframes auraBreath{0%,100%{opacity:1}50%{opacity:.55}}
+/* Presence：今ほかに聴いている人がいるときだけ、小さな点が低い頻度で現れて消える */
+.aura-motes{display:none}
+.pl-aura.has-presence .aura-motes{display:block}
+.aura-motes i{position:absolute;width:6px;height:6px;border-radius:50%;opacity:0;
+  background:radial-gradient(closest-side,#fff,rgba(63,227,255,.8) 45%,rgba(63,227,255,0));
+  animation:auraMote 19s ease-in-out infinite}
+.aura-motes i:nth-child(1){left:34%;top:32%}
+.aura-motes i:nth-child(2){left:57%;top:70%;animation-delay:-7s;animation-duration:23s}
+.aura-motes i:nth-child(3){left:83%;top:22%;animation-delay:-13s;animation-duration:27s}
+@keyframes auraMote{0%,100%{opacity:0;transform:translateY(5px)}12%{opacity:.9}28%{opacity:0;transform:translateY(-10px)}}
+/* 非表示・画面外では止める。最初の描画は遷移なしで出す */
+.pl-aura.is-paused *{animation-play-state:paused !important}
+.pl-aura.is-instant *{transition:none !important}
+
 /* =========================================================
    SHOWCASE（大・小・小の3枠）
    js/app.js（startShow / makeSlot）が組み立てる：
@@ -556,4 +606,7 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
   /* 番組名・出演者の横スクロールも止める（animation はインライン指定なので !important） */
   .is-scrolling > .mq-in{animation:none !important}
+  /* 共鳴ビジュアル：動きを止め、Presence の粒も出さない（光の量だけで表す） */
+  .pl-aura *{animation:none !important}
+  .pl-aura.has-presence .aura-motes{display:none}
 }

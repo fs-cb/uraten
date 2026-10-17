@@ -811,3 +811,115 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
   updatePolling();
 })();
 
+
+// ===== 共鳴ビジュアル（試作） =====
+// プレーヤーの周りの光（#plAura）。CLAUDE.md 11章。
+// - LEVEL（0〜3・光の量）、Pattern（景色）、Presence（今ほかに聴いている人がいるか）を別々に扱う
+// - 景色も強さもサイト全体で共通。本人の操作や再生状態では見え方を変えない
+// - 再生処理（initRadio）とは切り離す。audio・poll・render には触らない。ここが失敗しても放送は止めない
+// - 入力は試作中のため URL パラメータ（?level= / ?pattern= / ?presence= / ?status=）。
+//   本番では readInput を resonance.json（CLAUDE.md 4-5）の取得に差し替える
+(function initResonance(){
+  const root = document.getElementById('plAura');
+  const player = document.getElementById('player');
+  if(!root || !player) return;
+  try{
+    let q;
+    try{ q = new URLSearchParams(location.search); }catch(e){ return; }
+    const hasParam = ['level','pattern','presence','status'].some(k=>q.has(k));
+    const env = window.URATEN_ENV || {};
+    if(env.resonance !== true && !hasParam) return;   // フラグもパラメータも無ければ従来の見た目のまま
+
+    const PATTERNS = ['ambient','flow','pulse'];
+    const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
+    const FADE_MS  = 30000;           // 景色のクロスフェード（css の .aura-layer と合わせる）
+    const TICK_MS  = 5000;            // 入力を見直す間隔（本番は resonance.json の取得間隔）
+    const t0 = Date.now();
+
+    // --- 入力（試作）。{status, level, pattern, presence, generatedAt} を返す ---
+    function readInput(){
+      const now = Date.now();
+      const lv = q.get('level');
+      let level = 0;
+      if(lv === 'decay') level = Math.max(0, 3 - Math.floor((now - t0) / 40000));  // 3 から約2分で 0 へ
+      else if(/^[0-3]$/.test(lv || '')) level = Number(lv);
+      let pattern = q.get('pattern') || 'ambient';
+      if(pattern === 'cycle') pattern = PATTERNS[Math.floor(now / 60000) % PATTERNS.length];
+      const st = q.get('status');
+      return {
+        status: st === 'unknown' ? 'unknown' : 'ok',
+        level, pattern,
+        presence: q.get('presence') === '1',
+        generatedAt: st === 'stale' ? now - STALE_MS - 60000 : now
+      };
+    }
+
+    // --- 受け取った値の扱い（CLAUDE.md 4-5 のフロント側仕様） ---
+    // 状態不明・古い値・壊れた値は level 0 / presence なし（誰かがいると偽らない）。
+    // 知らない pattern は ambient として描く
+    function normalize(v){
+      const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'ambient';
+      const fresh = !!v && v.status === 'ok' && typeof v.generatedAt === 'number'
+                    && Date.now() - v.generatedAt <= STALE_MS;
+      if(!fresh) return { level:0, pattern, presence:false };
+      const level = (Number.isInteger(v.level) && v.level >= 0 && v.level <= 3) ? v.level : 0;
+      return { level, pattern, presence: v.presence === true };
+    }
+
+    // --- 反映。変わったところだけ書き換える ---
+    // pattern が同じなら data-level を変えるだけ。変わったら待機側の層に入れてクロスフェードする
+    const layers = root.querySelectorAll('.aura-layer');
+    let live = 0, curPattern = '', fadeTimer = null;
+    function apply(s){
+      root.dataset.level = String(s.level);
+      root.classList.toggle('has-presence', s.presence);
+      if(s.pattern === curPattern) return;
+      if(!curPattern){
+        layers[live].dataset.pattern = s.pattern;
+        layers[live].classList.add('on');
+      }else{
+        const old = live;
+        live = 1 - live;
+        layers[live].dataset.pattern = s.pattern;
+        layers[live].classList.add('on');
+        layers[old].classList.remove('on');
+        // 消え終わった層は動きを止める（見えない層でアニメーションを回さない）
+        clearTimeout(fadeTimer);
+        fadeTimer = setTimeout(()=>{
+          if(!layers[old].classList.contains('on')) delete layers[old].dataset.pattern;
+        }, FADE_MS + 500);
+      }
+      curPattern = s.pattern;
+    }
+    function tick(){
+      try{ apply(normalize(readInput())); }catch(e){ /* 演出の失敗は無視する（放送・閲覧を止めない） */ }
+    }
+
+    // 最初の1回は遷移なしで描く（開いた瞬間に光が立ち上がって「今何か起きた」と見せないため）
+    root.classList.add('is-instant');
+    root.hidden = false;
+    tick();
+    void root.offsetWidth;
+    root.classList.remove('is-instant');
+
+    // --- 見えている間だけ動かす（裏タブ・画面外・ギャラリー表示中は止める） ---
+    let timer = null, onScreen = true;
+    function update(){
+      const running = onScreen && !document.hidden;
+      root.classList.toggle('is-paused', !running);
+      clearInterval(timer);
+      timer = null;
+      if(running){ tick(); timer = setInterval(tick, TICK_MS); }
+    }
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(es=>{
+        es.forEach(e=>{ onScreen = e.isIntersecting; });
+        update();
+      }).observe(player);
+    }
+    document.addEventListener('visibilitychange', update);
+    update();
+  }catch(e){
+    root.hidden = true;   // 何かあれば従来の見た目に戻す
+  }
+})();
