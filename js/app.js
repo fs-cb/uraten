@@ -814,7 +814,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
 // ===== 共鳴ビジュアル（試作） =====
 // 画面全体の canvas（#fxCanvas）に光を描く。CLAUDE.md 11章。
-// - LEVEL（0〜4）、Pattern（景色）、Presence（今ほかに聴いている人の多さ。0〜3 の段階）を別々に扱う
+// - LEVEL（0〜4）、Pattern（景色）、Presence（今ほかに聴いている人の多さ。0〜4 の段階）を別々に扱う
 // - LEVEL 0 はデフォルト（元の背景のまま。何も描かず、描画も止める）。
 //   各景色は LEVEL 1〜4 で、段ごとに要素が加わって育つ
 // - 景色も強さもサイト全体で共通。本人の操作や再生状態では見え方を変えない
@@ -869,7 +869,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       return {
         status: st === 'unknown' ? 'unknown' : 'ok',
         level, pattern,
-        presence: /^[0-3]$/.test(params.presence || '') ? Number(params.presence) : 0,
+        presence: /^[0-4]$/.test(params.presence || '') ? Number(params.presence) : 0,
         generatedAt: st === 'stale' ? now - STALE_MS - 60000 : now
       };
     }
@@ -883,7 +883,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
                     && Date.now() - v.generatedAt <= STALE_MS;
       if(!fresh) return { level:0, pattern, presence:0 };
       const level = (Number.isInteger(v.level) && v.level >= 0 && v.level <= MAX_LV) ? v.level : 0;
-      const presence = (Number.isInteger(v.presence) && v.presence >= 0 && v.presence <= 3) ? v.presence : 0;
+      const presence = (Number.isInteger(v.presence) && v.presence >= 0 && v.presence <= 4) ? v.presence : 0;
       return { level, pattern, presence };
     }
 
@@ -1534,9 +1534,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const MAKERS = { star:sceneStars, flow:sceneFlow, forest:sceneForest };
 
     // Presence「浮遊する光の玉」：今ほかに聴いている人がいるときだけ、温かい光の玉がゆっくり浮かぶ。
-    // 人数は段階（presence 0〜3）でしか受け取らず、段階が上がるほど玉が増える。数は段階ごとの範囲で
+    // 人数は段階（presence 0〜4）でしか受け取らず、段階が上がるほど玉が増える。数は段階ごとの範囲で
     // 揺らぐので、玉の数から正確な人数はわからない。段階が下がったら多い分を約3秒で消す
-    const ORB_RANGE = [[0, 0], [1, 2], [3, 5], [6, 9]];
+    const ORB_RANGE = [[0, 0], [1, 2], [3, 5], [6, 9], [12, 16]];
     const orbs = [];
     let nextOrb = 0;
     function updateOrbs(dt, t, tier){
@@ -1770,7 +1770,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         const ROWS = [
           { key:'pattern',  label:'pattern',  opts:[['star','star'],['flow','flow'],['forest','forest'],['cycle','cycle']], def:'star' },
           { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['4','4'],['decay','decay']], def:'0' },
-          { key:'presence', label:'presence', opts:[['0','0'],['1','1'],['2','2'],['3','3']], def:'0' },
+          { key:'presence', label:'presence', opts:[['0','0'],['1','1'],['2','2'],['3','3'],['4','4']], def:'0' },
           { key:'status',   label:'status',   opts:[['ok','ok'],['unknown','unknown'],['stale','stale']], def:'ok' },
           { key:'_speed',   label:'遷移',     opts:[['slow','ゆっくり'],['instant','即時']], def:'slow' }
         ];
