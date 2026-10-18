@@ -1152,7 +1152,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
     // Flow（表示名「オーロラ」）
     //   段1 極夜：澄んだ夜空に星が瞬く・地平の上にかすかな緑の光・
-    //       左から右へ流れる光の粒子（LEVEL が上がるほど数と速さが増す）
+    //       左から右へ流れる、細かく明滅する光の粒子（LEVEL が上がるほど数と速さが増す）
     //   段2 オーロラの帯：緑のカーテンが1枚、裾をゆらしながらゆっくりうねる
     //   段3 ゆらめくカーテン：上空にもう1枚（青緑）。光の筋の明るさが波のように走る・
     //       地上のもやが緑に照らされる
@@ -1185,21 +1185,53 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       g.fillRect(0, 0, 32, 256);
       return s;
     }
-    const RAY = { green:makeRay(COL.aurora, COL.violet), teal:makeRay(COL.teal, COL.violet),
-                  high:makeRay(COL.violet, COL.pink), pink:makeRay(COL.pink, COL.aurora) };
+    // 色の違う光の筋。stops は上（0）から裾（1）へ [位置, 色, 濃さ]。裾ほど明るく、上へ向かって色が移る
+    function makeRayStops(stops){
+      const s = document.createElement('canvas');
+      s.width = 32; s.height = 256;
+      const g = s.getContext('2d');
+      const v = g.createLinearGradient(0, 0, 0, 256);
+      stops.forEach(([at, rgb, a])=>v.addColorStop(at, 'rgba(' + rgb + ',' + a + ')'));
+      g.fillStyle = v;
+      g.fillRect(0, 0, 32, 256);
+      g.globalCompositeOperation = 'destination-in';
+      const h = g.createLinearGradient(0, 0, 32, 0);
+      h.addColorStop(0, 'rgba(0,0,0,0)');
+      h.addColorStop(0.5, 'rgba(0,0,0,1)');
+      h.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = h;
+      g.fillRect(0, 0, 32, 256);
+      return s;
+    }
+    const hot = c=>c.map(v=>Math.round((v + 255) / 2));   // 裾のいちばん明るいところ
+    const AC = { lime:[190,255,140], emerald:[60,230,150], blue:[90,140,255], magenta:[220,90,255] };
+    const RAY = {
+      lime:    makeRayStops([[0,COL.violet,0],[0.4,COL.violet,0.25],[0.65,COL.aurora,0.55],[0.82,AC.lime,0.9],[0.93,hot(AC.lime),1],[1,AC.lime,0]]),
+      green:   makeRayStops([[0,COL.violet,0],[0.4,COL.violet,0.3],[0.62,COL.teal,0.45],[0.8,COL.aurora,0.88],[0.93,hot(COL.aurora),1],[1,COL.aurora,0]]),
+      emerald: makeRayStops([[0,COL.pink,0],[0.38,COL.violet,0.3],[0.6,AC.emerald,0.6],[0.82,COL.aurora,0.9],[0.93,hot(COL.aurora),1],[1,AC.emerald,0]]),
+      tealg:   makeRayStops([[0,AC.blue,0],[0.42,AC.blue,0.28],[0.65,COL.teal,0.6],[0.83,COL.aurora,0.85],[0.93,hot(COL.teal),1],[1,COL.teal,0]]),
+      teal:    makeRayStops([[0,COL.violet,0],[0.45,AC.blue,0.3],[0.7,COL.cyan,0.6],[0.85,COL.teal,0.9],[0.94,hot(COL.teal),1],[1,COL.teal,0]]),
+      high:    makeRayStops([[0,COL.pink,0],[0.45,COL.pink,0.3],[0.75,COL.violet,0.8],[0.92,hot(COL.violet),0.9],[1,COL.violet,0]]),
+      highm:   makeRayStops([[0,COL.violet,0],[0.45,AC.magenta,0.35],[0.75,COL.pink,0.7],[0.92,hot(COL.pink),0.85],[1,COL.pink,0]]),
+      pink:    makeRay(COL.pink, COL.aurora)
+    };
+    // 各カーテンが使う色の並び。筋ごとに、場所と時間でゆっくり変わる模様から選ぶ
     const CURTAINS = [
-      { base:0.62, amp:0.07, freq:1.3, w:0.04,   ph:0,   h:0.44, fold:0.035, rs:0.35, ray:'green', stage:2 },
-      { base:0.40, amp:0.06, freq:1.9, w:-0.03,  ph:2.2, h:0.32, fold:0.03,  rs:0.28, ray:'teal',  stage:3 },
-      { base:0.22, amp:0.05, freq:1.1, w:0.025,  ph:4.1, h:0.24, fold:0.025, rs:0.22, ray:'high',  stage:4 }
+      { base:0.62, amp:0.07, freq:1.3, w:0.04,   ph:0,   h:0.44, fold:0.035, rs:0.35, stage:2,
+        pal:['lime','green','green','emerald','tealg','green'] },
+      { base:0.40, amp:0.06, freq:1.9, w:-0.03,  ph:2.2, h:0.32, fold:0.03,  rs:0.28, stage:3,
+        pal:['tealg','teal','teal','green','teal'] },
+      { base:0.22, amp:0.05, freq:1.1, w:0.025,  ph:4.1, h:0.24, fold:0.025, rs:0.22, stage:4,
+        pal:['high','highm','high','highm'] }
     ];
     function sceneFlow(){
       const stars = [], motes = [];
       let strips = 0;
-      // 左から右へ流れる光の粒子。fresh のときは画面のどこからでも、流れ直すときは左端から
+      // 左から右へ流れる、細かく明滅する光の粒子。fresh のときは画面のどこからでも、流れ直すときは左端から
       function spawnMote(fresh){
         return { x:fresh ? rand(0, W) : rand(-40, -10), y:rand(0.05, 0.95) * H, f:0, dying:false,
-                 sp:rand(0.6, 1.4), ph:rand(0, TAU), size:rand(0.7, 1.3),
-                 col:pick(['aurora','aurora','teal','white','cyan']) };
+                 sp:rand(0.6, 1.4), ph:rand(0, TAU), size:rand(0.6, 1.4), pf:rand(1.2, 3.2),
+                 col:pick(['aurora','aurora','teal','white','cyan','violet']) };
       }
       function spawnStar(){
         return { x:rand(0, W), y:rand(0, H * 0.9), z:Math.random(), f:0, dying:false,
@@ -1207,7 +1239,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       // カーテン1枚を描く。fringe は段4の裾のピンク
       function curtain(c, k, t, L, br, fringe){
-        const n = MOBILE ? 26 : 44;
+        const n = MOBILE ? 38 : 72;   // 筋の本数（多いほど色と縞が細かくなる）
         const sw = W / n * 2.4;
         for(let i = 0; i <= n; i++){
           const u = i / n;
@@ -1221,10 +1253,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
           const edge = smooth(Math.min(u, 1 - u) * 6);
           // 段4：ところどころがゆっくり明滅する
           const patch = 1 + 0.7 * L[4] * Math.pow(Math.max(0, Math.sin(u * 5 + t * 0.35 + c.ph)), 4);
-          const a = 0.6 * k * bright * edge * patch * br;
+          const a = 0.42 * k * bright * edge * patch * br;   // 筋が細かく重なる分、1本は淡く
           if(a <= 0.003) continue;
+          // 色：2つの波を重ねた模様で、筋ごとに色を選ぶ（隣どうしが少しずつ違う色になる）
+          const m = 0.5 + 0.5 * (0.6 * Math.sin(u * 13.7 + c.ph + t * 0.04) + 0.4 * Math.sin(u * 37.1 - t * 0.07 + c.ph * 2));
+          const ray = RAY[c.pal[Math.min(c.pal.length - 1, Math.floor(m * c.pal.length))]];
           ctx.globalAlpha = Math.min(1, a);
-          ctx.drawImage(RAY[c.ray], x - sw / 2, yb - hh, sw, hh);
+          ctx.drawImage(ray, x - sw / 2, yb - hh, sw, hh);
           if(fringe > 0.01){
             ctx.globalAlpha = Math.min(1, 0.9 * a * fringe);
             ctx.drawImage(RAY.pink, x - sw / 2, yb - hh * 0.12, sw, hh * 0.2);
@@ -1238,9 +1273,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); motes.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
         update(dt, e){
           // 星はほとんど動かない（夜空の奥行き）。粒子数の上限は星と流れる粒子で分け合う
-          settle(stars, Math.round(e.want * 0.45), spawnStar);
+          settle(stars, Math.round(e.want * 0.35), spawnStar);
           sweep(stars, dt);
-          settle(motes, Math.round(e.want * 0.55), ()=>spawnMote(true));
+          settle(motes, Math.round(e.want * 0.65), ()=>spawnMote(true));
           sweep(motes, dt);
           const v = (10 + 14 * e.lv) * K;
           for(let i = 0; i < motes.length; i++){
@@ -1261,15 +1296,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
             const tw = 0.5 + 0.5 * Math.sin(t * p.tw + p.ph);
             dot(p.col, p.x, p.y, (2.5 + 4 * p.z) * K, (0.25 + 0.6 * p.z) * tw * p.f * L[1] * br);
           }
-          // 左から右へ流れる光の粒子（後ろに淡い光を2つ並べて、短い残光にする）
+          // 左から右へ流れる光の粒子。1つずつ自分の周期で明滅する（パルス状の細かい光）
           for(let i = 0; i < motes.length; i++){
             const p = motes[i];
-            const tw = 0.7 + 0.3 * Math.sin(t * 1.1 + p.ph);
-            const a = (0.45 + 0.4 * L[2]) * tw * p.f * L[1] * br;
-            const s = (5.5 + 4 * p.size) * K;
-            dot(p.col, p.x - s * 1.6, p.y, s * 0.8, 0.25 * a);
-            dot(p.col, p.x - s * 0.8, p.y, s * 0.9, 0.5 * a);
-            dot(p.col, p.x, p.y, s, a);
+            const pulse = 0.2 + 0.8 * Math.pow(Math.max(0, Math.sin(t * p.pf + p.ph)), 2);
+            const a = (0.5 + 0.4 * L[2]) * pulse * p.f * L[1] * br;
+            dot(p.col, p.x, p.y, (3.5 + 2.5 * p.size) * K * (0.8 + 0.4 * pulse), a);
           }
           // カーテン（高い空から順に）
           for(let ci = CURTAINS.length - 1; ci >= 0; ci--){
