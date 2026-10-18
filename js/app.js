@@ -1151,7 +1151,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
 
     // Flow（表示名「オーロラ」）
-    //   段1 極夜：澄んだ夜空に星が瞬く・地平の上にかすかな緑の光
+    //   段1 極夜：澄んだ夜空に星が瞬く・地平の上にかすかな緑の光・
+    //       左から右へ流れる光の粒子（LEVEL が上がるほど数と速さが増す）
     //   段2 オーロラの帯：緑のカーテンが1枚、裾をゆらしながらゆっくりうねる
     //   段3 ゆらめくカーテン：上空にもう1枚（青緑）。光の筋の明るさが波のように走る・
     //       地上のもやが緑に照らされる
@@ -1192,8 +1193,14 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       { base:0.22, amp:0.05, freq:1.1, w:0.025,  ph:4.1, h:0.24, fold:0.025, rs:0.22, ray:'high',  stage:4 }
     ];
     function sceneFlow(){
-      const stars = [];
+      const stars = [], motes = [];
       let strips = 0;
+      // 左から右へ流れる光の粒子。fresh のときは画面のどこからでも、流れ直すときは左端から
+      function spawnMote(fresh){
+        return { x:fresh ? rand(0, W) : rand(-40, -10), y:rand(0.05, 0.95) * H, f:0, dying:false,
+                 sp:rand(0.6, 1.4), ph:rand(0, TAU), size:rand(0.7, 1.3),
+                 col:pick(['aurora','aurora','teal','white','cyan']) };
+      }
       function spawnStar(){
         return { x:rand(0, W), y:rand(0, H * 0.9), z:Math.random(), f:0, dying:false,
                  ph:rand(0, TAU), tw:rand(0.5, 1.8), col:pick(['white','white','cyan']) };
@@ -1227,12 +1234,21 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       return {
         pattern:'flow',
-        count:()=>stars.length + strips,
-        rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
+        count:()=>stars.length + motes.length + strips,
+        rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); motes.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
         update(dt, e){
-          // 星はほとんど動かない（夜空の奥行き）
-          settle(stars, Math.round(e.want * 0.7), spawnStar);
+          // 星はほとんど動かない（夜空の奥行き）。粒子数の上限は星と流れる粒子で分け合う
+          settle(stars, Math.round(e.want * 0.45), spawnStar);
           sweep(stars, dt);
+          settle(motes, Math.round(e.want * 0.55), ()=>spawnMote(true));
+          sweep(motes, dt);
+          const v = (10 + 14 * e.lv) * K;
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i];
+            p.x += v * p.sp * dt;
+            p.y += Math.sin(e.t * 0.4 + p.ph + p.x / W * 3) * 6 * K * dt;   // ゆるやかにうねりながら
+            if(p.x > W + 20){ const n = spawnMote(false); p.x = n.x; p.y = n.y; }
+          }
         },
         draw(alpha, e){
           const t = e.t, L = e.L, br = alpha * e.bright;
@@ -1244,6 +1260,16 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
             const p = stars[i];
             const tw = 0.5 + 0.5 * Math.sin(t * p.tw + p.ph);
             dot(p.col, p.x, p.y, (2.5 + 4 * p.z) * K, (0.25 + 0.6 * p.z) * tw * p.f * L[1] * br);
+          }
+          // 左から右へ流れる光の粒子（後ろに淡い光を2つ並べて、短い残光にする）
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i];
+            const tw = 0.7 + 0.3 * Math.sin(t * 1.1 + p.ph);
+            const a = (0.45 + 0.4 * L[2]) * tw * p.f * L[1] * br;
+            const s = (5.5 + 4 * p.size) * K;
+            dot(p.col, p.x - s * 1.6, p.y, s * 0.8, 0.25 * a);
+            dot(p.col, p.x - s * 0.8, p.y, s * 0.9, 0.5 * a);
+            dot(p.col, p.x, p.y, s, a);
           }
           // カーテン（高い空から順に）
           for(let ci = CURTAINS.length - 1; ci >= 0; ci--){
