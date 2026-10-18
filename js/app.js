@@ -1656,11 +1656,14 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
     // 見た目の切り替え：景色が見えている間だけ body.fx-on（パネルを透かす）。
     // LEVEL 0 では公開中と同じ見た目にする。何も描かないときは canvas も隠す。変わったときだけ書き換える
-    let shownOn = null, shownFront = null, shownCrowd = null;
+    let shownOn = null, shownFront = null, shownCrowd = null, shownCrowdMax = null;
     function syncLook(){
       // presence 3 以上（人が集まっている）：Discord の参加ボタンの縁を光らせる（css の .fx-crowd）
       const crowd = target.presence >= 3;
       if(crowd !== shownCrowd){ shownCrowd = crowd; document.body.classList.toggle('fx-crowd', crowd); }
+      // presence 4（最大）：もっと強く光らせる（css の .fx-crowd-max）
+      const crowdMax = target.presence >= 4;
+      if(crowdMax !== shownCrowdMax){ shownCrowdMax = crowdMax; document.body.classList.toggle('fx-crowd-max', crowdMax); }
       const on = target.level > 0 || lv > 0;
       if(on !== shownOn){
         shownOn = on;
@@ -1741,7 +1744,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       raf = -1;   // 以後 update() から再開させない
       canvas.hidden = true;
       front.hidden = true;
-      document.body.classList.remove('fx-ready', 'fx-on', 'fx-crowd');
+      document.body.classList.remove('fx-ready', 'fx-on', 'fx-crowd', 'fx-crowd-max');
     };
 
     resize();
@@ -1841,6 +1844,6 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     update();
   }catch(e){
     if(shutdown) shutdown();   // 何かあれば従来の見た目に戻す
-    else{ canvas.hidden = true; front.hidden = true; document.body.classList.remove('fx-ready', 'fx-on', 'fx-crowd'); }
+    else{ canvas.hidden = true; front.hidden = true; document.body.classList.remove('fx-ready', 'fx-on', 'fx-crowd', 'fx-crowd-max'); }
   }
 })();
