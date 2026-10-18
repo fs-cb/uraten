@@ -894,7 +894,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const TAU = Math.PI * 2;
     const COL = {
       pink:[255,62,165], violet:[139,108,255], cyan:[63,227,255], white:[246,240,255],
-      amber:[255,176,92], gold:[255,222,160]
+      amber:[255,176,92], gold:[255,222,160],
+      sun:[255,232,170], leaf:[150,230,140], moss:[90,200,150], firefly:[214,255,140]
     };
     // 光の画像を色ごとに1回だけ作る。以後は drawImage で貼るだけ
     //   SPRITE … 芯のある光の粒   HAZE … 芯のない柔らかい光（もや・ヴェール・後光）
@@ -1281,134 +1282,202 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       };
     }
 
-    // Pulse「呼吸」（水面の波紋）
-    //   段1 プレーヤーの背後の光が、約7秒周期でゆっくり呼吸する・暖色のもや
-    //   段2 呼吸に合わせて、細く淡い波紋が1つずつ広がる
-    //   段3 周りの光の粒が、呼吸に合わせて外へ内へとゆらぐ。吸う時に明るくなる・
-    //       波紋が二重になり、色がピンクから琥珀へ移ろう。呼吸が少し深く速くなる（約5秒）
-    //   段4「光の花」 吸うたびに、光の点が同心円に並んだ花がゆっくり回りながら開く・
-    //       吐くたびに、灯籠のような光がふわりと昇る
-    const HAZE_PULSE1 = [ { col:'amber', x:0.85, y:0.8,  r:0.75, s:0.04, p:0, a:0.6 },
-                          { col:'pink',  x:0.12, y:0.85, r:0.7,  s:0.05, p:2, a:0.6 } ];
+    // Pulse（表示名「木漏れ日の森」）
+    //   段1 森の気配：足もとの苔色のもやと、左上から差す陽のもや・光の塵がゆっくりただよう
+    //   段2 木漏れ日：左上から斜めに差し込む光芒が、ゆっくり明るさを変えながら揺れる。
+    //       光芒の中を通る塵がきらりと光る
+    //   段3 揺れる光斑：地面に落ちた木漏れ日の光の斑が、葉の揺れに合わせてちらちら揺らぐ・
+    //       光芒が増える・光を受けた葉がくるくると舞い落ちる
+    //   段4 森の精：蛍がゆっくり明滅しながらさまよう・低く霧が流れる・
+    //       ときどき風が吹き抜け、光芒と葉と塵がいっせいにそよぐ
+    // ※ Presence の金色の光の玉と取り違えないよう、景色側には大きな金色の玉を置かない
+    const HAZE_FOREST1 = [ { col:'moss', x:0.2,  y:0.98, r:1.0,  s:0.03, p:0, a:1.3 },
+                           { col:'leaf', x:0.8,  y:0.95, r:0.85, s:0.04, p:2, a:1.0 },
+                           { col:'sun',  x:0.08, y:0.02, r:0.9,  s:0.03, p:4, a:1.2 } ];
+    // 段2：森全体を包む緑の気配
+    const HAZE_FOREST2 = [ { col:'moss', x:0.55, y:0.55, r:1.1,  s:0.02, p:1, a:0.9 },
+                           { col:'leaf', x:0.15, y:0.45, r:0.8,  s:0.03, p:3, a:0.6 },
+                           { col:'sun',  x:0.35, y:0.12, r:0.7,  s:0.03, p:5, a:0.8 } ];
+    // 光芒の画像：横は中央が明るく、縦は上で強く下へ向かって薄れる
+    function makeBeam(c){
+      const s = document.createElement('canvas');
+      s.width = 64; s.height = 256;
+      const g = s.getContext('2d');
+      const h = g.createLinearGradient(0, 0, 64, 0);
+      h.addColorStop(0, 'rgba(' + c + ',0)');
+      h.addColorStop(0.5, 'rgba(' + c + ',1)');
+      h.addColorStop(1, 'rgba(' + c + ',0)');
+      g.fillStyle = h;
+      g.fillRect(0, 0, 64, 256);
+      g.globalCompositeOperation = 'destination-in';
+      const v = g.createLinearGradient(0, 0, 0, 256);
+      v.addColorStop(0, 'rgba(0,0,0,0)');
+      v.addColorStop(0.12, 'rgba(0,0,0,.9)');
+      v.addColorStop(0.55, 'rgba(0,0,0,.45)');
+      v.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = v;
+      g.fillRect(0, 0, 64, 256);
+      return s;
+    }
+    const BEAM = { sun:makeBeam(COL.sun), pale:makeBeam(COL.white) };
     function scenePulse(){
-      const dust = [], ripples = [], lanterns = [];
-      let phase = 0, breath = 0, cx = 0, cy = 0, centerAt = -1, e4 = false;
-      function spawnDust(){
-        return { r:rand(0.08, 0.6), a:rand(0, TAU), w:rand(-0.015, 0.015), f:0, dying:false,
-                 ph:rand(0, TAU), col:pick(['pink','amber','white']) };
-      }
-      function center(t){
-        if(centerAt >= 0 && t - centerAt < 0.25) return;   // プレーヤーの位置は 0.25 秒ごとに測り直す
-        centerAt = t;
-        const pl = document.getElementById('player');
-        const r = pl && pl.offsetParent ? pl.getBoundingClientRect() : null;
-        if(r && r.bottom > 0 && r.top < window.innerHeight){
-          cx = (r.left + r.width / 2) * K; cy = (r.top + r.height / 2) * K;
-        }else{
-          cx = W / 2; cy = H * 0.15;
+      const motes = [], spots = [], leaves = [], flies = [];
+      let beams = [], wind = 0;
+      // 光芒：左上の梢のすき間から右下へ斜めに差す。段2 で5本、段3 で3本増える
+      function makeBeams(){
+        beams = [];
+        for(let i = 0; i < 8; i++){
+          beams.push({ x:W * (0.02 + 0.09 * i + rand(-0.03, 0.03)), y:-H * 0.06,
+                       a:rand(0.38, 0.55), w:W * rand(0.07, 0.16), len:H * rand(1.15, 1.5),
+                       ph:rand(0, TAU), sp:rand(0.05, 0.12), col:Math.random() < 0.7 ? 'sun' : 'pale',
+                       stage:i < 5 ? 2 : 3, k:0 });
         }
+      }
+      // 光斑：画面の下半分に、木漏れ日の落ちた斑をまとまりで置く
+      function makeSpots(){
+        spots.length = 0;
+        const n = MOBILE ? 14 : 26;
+        for(let i = 0; i < n; i++){
+          spots.push({ x:rand(0.03, 0.97) * W, y:rand(0.4, 0.98) * H, r:rand(36, 90) * K,
+                       f1:rand(0.4, 1.1), f2:rand(0.15, 0.5), ph:rand(0, TAU), ph2:rand(0, TAU),
+                       col:Math.random() < 0.75 ? 'sun' : 'leaf' });
+        }
+      }
+      makeBeams();
+      makeSpots();
+      function spawnMote(){
+        return { x:rand(0, W), y:rand(0, H), f:0, dying:false, ph:rand(0, TAU),
+                 vx:rand(-2, 2) * K, vy:rand(-4, -1) * K, glow:0 };
+      }
+      function spawnLeaf(){
+        return { x:rand(-0.05, 1) * W, y:rand(-0.1, 0.9) * H, f:0, dying:false,
+                 vy:rand(6, 12) * K, vx:rand(1, 4) * K, rot:rand(0, TAU), vr:rand(-1.2, 1.2),
+                 size:rand(16, 26) * K, ph:rand(0, TAU), col:pick(['leaf','leaf','sun','moss']) };
+      }
+      function spawnFly(){
+        return { x:rand(0.05, 0.95) * W, y:rand(0.35, 0.95) * H, f:0, dying:false,
+                 ax:rand(0.05, 0.12), ay:rand(0.04, 0.1), rx:rand(20, 60) * K, ry:rand(12, 40) * K,
+                 ph:rand(0, TAU), bf:rand(0.5, 1.1), bp:rand(0, TAU) };
+      }
+      // 光芒の中にいるとき、どれだけ明るくなるか（0〜1）
+      function inBeam(px, py){
+        let best = 0;
+        for(let i = 0; i < beams.length; i++){
+          const b = beams[i];
+          if(b.k <= 0.01) continue;
+          const dx = px - b.x, dy = py - b.y;
+          const sa = Math.sin(b.a), ca = Math.cos(b.a);
+          const along = dx * sa + dy * ca;
+          if(along < 0 || along > b.len) continue;
+          const perp = Math.abs(dx * ca - dy * sa);
+          if(perp < b.w / 2) best = Math.max(best, (1 - perp / (b.w / 2)) * b.k);
+        }
+        return best;
       }
       return {
         pattern:'pulse',
-        count:()=>dust.length + ripples.length + lanterns.length + (e4 ? 60 : 0),
-        rescale(){ ripples.length = 0; lanterns.length = 0; centerAt = -1; },
+        count:()=>motes.length + leaves.length + flies.length,
+        rescale(sx, sy){
+          motes.forEach(p=>{ p.x *= sx; p.y *= sy; });
+          leaves.forEach(p=>{ p.x *= sx; p.y *= sy; });
+          flies.forEach(p=>{ p.x *= sx; p.y *= sy; });
+          makeBeams(); makeSpots();
+        },
         update(dt, e){
-          const L = e.L;
-          center(e.t);
-          const period = 7 - 2 * L[3];                 // 約7秒（段3 で約5秒）
-          const before = Math.floor(phase), beforeHalf = Math.floor(phase + 0.5);
-          phase += dt / period;
-          breath = 0.5 - 0.5 * Math.cos(phase * TAU);   // 0（吐き切り）〜1（吸い切り）
-          if(Math.floor(phase) !== before && L[2] > 0.01) ripples.push({ age:0 });
-          // 段4：吐き始めに、画面の下から灯籠のような光を1〜2つ昇らせる
-          e4 = L[4] > 0.01;
-          if(e4 && Math.floor(phase + 0.5) !== beforeHalf){
-            const n = Math.random() < 0.5 ? 1 : 2;
-            for(let i = 0; i < n && lanterns.length < 14; i++){
-              lanterns.push({ x:rand(0.06, 0.94) * W, y:H * rand(0.85, 1.02),
-                              vy:-rand(14, 22) * K, sw:rand(6, 14) * K, ph:rand(0, TAU),
-                              age:0, life:rand(14, 20), col:pick(['amber','pink','amber']) });
-            }
+          const t = e.t, L = e.L;
+          // 風：ふだんは凪いでいて、段4 ではときどき吹き抜ける
+          const gust = Math.pow(Math.max(0, Math.sin(t * 0.045)), 6);
+          wind = 0.15 * Math.sin(t * 0.11) + gust * L[4];
+          for(let i = 0; i < beams.length; i++){
+            const b = beams[i];
+            b.k = b.stage === 2 ? L[2] : L[3];
           }
-          for(let i = lanterns.length - 1; i >= 0; i--){
-            const l = lanterns[i];
-            l.age += dt;
-            if(l.age >= l.life){ lanterns.splice(i, 1); continue; }
-            l.y += l.vy * dt;
+          settle(motes, e.want, spawnMote);
+          sweep(motes, dt);
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i];
+            p.x += (p.vx + Math.sin(t * 0.3 + p.ph) * 3 * K + wind * 24 * K) * dt;
+            p.y += (p.vy + Math.cos(t * 0.25 + p.ph) * 2 * K) * dt;
+            if(p.y < -10) p.y = H + 10;
+            if(p.x < -10) p.x = W + 10; else if(p.x > W + 10) p.x = -10;
+            // 光芒の中を通るときだけ、きらりと光る（毎フレームではなく間引いて調べる）
+            if(L[2] > 0.01 && ((i + Math.floor(t * 30)) % 3 === 0)) p.glow = inBeam(p.x, p.y);
+            else if(L[2] <= 0.01) p.glow = 0;
           }
-          for(let i = ripples.length - 1; i >= 0; i--){
-            ripples[i].age += dt;
-            if(ripples[i].age >= 7) ripples.splice(i, 1);
+          settle(leaves, Math.round((MOBILE ? 8 : 16) * L[3] + (MOBILE ? 4 : 8) * L[4]), spawnLeaf);
+          sweep(leaves, dt);
+          for(let i = 0; i < leaves.length; i++){
+            const p = leaves[i];
+            p.y += p.vy * dt;
+            p.x += (p.vx + Math.sin(t * 0.7 + p.ph) * 8 * K + wind * 40 * K) * dt;
+            p.rot += (p.vr + wind * 2) * dt;
+            if(p.y > H + 20){ p.y = -20; p.x = rand(-0.05, 1) * W; }
+            if(p.x > W + 20) p.x = -20;
           }
-          settle(dust, Math.round(e.want * L[3]), spawnDust);
-          sweep(dust, dt);
-          for(let i = 0; i < dust.length; i++) dust[i].a += dust[i].w * dt;
+          settle(flies, Math.round((MOBILE ? 18 : 36) * L[4]), spawnFly);
+          sweep(flies, dt);
         },
         draw(alpha, e){
-          const L = e.L, t = e.t;
-          const big = Math.max(W, H);
-          const b = breath;
-          // 段3：色がピンクから琥珀へゆっくり移ろう
-          const warm = 0.5 + 0.5 * Math.sin(t * 0.07);
-          const wb = L[3] * warm, wa = 1 - wb;
-          nebula(HAZE_PULSE1, L[1], alpha, e);
-          // 呼吸する光
-          const deep = 1 + 0.4 * L[3];
-          const gs = big * (0.42 + 0.08 * b * deep);
-          const ga = (0.2 + 0.22 * b * deep) * L[1] * alpha * e.bright;
-          haze('pink', cx, cy, gs, gs * 0.75, ga * wa);
-          haze('amber', cx, cy, gs, gs * 0.75, ga * wb);
-          haze('white', cx, cy, gs * 0.35, gs * 0.25, ga * 0.5);
-          // 波紋
-          if(L[2] > 0.01){
-            ctx.strokeStyle = 'rgb(' + (wb > wa ? COL.amber : COL.pink) + ')';
-            ctx.lineWidth = 2 * K;
-            for(let i = 0; i < ripples.length; i++){
-              const r = ripples[i];
-              const life = 1 - r.age / 7;
-              const rad = big * (0.08 + 0.05 * r.age);
-              ctx.globalAlpha = 0.2 * life * L[2] * alpha * e.bright;
-              ctx.beginPath();
-              ctx.ellipse(cx, cy, rad, rad * 0.6, 0, 0, TAU);
-              ctx.stroke();
-              if(L[3] > 0.01){   // 段3：二重の波紋
-                ctx.globalAlpha = 0.13 * life * L[3] * alpha * e.bright;
-                ctx.beginPath();
-                ctx.ellipse(cx, cy, rad * 0.82, rad * 0.82 * 0.6, 0, 0, TAU);
-                ctx.stroke();
-              }
-            }
-          }
-          // 段4：光の花。吸うと開き、吐くと閉じる。外と内で逆向きにゆっくり回る
+          const t = e.t, L = e.L, br = alpha * e.bright;
+          nebula(HAZE_FOREST1, L[1], alpha, e);
+          nebula(HAZE_FOREST2, L[2], alpha, e);
+          // 段4：低く流れる霧
           if(L[4] > 0.01){
-            const RINGS = [[12, 0.12, 1, 'white'], [20, 0.2, -1, 'amber'], [28, 0.3, 1, 'pink']];
-            const open = 0.55 + 0.45 * b;
-            for(let ri = 0; ri < RINGS.length; ri++){
-              const [n, r0, dir, col] = RINGS[ri];
-              const rad = big * r0 * open;
-              const rot = t * 0.05 * dir + ri * 0.3;
-              for(let i = 0; i < n; i++){
-                const ang = rot + i / n * TAU;
-                dot(col, cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad * 0.6, (7 + 5 * b) * K,
-                    (0.25 + 0.55 * b) * L[4] * alpha * e.bright);
-              }
-            }
-            // 灯籠：縦長の柔らかい光と小さな芯
-            for(let i = 0; i < lanterns.length; i++){
-              const l = lanterns[i];
-              const a = Math.sin(Math.PI * l.age / l.life) * L[4] * alpha * e.bright;
-              const x = l.x + Math.sin(t * 0.5 + l.ph) * l.sw;
-              haze(l.col, x, l.y, 26 * K, 38 * K, 0.4 * a);
-              dot(l.col, x, l.y, 9 * K, 0.7 * a);
+            const n = MOBILE ? 5 : 8, off = (t * 0.008) % 1;
+            for(let i = -1; i <= n; i++){
+              const u = (i + off) / n;
+              haze(i % 2 ? 'moss' : 'white', u * W, H * (0.86 + 0.04 * Math.sin(u * 5 + t * 0.15)),
+                   W / n * 2.4, H * 0.24, 0.2 * L[4] * br);
             }
           }
-          // 呼吸に合わせてゆらぐ光の粒
-          for(let i = 0; i < dust.length; i++){
-            const p = dust[i];
-            const rr = big * p.r * (1 + 0.07 * (b - 0.5) * deep);
-            const x = cx + Math.cos(p.a) * rr, y = cy + Math.sin(p.a) * rr * 0.6;
-            dot(p.col, x, y, 6 * K,
-                (0.2 + 0.45 * b) * (0.7 + 0.3 * Math.sin(t + p.ph)) * p.f * L[3] * alpha * e.bright);
+          // 段2・3：光芒
+          for(let i = 0; i < beams.length; i++){
+            const b = beams[i];
+            if(b.k <= 0.01) continue;
+            const breath = 0.55 + 0.45 * Math.sin(t * b.sp + b.ph);
+            const a = b.a + 0.025 * Math.sin(t * 0.05 + b.ph) + 0.04 * wind;
+            const ca = Math.cos(a), sa = Math.sin(a);
+            ctx.setTransform(ca, -sa, sa, ca, b.x, b.y);
+            ctx.globalAlpha = Math.min(1, 0.5 * breath * b.k * br);
+            ctx.drawImage(BEAM[b.col], -b.w / 2, 0, b.w, b.len);
+          }
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          // 段3：地面の光斑。葉の揺れに合わせてちらちら揺らぐ
+          if(L[3] > 0.01){
+            for(let i = 0; i < spots.length; i++){
+              const s = spots[i];
+              const flick = 0.35 + 0.65 * Math.abs(Math.sin(t * s.f1 + s.ph) * Math.sin(t * s.f2 + s.ph2 + wind));
+              haze(s.col, s.x, s.y, s.r * 2, s.r, 0.55 * flick * L[3] * br);
+              dot('white', s.x, s.y, s.r * 0.4, 0.3 * flick * L[3] * br);
+            }
+          }
+          // 光の塵
+          for(let i = 0; i < motes.length; i++){
+            const p = motes[i];
+            const tw = 0.6 + 0.4 * Math.sin(t * 0.8 + p.ph);
+            const g = p.glow;
+            dot(g > 0.05 ? 'sun' : 'white', p.x, p.y, (3.5 + 6 * g) * K,
+                (0.3 + 0.7 * g) * tw * p.f * L[1] * br);
+          }
+          // 段3：光を受けた葉（細長い光が、回りながら舞い落ちる）
+          for(let i = 0; i < leaves.length; i++){
+            const p = leaves[i];
+            const c = Math.cos(p.rot), s = Math.sin(p.rot);
+            const shine = 0.45 + 0.55 * Math.abs(Math.cos(p.rot * 2));
+            ctx.setTransform(c, s, -s, c, p.x, p.y);
+            ctx.globalAlpha = Math.min(1, 0.85 * shine * p.f * Math.max(L[3], L[4]) * br);
+            ctx.drawImage(SPRITE[p.col], -p.size / 2, -p.size * 0.22, p.size, p.size * 0.44);
+          }
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          // 段4：蛍（小さな黄緑の光が、ゆっくり明滅しながらさまよう）
+          for(let i = 0; i < flies.length; i++){
+            const p = flies[i];
+            const x = p.x + Math.sin(t * p.ax * TAU + p.ph) * p.rx;
+            const y = p.y + Math.sin(t * p.ay * TAU + p.ph * 1.7) * p.ry;
+            const blink = Math.pow(Math.max(0, Math.sin(t * p.bf + p.bp)), 3);
+            const a = (0.12 + 0.88 * blink) * p.f * L[4] * br;
+            haze('firefly', x, y, 48 * K, 48 * K, 0.5 * a);
+            dot('firefly', x, y, (8 + 5 * blink) * K, a);
           }
         }
       };
