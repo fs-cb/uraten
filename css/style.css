@@ -55,16 +55,17 @@ button{font:inherit;color:inherit}
 .join--dc{border-color:rgba(88,101,242,.85);background:rgba(88,101,242,.14);box-shadow:0 0 18px rgba(88,101,242,.3),inset 0 0 12px rgba(88,101,242,.14)}
 .join--dc:hover{background:rgba(88,101,242,.28)}
 /* 共鳴ビジュアル：presence 3 以上（人が集まっている）のとき、Discord の参加ボタンの縁が光る。
-   js/app.js（initResonance）が body に .fx-crowd を付ける。光は疑似要素に描いておき、動かすのは透明度だけ */
+   js/app.js（initResonance）が body に .fx-crowd を付ける。光は疑似要素に描いておき、動かすのは透明度だけ。
+   色は Discord のブランドカラー（Blurple #5865F2）に合わせる */
 .join--dc,.drawer-dc{position:relative}
 .join--dc::after,.drawer-dc::after{content:"";position:absolute;inset:-3px;border-radius:99px;pointer-events:none;opacity:0;
-  border:1.5px solid rgba(150,160,255,.95);box-shadow:0 0 14px rgba(110,125,255,.9),0 0 32px rgba(88,101,242,.55),inset 0 0 10px rgba(110,125,255,.35)}
+  border:1.5px solid #5865f2;box-shadow:0 0 14px rgba(88,101,242,.95),0 0 32px rgba(88,101,242,.6),inset 0 0 10px rgba(88,101,242,.45)}
 .drawer-dc::after{inset:4px -8px;border-radius:12px}
 .fx-crowd .join--dc::after,.fx-crowd .drawer-dc::after{animation:dcGlow 2.6s ease-in-out infinite}
 @keyframes dcGlow{0%,100%{opacity:.4}50%{opacity:1}}
 /* presence 4（最大）：外側にもう1層、大きくにじむ光を足し、明滅も速く強くする（body.fx-crowd-max） */
 .join--dc::before,.drawer-dc::before{content:"";position:absolute;inset:-6px;border-radius:99px;pointer-events:none;opacity:0;
-  box-shadow:0 0 26px 6px rgba(125,140,255,.8),0 0 64px 14px rgba(88,101,242,.5)}
+  box-shadow:0 0 26px 6px rgba(88,101,242,.85),0 0 64px 14px rgba(88,101,242,.5)}
 .drawer-dc::before{inset:2px -10px;border-radius:14px}
 .fx-crowd-max .join--dc::after,.fx-crowd-max .drawer-dc::after{animation:dcGlowMax 1.8s ease-in-out infinite}
 .fx-crowd-max .join--dc::before,.fx-crowd-max .drawer-dc::before{animation:dcHalo 1.8s ease-in-out infinite}
