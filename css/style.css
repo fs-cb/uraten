@@ -174,6 +174,8 @@ button{font:inherit;color:inherit}
    fx-on の間だけ外して、不透明度の高い地色に置き換える。 */
 @property --fxa{syntax:'<number>';inherits:false;initial-value:0}
 .fx-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+/* Presence の光の玉だけは、パネルに隠れないよう中身より手前（ヘッダー・タブバー・モーダルより奥）に描く */
+.fx-front{z-index:45}
 .fx-ready .player,.fx-ready .vcard,.fx-ready .cal-row,.fx-ready .gl-btn{--fxa:0}
 .fx-on .player,.fx-on .vcard,.fx-on .cal-row,.fx-on .gl-btn{--fxa:1}
 .fx-ready .player{transition:--fxa 6s ease;
