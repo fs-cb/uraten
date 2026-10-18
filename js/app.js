@@ -895,7 +895,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const COL = {
       pink:[255,62,165], violet:[139,108,255], cyan:[63,227,255], white:[246,240,255],
       amber:[255,176,92], gold:[255,222,160],
-      sun:[255,232,170], leaf:[150,230,140], moss:[90,200,150], firefly:[214,255,140]
+      sun:[255,232,170], leaf:[150,230,140], moss:[90,200,150], firefly:[214,255,140],
+      aurora:[110,255,170], teal:[70,225,215]
     };
     // 光の画像を色ごとに1回だけ作る。以後は drawImage で貼るだけ
     //   SPRITE … 芯のある光の粒   HAZE … 芯のない柔らかい光（もや・ヴェール・後光）
@@ -1149,134 +1150,118 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       };
     }
 
-    // Flow「光のヴェール」（オーロラ）
-    //   段1 ゆるい流れに乗ってただよう小さな光の粒・ピンクのもや
-    //   段2 オーロラのヴェールが1枚、ゆっくりうねる
-    //   段3 ヴェールが2枚。粒がヴェールに沿って流れ、ごく淡い短い尾を引く・
-    //       ヴェールの中を明るさの波がゆっくり伝う・光の花びらが舞い落ちる
-    //   段4「光の海」 オーロラに細かく揺らめく縦の光の筋・画面の下に光の霧の川・
-    //       花びらが増えてときどききらめく・全体の色がピンク→紫→シアンとゆっくり巡る
-    const HAZE_FLOW1 = [ { col:'pink',   x:0.2,  y:0.4, r:0.9, s:0.04, p:1, a:0.8 },
-                         { col:'violet', x:0.8,  y:0.2, r:0.7, s:0.05, p:4, a:0.6 } ];
-    const HAZE_FLOW4 = [ { col:'pink',   x:0.5, y:0.3, r:1.0, s:0.03, p:0, a:0.7 },
-                         { col:'violet', x:0.3, y:0.6, r:1.0, s:0.03, p:2, a:0.7 },
-                         { col:'cyan',   x:0.7, y:0.5, r:1.0, s:0.03, p:4, a:0.7 } ];
-    const VEILS = [
-      { base:0.30, amp:0.10, freq:1.6, w:0.05,  ph:0,   cols:['pink','violet'] },
-      { base:0.62, amp:0.09, freq:2.2, w:-0.04, ph:2.4, cols:['cyan','violet'] }
+    // Flow（表示名「オーロラ」）
+    //   段1 極夜：澄んだ夜空に星が瞬く・地平の上にかすかな緑の光
+    //   段2 オーロラの帯：緑のカーテンが1枚、裾をゆらしながらゆっくりうねる
+    //   段3 ゆらめくカーテン：上空にもう1枚（青緑）。光の筋の明るさが波のように走る・
+    //       地上のもやが緑に照らされる
+    //   段4 ブレイクアップ：裾がピンクに染まる・さらに高い空に紫の帯・ところどころがゆっくり明滅する・
+    //       画面の下の湖面にオーロラが映り込む
+    // カーテンは、細い光の筋（裾が明るく、上へ向かって紫に溶ける）を曲線に沿って並べて作る
+    const HAZE_AURORA1 = [ { col:'violet', x:0.5,  y:0.0,  r:1.1, s:0.02, p:0, a:0.7 },
+                           { col:'aurora', x:0.35, y:0.66, r:0.95, s:0.03, p:2, a:0.85 } ];
+    const HAZE_AURORA3 = [ { col:'aurora', x:0.6,  y:0.88, r:1.0, s:0.03, p:1, a:0.8 },
+                           { col:'teal',   x:0.2,  y:0.78, r:0.8, s:0.03, p:3, a:0.6 } ];
+    function makeRay(bottom, top){
+      const s = document.createElement('canvas');
+      s.width = 32; s.height = 256;
+      const g = s.getContext('2d');
+      const hot = bottom.map(v=>Math.round((v + 255) / 2));   // 裾のいちばん明るいところ
+      const v = g.createLinearGradient(0, 0, 0, 256);
+      v.addColorStop(0,    'rgba(' + top + ',0)');
+      v.addColorStop(0.45, 'rgba(' + top + ',.3)');
+      v.addColorStop(0.8,  'rgba(' + bottom + ',.85)');
+      v.addColorStop(0.93, 'rgba(' + hot + ',1)');
+      v.addColorStop(1,    'rgba(' + bottom + ',0)');
+      g.fillStyle = v;
+      g.fillRect(0, 0, 32, 256);
+      g.globalCompositeOperation = 'destination-in';
+      const h = g.createLinearGradient(0, 0, 32, 0);
+      h.addColorStop(0, 'rgba(0,0,0,0)');
+      h.addColorStop(0.5, 'rgba(0,0,0,1)');
+      h.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = h;
+      g.fillRect(0, 0, 32, 256);
+      return s;
+    }
+    const RAY = { green:makeRay(COL.aurora, COL.violet), teal:makeRay(COL.teal, COL.violet),
+                  high:makeRay(COL.violet, COL.pink), pink:makeRay(COL.pink, COL.aurora) };
+    const CURTAINS = [
+      { base:0.62, amp:0.07, freq:1.3, w:0.04,   ph:0,   h:0.44, fold:0.035, rs:0.35, ray:'green', stage:2 },
+      { base:0.40, amp:0.06, freq:1.9, w:-0.03,  ph:2.2, h:0.32, fold:0.03,  rs:0.28, ray:'teal',  stage:3 },
+      { base:0.22, amp:0.05, freq:1.1, w:0.025,  ph:4.1, h:0.24, fold:0.025, rs:0.22, ray:'high',  stage:4 }
     ];
     function sceneFlow(){
-      const motes = [], petals = [];
-      const veilY = (v, x, t)=> H * (v.base + v.amp * Math.sin((x / W) * v.freq * Math.PI + t * v.w + v.ph)
-                                     + 0.025 * Math.sin((x / W) * 5.1 - t * 0.07 + v.ph));
-      function spawnMote(){
-        return { x:rand(0, W), y:rand(0, H), f:0, dying:false, ph:rand(0, TAU), sp:rand(0.6, 1.4),
-                 v:Math.random() < 0.5 ? 0 : 1, trail:[], col:pick(['pink','violet','white','cyan']) };
+      const stars = [];
+      let strips = 0;
+      function spawnStar(){
+        return { x:rand(0, W), y:rand(0, H * 0.9), z:Math.random(), f:0, dying:false,
+                 ph:rand(0, TAU), tw:rand(0.5, 1.8), col:pick(['white','white','cyan']) };
       }
-      function spawnPetal(){
-        return { x:rand(0, W), y:rand(-20, H), f:0, dying:false, ph:rand(0, TAU), sw:rand(10, 26) * K,
-                 vy:rand(5, 10) * K, col:pick(['pink','white','pink']) };
+      // カーテン1枚を描く。fringe は段4の裾のピンク
+      function curtain(c, k, t, L, br, fringe){
+        const n = MOBILE ? 26 : 44;
+        const sw = W / n * 2.4;
+        for(let i = 0; i <= n; i++){
+          const u = i / n;
+          const x = W * (-0.05 + 1.1 * u + c.fold * Math.sin(u * 9 + t * 0.07 + c.ph));
+          const yb = H * (c.base + c.amp * Math.sin(u * c.freq * Math.PI + t * c.w + c.ph)
+                          + 0.02 * Math.sin(u * 7.3 - t * 0.12 + c.ph));
+          const hh = H * c.h * (0.7 + 0.3 * Math.sin(u * 11 + t * 0.09 + c.ph));
+          // 光の筋の明るさ：ゆっくり流れる波（段3 で強く速くなる）
+          const wave = Math.sin(u * 22 - t * c.rs * (1 + L[3]));
+          const bright = 0.65 + (0.12 + 0.3 * L[3]) * wave;
+          const edge = smooth(Math.min(u, 1 - u) * 6);
+          // 段4：ところどころがゆっくり明滅する
+          const patch = 1 + 0.7 * L[4] * Math.pow(Math.max(0, Math.sin(u * 5 + t * 0.35 + c.ph)), 4);
+          const a = 0.6 * k * bright * edge * patch * br;
+          if(a <= 0.003) continue;
+          ctx.globalAlpha = Math.min(1, a);
+          ctx.drawImage(RAY[c.ray], x - sw / 2, yb - hh, sw, hh);
+          if(fringe > 0.01){
+            ctx.globalAlpha = Math.min(1, 0.9 * a * fringe);
+            ctx.drawImage(RAY.pink, x - sw / 2, yb - hh * 0.12, sw, hh * 0.2);
+          }
+          strips++;
+        }
       }
       return {
         pattern:'flow',
-        count:()=>motes.length + petals.length,
-        rescale(sx, sy){ motes.forEach(p=>{ p.x *= sx; p.y *= sy; p.trail.length = 0; });
-                         petals.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
+        count:()=>stars.length + strips,
+        rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); },
         update(dt, e){
-          const t = e.t, L = e.L;
-          settle(motes, e.want, spawnMote);
-          sweep(motes, dt);
-          settle(petals, Math.round((MOBILE ? 6 : 12) * L[3] + (MOBILE ? 10 : 20) * L[4]), spawnPetal);
-          sweep(petals, dt);
-          for(let i = 0; i < motes.length; i++){
-            const p = motes[i];
-            // ゆるい流れ（右へ、少し上下にうねる）
-            const ang = 0.35 * Math.sin(p.y / H * 3 + t * 0.05) + 0.25 * Math.sin(p.x / W * 2 - t * 0.04);
-            const v = (6 + 10 * L[2]) * K * p.sp;
-            p.x += Math.cos(ang) * v * dt;
-            p.y += Math.sin(ang) * v * dt;
-            // 段3：近くのヴェールへゆっくり寄っていく
-            if(L[3] > 0){
-              const ty = veilY(VEILS[p.v], p.x, t);
-              p.y += (ty - p.y) * Math.min(1, dt * 0.15 * L[3]);
-            }
-            if(p.x > W + 20){ p.x = -20; p.y = rand(0, H); p.trail.length = 0; }
-            if(p.y < -20) p.y = H + 20; else if(p.y > H + 20) p.y = -20;
-            if(L[3] > 0.01){
-              p.trail.push(p.x, p.y);
-              if(p.trail.length > 10) p.trail.splice(0, 2);
-            }else if(p.trail.length) p.trail.length = 0;
-          }
-          for(let i = 0; i < petals.length; i++){
-            const p = petals[i];
-            p.y += p.vy * dt;
-            p.x += Math.sin(t * 0.6 + p.ph) * p.sw * dt;
-            if(p.y > H + 20){ p.y = -20; p.x = rand(0, W); }
-          }
+          // 星はほとんど動かない（夜空の奥行き）
+          settle(stars, Math.round(e.want * 0.7), spawnStar);
+          sweep(stars, dt);
         },
         draw(alpha, e){
-          const t = e.t, L = e.L;
-          nebula(HAZE_FLOW1, L[1], alpha, e);
-          // 段4：全体の色がピンク→紫→シアンとゆっくり巡る
+          const t = e.t, L = e.L, br = alpha * e.bright;
+          strips = 0;
+          nebula(HAZE_AURORA1, L[1], alpha, e);
+          nebula(HAZE_AURORA3, L[3], alpha, e);
+          // 星
+          for(let i = 0; i < stars.length; i++){
+            const p = stars[i];
+            const tw = 0.5 + 0.5 * Math.sin(t * p.tw + p.ph);
+            dot(p.col, p.x, p.y, (2.5 + 4 * p.z) * K, (0.25 + 0.6 * p.z) * tw * p.f * L[1] * br);
+          }
+          // カーテン（高い空から順に）
+          for(let ci = CURTAINS.length - 1; ci >= 0; ci--){
+            const c = CURTAINS[ci];
+            const k = L[c.stage];
+            if(k > 0.01) curtain(c, k, t, L, br, ci === 0 ? L[4] : 0);
+          }
+          // 段4：湖面への映り込み（地平の線を境に上下を返し、縦につぶして淡く描く）
           if(L[4] > 0.01){
-            for(let k = 0; k < 3; k++){
-              const w = Math.max(0, Math.cos(t * 0.03 - k * TAU / 3));
-              nebula([HAZE_FLOW4[k]], L[4] * w, alpha, e);
+            const H0 = H * 0.86;
+            haze('teal', W / 2, H0, W * 1.3, H * 0.06, 0.16 * L[4] * br);
+            ctx.setTransform(1, 0, 0, -0.35, 0, H0 * 1.35);
+            for(let ci = 1; ci >= 0; ci--){
+              const c = CURTAINS[ci];
+              const k = L[c.stage] * 0.3 * L[4];
+              if(k > 0.003) curtain(c, k, t, L, br, 0);
             }
-          }
-          // ヴェール：縦長の柔らかい光を曲線に沿って並べる（カーテンのように見える）
-          for(let vi = 0; vi < VEILS.length; vi++){
-            const k = vi === 0 ? L[2] : L[3];
-            if(k <= 0.01) continue;
-            const v = VEILS[vi];
-            const n = MOBILE ? 12 : 18;
-            for(let i = 0; i <= n; i++){
-              const x = -W * 0.08 + (W * 1.16) * (i / n);
-              const y = veilY(v, x, t);
-              // 段3：明るさの波がヴェールの中をゆっくり伝う
-              const shimmer = 1 + 0.6 * L[3] * Math.sin((x / W) * 7 - t * 0.5 + vi);
-              haze(v.cols[i % 2], x, y - H * 0.16, W / n * 2.6, H * 0.85,
-                   0.27 * k * shimmer * alpha * e.bright);
-              // 段4：細かく揺らめく縦の光の筋
-              if(L[4] > 0.01){
-                const flick = 0.4 + 0.6 * Math.max(0, Math.sin(t * 0.9 + i * 1.7 + vi * 2));
-                haze('white', x + Math.sin(i * 3.1) * W / n * 0.3, y - H * 0.2, W / n * 0.22, H * 0.9,
-                     0.12 * L[4] * k * flick * alpha * e.bright);
-              }
-            }
-          }
-          // 段4：画面の下を流れる光の霧の川
-          if(L[4] > 0.01){
-            const n = MOBILE ? 6 : 9, off = (t * 0.012) % 1;
-            for(let i = -1; i <= n; i++){
-              const u = (i + off) / n;
-              haze(i % 2 ? 'cyan' : 'violet', u * W, H * (0.9 + 0.03 * Math.sin(u * 6 + t * 0.2)),
-                   W / n * 2.2, H * 0.28, 0.16 * L[4] * alpha * e.bright);
-            }
-          }
-          // 粒（段3から、ごく淡い短い尾）
-          ctx.lineCap = 'round';
-          for(let i = 0; i < motes.length; i++){
-            const p = motes[i], tr = p.trail, n = tr.length;
-            const a = p.f * L[1] * alpha * e.bright;
-            if(n >= 4){
-              ctx.globalAlpha = 0.12 * L[3] * a;
-              ctx.strokeStyle = 'rgb(' + COL[p.col] + ')';
-              ctx.lineWidth = 2 * K;
-              ctx.beginPath();
-              ctx.moveTo(tr[0], tr[1]);
-              for(let j = 2; j < n; j += 2) ctx.lineTo(tr[j], tr[j + 1]);
-              ctx.stroke();
-            }
-            const tw = 0.6 + 0.4 * Math.sin(t * 0.9 + p.ph);
-            dot(p.col, p.x, p.y, (4 + 3 * p.sp) * K, 0.6 * tw * a);
-          }
-          // 花びら（段4 ではときどききらめく）
-          const pk = Math.max(L[3], L[4]);
-          for(let i = 0; i < petals.length; i++){
-            const p = petals[i];
-            const g = Math.pow(Math.max(0, Math.sin(t * 0.8 + p.ph * 2)), 20) * L[4];
-            dot(p.col, p.x, p.y, 9 * K * (1 + 1.2 * g), (0.5 + 0.5 * g) * p.f * pk * alpha * e.bright);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
           }
         }
       };
