@@ -1159,10 +1159,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     //   段4 ブレイクアップ：裾がピンクに染まる・さらに高い空に紫の帯・ところどころがゆっくり明滅する・
     //       画面の下の湖面にオーロラが映り込む
     // カーテンは、細い光の筋（裾が明るく、上へ向かって紫に溶ける）を曲線に沿って並べて作る
-    const HAZE_AURORA1 = [ { col:'violet', x:0.5,  y:0.0,  r:1.1, s:0.02, p:0, a:0.7 },
-                           { col:'aurora', x:0.35, y:0.66, r:0.95, s:0.03, p:2, a:0.85 } ];
-    const HAZE_AURORA3 = [ { col:'aurora', x:0.6,  y:0.88, r:1.0, s:0.03, p:1, a:0.8 },
-                           { col:'teal',   x:0.2,  y:0.78, r:0.8, s:0.03, p:3, a:0.6 } ];
+    const HAZE_AURORA1 = [ { col:'violet', x:0.5,  y:0.0,  r:1.1,  s:0.02, p:0, a:0.8 },
+                           { col:'aurora', x:0.3,  y:0.68, r:0.8,  s:0.03, p:2, a:0.5 },
+                           { col:'cyan',   x:0.75, y:0.62, r:0.8,  s:0.03, p:4, a:0.55 } ];
+    const HAZE_AURORA3 = [ { col:'cyan',   x:0.6,  y:0.88, r:1.0,  s:0.03, p:1, a:0.7 },
+                           { col:'pink',   x:0.2,  y:0.8,  r:0.8,  s:0.03, p:3, a:0.5 },
+                           { col:'violet', x:0.85, y:0.4,  r:0.8,  s:0.03, p:5, a:0.6 } ];
     function makeRay(bottom, top){
       const s = document.createElement('canvas');
       s.width = 32; s.height = 256;
@@ -1213,16 +1215,20 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       teal:    makeRayStops([[0,COL.violet,0],[0.45,AC.blue,0.3],[0.7,COL.cyan,0.6],[0.85,COL.teal,0.9],[0.94,hot(COL.teal),1],[1,COL.teal,0]]),
       high:    makeRayStops([[0,COL.pink,0],[0.45,COL.pink,0.3],[0.75,COL.violet,0.8],[0.92,hot(COL.violet),0.9],[1,COL.violet,0]]),
       highm:   makeRayStops([[0,COL.violet,0],[0.45,AC.magenta,0.35],[0.75,COL.pink,0.7],[0.92,hot(COL.pink),0.85],[1,COL.pink,0]]),
+      cyan:    makeRayStops([[0,COL.violet,0],[0.42,AC.blue,0.3],[0.66,COL.cyan,0.6],[0.83,COL.cyan,0.9],[0.93,hot(COL.cyan),1],[1,COL.cyan,0]]),
+      cyanm:   makeRayStops([[0,AC.magenta,0],[0.4,AC.magenta,0.3],[0.62,COL.violet,0.5],[0.82,COL.cyan,0.88],[0.93,hot(COL.cyan),1],[1,COL.cyan,0]]),
+      violet:  makeRayStops([[0,AC.magenta,0],[0.42,AC.magenta,0.3],[0.65,COL.violet,0.6],[0.83,COL.violet,0.9],[0.93,hot(COL.violet),1],[1,COL.violet,0]]),
+      magenta: makeRayStops([[0,COL.violet,0],[0.42,COL.violet,0.3],[0.65,AC.magenta,0.6],[0.83,AC.magenta,0.9],[0.93,hot(AC.magenta),1],[1,AC.magenta,0]]),
       pink:    makeRay(COL.pink, COL.aurora)
     };
     // 各カーテンが使う色の並び。筋ごとに、場所と時間でゆっくり変わる模様から選ぶ
     const CURTAINS = [
       { base:0.62, amp:0.07, freq:1.3, w:0.04,   ph:0,   h:0.44, fold:0.035, rs:0.35, stage:2,
-        pal:['lime','green','green','emerald','tealg','green'] },
+        pal:['green','cyan','violet','tealg','magenta','emerald','cyanm','violet'] },
       { base:0.40, amp:0.06, freq:1.9, w:-0.03,  ph:2.2, h:0.32, fold:0.03,  rs:0.28, stage:3,
-        pal:['tealg','teal','teal','green','teal'] },
+        pal:['cyan','teal','violet','cyanm','magenta','cyan'] },
       { base:0.22, amp:0.05, freq:1.1, w:0.025,  ph:4.1, h:0.24, fold:0.025, rs:0.22, stage:4,
-        pal:['high','highm','high','highm'] }
+        pal:['high','highm','magenta','violet','highm'] }
     ];
     function sceneFlow(){
       const stars = [], motes = [];
@@ -1231,7 +1237,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       function spawnMote(fresh){
         return { x:fresh ? rand(0, W) : rand(-40, -10), y:rand(0.05, 0.95) * H, f:0, dying:false,
                  sp:rand(0.6, 1.4), ph:rand(0, TAU), size:rand(0.6, 1.4), pf:rand(1.2, 3.2),
-                 col:pick(['aurora','aurora','teal','white','cyan','violet']) };
+                 col:pick(['aurora','cyan','cyan','violet','violet','pink','white','teal']) };
       }
       function spawnStar(){
         return { x:rand(0, W), y:rand(0, H * 0.9), z:Math.random(), f:0, dying:false,
@@ -1256,7 +1262,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
           const a = 0.42 * k * bright * edge * patch * br;   // 筋が細かく重なる分、1本は淡く
           if(a <= 0.003) continue;
           // 色：2つの波を重ねた模様で、筋ごとに色を選ぶ（隣どうしが少しずつ違う色になる）
-          const m = 0.5 + 0.5 * (0.6 * Math.sin(u * 13.7 + c.ph + t * 0.04) + 0.4 * Math.sin(u * 37.1 - t * 0.07 + c.ph * 2));
+          const m = 0.5 + 0.5 * (0.6 * Math.sin(u * 13.7 + c.ph + t * 0.05) + 0.4 * Math.sin(u * 37.1 - t * 0.09 + c.ph * 2));
           const ray = RAY[c.pal[Math.min(c.pal.length - 1, Math.floor(m * c.pal.length))]];
           ctx.globalAlpha = Math.min(1, a);
           ctx.drawImage(ray, x - sw / 2, yb - hh, sw, hh);
