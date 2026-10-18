@@ -841,7 +841,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(!backCtx || !frontCtx) return;
     let ctx = backCtx;   // dot / haze が描く先。光の玉を描く間だけ frontCtx に切り替える
 
-    const PATTERNS = ['ambient','flow','pulse'];
+    const PATTERNS = ['pulse','flow','forest'];
     const MAX_LV   = 4;
     const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
     const FADE_MS  = 30000;           // 景色のクロスフェード
@@ -863,7 +863,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       let level = 0;
       if(lv === 'decay') level = Math.max(0, MAX_LV - Math.floor((now - decayFrom) / 40000));  // 4 から約2.5分で 0 へ
       else if(/^[0-4]$/.test(lv || '')) level = Number(lv);
-      let pattern = params.pattern || 'ambient';
+      let pattern = params.pattern || 'pulse';
       if(pattern === 'cycle') pattern = PATTERNS[Math.floor(now / 60000) % PATTERNS.length];
       const st = params.status;
       return {
@@ -876,9 +876,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
     // --- 受け取った値の扱い（CLAUDE.md 4-5 のフロント側仕様） ---
     // 状態不明・古い値・壊れた値は level 0（デフォルト）/ presence 0（誰かがいると偽らない）。
-    // 知らない pattern は ambient として描く
+    // 知らない pattern は pulse（星屑の海）として描く
     function normalize(v){
-      const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'ambient';
+      const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'pulse';
       const fresh = !!v && v.status === 'ok' && typeof v.generatedAt === 'number'
                     && Date.now() - v.generatedAt <= STALE_MS;
       if(!fresh) return { level:0, pattern, presence:0 };
@@ -974,18 +974,18 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     // e … { lv（0〜4 の連続値）, L[1..4]（各段の現れ具合 0〜1）, want（この景色に割り当てた粒子数）, bright, t }
     // 段 k の要素は、lv が k-1 から k に上がる間にふわっと現れる
 
-    // Ambient「星屑の海」
+    // Pulse（表示名「星屑の海」）
     //   段1 まばらな星屑がゆっくり瞬く・青紫のもや
     //   段2 奥行き（手前の大きな粒と奥の小さな粒が別の速さで漂う）・シアンのもや
     //   段3 斜めに淡い天の川・ときどき星がふわりと強く輝く・色が増える
     //   段4「星降る夜」 明るい星どうしが淡い線でつながり、星座がゆっくり現れては消える・
     //       ごく淡い流れ星がまれに落ちる・もやの色がゆっくり移ろう
-    const HAZE_AMBIENT1 = [ { col:'violet', x:0.25, y:0.3, r:0.95, s:0.04, p:0 },
+    const HAZE_STAR1 = [ { col:'violet', x:0.25, y:0.3, r:0.95, s:0.04, p:0 },
                             { col:'violet', x:0.75, y:0.8, r:0.7,  s:0.05, p:3, a:0.6 } ];
-    const HAZE_AMBIENT2 = [ { col:'cyan',   x:0.82, y:0.35, r:0.75, s:0.04, p:2, a:0.7 } ];
-    const HAZE_AMBIENT4A = [ { col:'pink',  x:0.55, y:0.6,  r:0.85, s:0.03, p:1, a:0.6 } ];
-    const HAZE_AMBIENT4B = [ { col:'cyan',  x:0.3,  y:0.7,  r:0.85, s:0.03, p:4, a:0.6 } ];
-    function sceneAmbient(){
+    const HAZE_STAR2 = [ { col:'cyan',   x:0.82, y:0.35, r:0.75, s:0.04, p:2, a:0.7 } ];
+    const HAZE_STAR4A = [ { col:'pink',  x:0.55, y:0.6,  r:0.85, s:0.03, p:1, a:0.6 } ];
+    const HAZE_STAR4B = [ { col:'cyan',  x:0.3,  y:0.7,  r:0.85, s:0.03, p:4, a:0.6 } ];
+    function sceneStars(){
       const stars = [], band = [], consts = [], shooting = [];
       let warmCols = 0, bandOn = false, nextConst = 0, nextShoot = 0;
       // 星座：明るい星を1つ選び、近い明るい星を順にたどって3〜6個つなぐ
@@ -1025,7 +1025,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       makeBand();
       return {
-        pattern:'ambient',
+        pattern:'pulse',
         count:()=>stars.length + (bandOn ? band.length : 0) + shooting.length,
         rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); makeBand(); consts.length = 0; shooting.length = 0; },
         update(dt, e){
@@ -1075,13 +1075,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         },
         draw(alpha, e){
           const t = e.t, L = e.L;
-          nebula(HAZE_AMBIENT1, L[1], alpha, e);
-          nebula(HAZE_AMBIENT2, L[2], alpha, e);
+          nebula(HAZE_STAR1, L[1], alpha, e);
+          nebula(HAZE_STAR2, L[2], alpha, e);
           // 段4：もやの色がゆっくり移ろう
           if(L[4] > 0.01){
             const drift = 0.5 + 0.5 * Math.sin(t * 0.05);
-            nebula(HAZE_AMBIENT4A, L[4] * drift, alpha, e);
-            nebula(HAZE_AMBIENT4B, L[4] * (1 - drift), alpha, e);
+            nebula(HAZE_STAR4A, L[4] * drift, alpha, e);
+            nebula(HAZE_STAR4B, L[4] * (1 - drift), alpha, e);
           }
           // 天の川
           bandOn = L[3] > 0.01;
@@ -1331,7 +1331,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       };
     }
 
-    // Pulse（表示名「木漏れ日の森」）
+    // Forest（表示名「木漏れ日の森」）
     //   段1 森の気配：足もとの苔色のもやと、左上から差す陽のもや・光の塵がゆっくりただよう
     //   段2 木漏れ日：左上から斜めに差し込む光芒が、ゆっくり明るさを変えながら揺れる。
     //       光芒の中を通る塵がきらりと光る
@@ -1369,7 +1369,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       return s;
     }
     const BEAM = { sun:makeBeam(COL.sun), pale:makeBeam(COL.white) };
-    function scenePulse(){
+    function sceneForest(){
       const motes = [], spots = [], leaves = [], flies = [];
       let beams = [], wind = 0;
       // 光芒：左上の梢のすき間から右下へ斜めに差す。段2 で5本、段3 で3本増える
@@ -1424,7 +1424,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         return best;
       }
       return {
-        pattern:'pulse',
+        pattern:'forest',
         count:()=>motes.length + leaves.length + flies.length,
         rescale(sx, sy){
           motes.forEach(p=>{ p.x *= sx; p.y *= sy; });
@@ -1531,7 +1531,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         }
       };
     }
-    const MAKERS = { ambient:sceneAmbient, flow:sceneFlow, pulse:scenePulse };
+    const MAKERS = { pulse:sceneStars, flow:sceneFlow, forest:sceneForest };
 
     // Presence「浮遊する光の玉」：今ほかに聴いている人がいるときだけ、温かい光の玉がゆっくり浮かぶ。
     // 人数は段階（presence 0〜3）でしか受け取らず、段階が上がるほど玉が増える。数は段階ごとの範囲で
@@ -1574,7 +1574,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
 
     // ---------- 状態と更新 ----------
-    let target = { level:0, pattern:'ambient', presence:0 };
+    let target = { level:0, pattern:'pulse', presence:0 };
     let lv = 0;                       // 実際に描く強さ（target.level へゆっくり近づく）
     const scenes = [];                // 切り替え中だけ2つになる
     let quality = 1;                  // 自動で軽くするときの倍率（0.3〜1）
@@ -1768,7 +1768,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(usePanel){
       try{
         const ROWS = [
-          { key:'pattern',  label:'pattern',  opts:[['ambient','ambient'],['flow','flow'],['pulse','pulse'],['cycle','cycle']], def:'ambient' },
+          { key:'pattern',  label:'pattern',  opts:[['pulse','pulse'],['flow','flow'],['forest','forest'],['cycle','cycle']], def:'pulse' },
           { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['4','4'],['decay','decay']], def:'0' },
           { key:'presence', label:'presence', opts:[['0','0'],['1','1'],['2','2'],['3','3']], def:'0' },
           { key:'status',   label:'status',   opts:[['ok','ok'],['unknown','unknown'],['stale','stale']], def:'ok' },
