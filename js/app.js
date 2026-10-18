@@ -841,7 +841,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(!backCtx || !frontCtx) return;
     let ctx = backCtx;   // dot / haze が描く先。光の玉を描く間だけ frontCtx に切り替える
 
-    const PATTERNS = ['pulse','flow','forest'];
+    const PATTERNS = ['star','flow','forest'];
     const MAX_LV   = 4;
     const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
     const FADE_MS  = 30000;           // 景色のクロスフェード
@@ -863,7 +863,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       let level = 0;
       if(lv === 'decay') level = Math.max(0, MAX_LV - Math.floor((now - decayFrom) / 40000));  // 4 から約2.5分で 0 へ
       else if(/^[0-4]$/.test(lv || '')) level = Number(lv);
-      let pattern = params.pattern || 'pulse';
+      let pattern = params.pattern || 'star';
       if(pattern === 'cycle') pattern = PATTERNS[Math.floor(now / 60000) % PATTERNS.length];
       const st = params.status;
       return {
@@ -876,9 +876,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
     // --- 受け取った値の扱い（CLAUDE.md 4-5 のフロント側仕様） ---
     // 状態不明・古い値・壊れた値は level 0（デフォルト）/ presence 0（誰かがいると偽らない）。
-    // 知らない pattern は pulse（星屑の海）として描く
+    // 知らない pattern は star（星屑の海）として描く
     function normalize(v){
-      const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'pulse';
+      const pattern = (v && PATTERNS.indexOf(v.pattern) >= 0) ? v.pattern : 'star';
       const fresh = !!v && v.status === 'ok' && typeof v.generatedAt === 'number'
                     && Date.now() - v.generatedAt <= STALE_MS;
       if(!fresh) return { level:0, pattern, presence:0 };
@@ -974,7 +974,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     // e … { lv（0〜4 の連続値）, L[1..4]（各段の現れ具合 0〜1）, want（この景色に割り当てた粒子数）, bright, t }
     // 段 k の要素は、lv が k-1 から k に上がる間にふわっと現れる
 
-    // Pulse（表示名「星屑の海」）
+    // Star（表示名「星屑の海」）
     //   段1 まばらな星屑がゆっくり瞬く・青紫のもや
     //   段2 奥行き（手前の大きな粒と奥の小さな粒が別の速さで漂う）・シアンのもや
     //   段3 斜めに淡い天の川・ときどき星がふわりと強く輝く・色が増える
@@ -1025,7 +1025,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }
       makeBand();
       return {
-        pattern:'pulse',
+        pattern:'star',
         count:()=>stars.length + (bandOn ? band.length : 0) + shooting.length,
         rescale(sx, sy){ stars.forEach(p=>{ p.x *= sx; p.y *= sy; }); makeBand(); consts.length = 0; shooting.length = 0; },
         update(dt, e){
@@ -1531,7 +1531,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         }
       };
     }
-    const MAKERS = { pulse:sceneStars, flow:sceneFlow, forest:sceneForest };
+    const MAKERS = { star:sceneStars, flow:sceneFlow, forest:sceneForest };
 
     // Presence「浮遊する光の玉」：今ほかに聴いている人がいるときだけ、温かい光の玉がゆっくり浮かぶ。
     // 人数は段階（presence 0〜3）でしか受け取らず、段階が上がるほど玉が増える。数は段階ごとの範囲で
@@ -1574,7 +1574,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
 
     // ---------- 状態と更新 ----------
-    let target = { level:0, pattern:'pulse', presence:0 };
+    let target = { level:0, pattern:'star', presence:0 };
     let lv = 0;                       // 実際に描く強さ（target.level へゆっくり近づく）
     const scenes = [];                // 切り替え中だけ2つになる
     let quality = 1;                  // 自動で軽くするときの倍率（0.3〜1）
@@ -1768,7 +1768,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(usePanel){
       try{
         const ROWS = [
-          { key:'pattern',  label:'pattern',  opts:[['pulse','pulse'],['flow','flow'],['forest','forest'],['cycle','cycle']], def:'pulse' },
+          { key:'pattern',  label:'pattern',  opts:[['star','star'],['flow','flow'],['forest','forest'],['cycle','cycle']], def:'star' },
           { key:'level',    label:'level',    opts:[['0','0'],['1','1'],['2','2'],['3','3'],['4','4'],['decay','decay']], def:'0' },
           { key:'presence', label:'presence', opts:[['0','0'],['1','1'],['2','2'],['3','3']], def:'0' },
           { key:'status',   label:'status',   opts:[['ok','ok'],['unknown','unknown'],['stale','stale']], def:'ok' },
