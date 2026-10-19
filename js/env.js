@@ -27,11 +27,12 @@
      ※ 未知の値を書いた場合・このファイルが読み込めなかった場合は 'uraten'（本番）
        として動く。公開サイトが意図せずテスト局を向かないようにするため。
 
-   resonance … true / false（共鳴ビジュアル。試作中のため false）
-     false のときはプレーヤーの見た目は従来のまま。URL に ?level= / ?pattern= /
-     ?presence= / ?status= を付けたときだけ、その表示に限り試作の演出を出す。
+   resonance … true / false（共鳴ビジュアル。CLAUDE.md 11章）
+     true のときは、uraten-ops が R2 に置く resonance.json を読んで、トップの背景に演出を描く。
+     false にすると、演出は出ず、従来の見た目のまま（不具合があったときはここを false にして戻す）。
+     ※ resonance.json は VPS 側の集計なので、ステーションの切り替えは VPS 側の設定でも行う。
 ========================================================= */
 window.URATEN_ENV = {
   station: 'uraten-test',
-  resonance: false
+  resonance: true
 };
