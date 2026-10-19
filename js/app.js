@@ -821,8 +821,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 // - 再生処理（initRadio）とは切り離す。audio・poll・render には触らない。ここが失敗しても放送は止めない
 // - 軽さ：毎秒30回まで・解像度を落とす・粒子の上限・重い端末では自動で減らす・
 //   非表示やモーダル表示中は止める・動きを減らす設定では止まった絵にする
-// - 入力は試作中のため URL パラメータと確認用パネル。
-//   本番では readInput を resonance.json（CLAUDE.md 4-5）の取得に差し替える
+// - 入力は、uraten-ops が R2 に置く resonance.json（CLAUDE.md 4-5）。表示中だけ60秒ごとに取りに行く。
+//   URL パラメータ（?level= 等）や ?resonance=panel があるときは、確認用にそちらを使う（JSON は読まない）
+// - ?resonance=live：env.js のフラグがオフでも JSON を読んで描き、右下に受け取った値を出す（公開前の確認用）
 (function initResonance(){
   const canvas = document.getElementById('fxCanvas');
   const front  = document.getElementById('fxFront');   // Presence の光の玉だけを描く手前の層
@@ -833,9 +834,11 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     try{ q = new URLSearchParams(location.search); }catch(e){ return; }
     const KEYS = ['level','pattern','presence','status'];
     const usePanel = q.get('resonance') === 'panel';   // 確認用パネル（?resonance=panel）
-    const hasParam = usePanel || KEYS.some(k=>q.has(k));
+    const liveCheck = q.get('resonance') === 'live';   // 公開前の確認（?resonance=live）
+    const manual = usePanel || KEYS.some(k=>q.has(k)); // 手で値を与える（JSON は読まない）
     const env = window.URATEN_ENV || {};
-    if(env.resonance !== true && !hasParam) return;   // フラグもパラメータも無ければ従来の見た目のまま
+    if(env.resonance !== true && !manual && !liveCheck) return;   // フラグもパラメータも無ければ従来の見た目のまま
+    const live = !manual;                              // resonance.json を読んで描く
 
     const backCtx = canvas.getContext('2d'), frontCtx = front.getContext('2d');
     if(!backCtx || !frontCtx) return;
@@ -845,7 +848,9 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const MAX_LV   = 4;
     const STALE_MS = 10 * 60 * 1000;  // これより古い値は「集計が止まっている」とみなす
     const FADE_MS  = 30000;           // 景色のクロスフェード
-    const TICK_MS  = 5000;            // 入力を見直す間隔（本番は resonance.json の取得間隔）
+    const TICK_MS  = 5000;            // 入力を見直す間隔（受け取った値が古くなっていないかも、ここで見直す）
+    const RES_URL  = 'https://media.ura-ten.jp/resonance/resonance.json';
+    const FETCH_MS = 60000;           // resonance.json を取りに行く間隔（R2 のキャッシュも60秒）
     const FRAME_MS = 1000 / 30;       // 描くのは毎秒30回まで
     const CAPS     = [0, 80, 160, 250, 340];   // LEVEL ごとの粒子数の上限（PC。スマホは半分）
     const SLOW_MS  = 12;              // 1フレームの描画がこれを超え続けたら粒子を減らす
@@ -856,8 +861,43 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     const params = {};
     KEYS.forEach(k=>{ params[k] = q.get(k); });
 
-    // --- 入力（試作）。{status, level, pattern, presence, generatedAt} を返す ---
+    // --- resonance.json の取得（表示中だけ。端末ごとに数秒ずらす） ---
+    // 確認用に ?src= で同じオリジンの JSON に差し替えられる（例：?resonance=live&src=./test.json）。
+    // ほかのオリジンは受け付けない
+    const liveSrc = (function(){
+      const src = q.get('src');
+      if(!src) return RES_URL;
+      try{ const u = new URL(src, location.href); return u.origin === location.origin ? u.href : RES_URL; }
+      catch(e){ return RES_URL; }
+    })();
+    let liveData = null, liveFirst = true, fetchTimer = null, lastFetch = 0, liveError = '';
+    function fetchLive(){
+      lastFetch = Date.now();
+      fetch(liveSrc, { cache:'no-cache' })
+        .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+        .then(j=>{
+          if(!j || typeof j !== 'object') throw new Error('形が違う');
+          const at = Date.parse(j.generated_at);
+          liveData = { status: j.status === 'ok' ? 'ok' : 'unknown', level: j.level, pattern: j.pattern,
+                       presence: j.presence, generatedAt: isNaN(at) ? 0 : at, raw: j };
+          liveError = '';
+          // 開いて最初に届いた値は、遷移させずにその状態で描く（来た瞬間に光が立ち上がって見せないため）
+          tick(liveFirst);
+          liveFirst = false;
+        })
+        .catch(err=>{ liveError = String(err && err.message || err); });   // 前の値のまま。古くなればデフォルトに戻る
+    }
+    function scheduleFetch(){
+      clearTimeout(fetchTimer);
+      fetchTimer = null;
+      if(!live || document.hidden) return;
+      const wait = Math.max(0, lastFetch + FETCH_MS - Date.now());
+      fetchTimer = setTimeout(()=>{ fetchLive(); scheduleFetch(); }, wait + Math.random() * 5000);
+    }
+
+    // --- 入力。{status, level, pattern, presence, generatedAt} を返す ---
     function readInput(){
+      if(live) return liveData;   // まだ届いていなければ null（＝デフォルト）
       const now = Date.now();
       const lv = params.level;
       let level = 0;
@@ -1581,8 +1621,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     let galleryOn = false, modalOpen = false;
     const reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
-    function setTarget(s){
-      const first = !scenes.length;
+    function setTarget(s, instant){
+      const first = !scenes.length || !!instant;
       target = s;
       if(first || instantMode) lv = s.level;   // 最初の1回と「即時」は遷移させない
       const cur = scenes[scenes.length - 1];
@@ -1590,7 +1630,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         const sc = MAKERS[s.pattern]();
         sc.alpha = (first || instantMode) ? 1 : 0;
         sc.goal = 1;
-        scenes.forEach(o=>{ o.goal = 0; if(instantMode) o.alpha = 0; });
+        scenes.forEach(o=>{ o.goal = 0; if(instantMode || first) o.alpha = 0; });
         scenes.push(sc);
         while(scenes.length > 2) scenes.shift();
       }
@@ -1720,10 +1760,10 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
     // 入力の見直し（本番では resonance.json の取得）。表示中だけ回す
     let onApplied = null;   // 確認用パネルが「いま描いている状態」を出すのに使う
-    function tick(){
+    function tick(instant){
       try{
         const s = normalize(readInput());
-        setTarget(s);
+        setTarget(s, instant === true);
         syncLook();
         if(onApplied) onApplied(s);
         if(reduced && reduced.matches) still();
@@ -1741,6 +1781,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       cancelAnimationFrame(raf);
       clearInterval(tickTimer);
       clearInterval(watchTimer);
+      clearTimeout(fetchTimer);
       raf = -1;   // 以後 update() から再開させない
       canvas.hidden = true;
       front.hidden = true;
@@ -1758,7 +1799,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(()=>{ try{ resize(); if(reduced && reduced.matches) still(); }catch(e){ shutdown(); } }, 200);
     });
-    document.addEventListener('visibilitychange', ()=>{ updateTick(); update(); });
+    document.addEventListener('visibilitychange', ()=>{ updateTick(); update(); scheduleFetch(); });
     if(reduced && reduced.addEventListener) reduced.addEventListener('change', update);
     // モーダルとイラスト一覧の開閉は1秒ごとに見る（app.js の他の処理には手を入れない）
     const galleryPage = document.getElementById('galleryPage');
@@ -1841,6 +1882,41 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       }catch(e){ /* パネルが作れなくても演出は続ける */ }
     }
 
+    // --- 公開前の確認（?resonance=live）：受け取った値と描画の状態を右下に出す（ボタンは無い） ---
+    if(liveCheck && live){
+      try{
+        const box = document.createElement('div');
+        box.className = 'aura-panel';
+        const head = document.createElement('div');
+        head.className = 'aura-panel-h';
+        head.textContent = 'RESONANCE（LIVE）';
+        const body = document.createElement('div');
+        body.className = 'aura-panel-body';
+        const got = document.createElement('div');
+        const now = document.createElement('div');
+        now.className = 'aura-panel-now';
+        const perf = document.createElement('div');
+        perf.className = 'aura-panel-perf';
+        body.appendChild(got); body.appendChild(now); body.appendChild(perf);
+        box.appendChild(head); box.appendChild(body);
+        document.body.appendChild(box);
+        onApplied = s=>{
+          now.textContent = '描画中：' + s.pattern + ' / level ' + s.level + ' / presence ' + s.presence;
+        };
+        setInterval(()=>{
+          const d = liveData && liveData.raw;
+          got.textContent = d
+            ? '受信：' + d.generated_at + ' / ' + d.status + ' / ' + d.pattern + ' / level ' + d.level + ' / presence ' + d.presence
+            : '受信：まだ届いていません' + (liveError ? '（' + liveError + '）' : '');
+          let n = orbs.length;
+          scenes.forEach(sc=>{ n += sc.count(); });
+          const state = raf > 0 ? '' : (resting() ? ' / 停止中（デフォルト）' : ' / 停止中');
+          perf.textContent = '粒子 ' + n + ' / 描画 ' + costAvg.toFixed(1) + 'ms / 品質 ' + Math.round(quality * 100) + '%' + state;
+        }, 1000);
+      }catch(e){ /* 表示が作れなくても演出は続ける */ }
+    }
+
+    if(live){ fetchLive(); scheduleFetch(); }
     update();
   }catch(e){
     if(shutdown) shutdown();   // 何かあれば従来の見た目に戻す
