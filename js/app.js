@@ -11,8 +11,8 @@
     if(el) el.scrollIntoView({behavior: onTop ? 'smooth' : 'auto', block:'start'});
   }
 
-  // ===== URATENとは（モーダル。説明は準備中） =====
-  function openAbout(){ closeMenu(); document.getElementById('aboutModal').classList.add('open'); }
+  // ===== URATENとは（モーダル。開くたびに先頭から読めるようにする） =====
+  function openAbout(){ closeMenu(); document.getElementById('aboutModal').classList.add('open'); document.getElementById('aboutCard').scrollTop = 0; }
   function closeAbout(){ const m = document.getElementById('aboutModal'); if(m) m.classList.remove('open'); }
 
   // ===== イラスト（トップのスライドショー・#galleryPage の一覧） =====

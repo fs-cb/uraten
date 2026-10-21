@@ -374,7 +374,22 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .about-logo{margin-top:14px;font-family:var(--display);font-weight:200;font-size:40px;letter-spacing:.34em;line-height:1;
   background:linear-gradient(90deg,#fff 55%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
 .about-title{margin-top:16px;font-size:22px;font-weight:700;letter-spacing:.06em}
-.about-ph{margin-top:24px;padding:48px 20px;border:1px dashed var(--line2);border-radius:12px;text-align:center;font-size:13px;line-height:1.9;color:var(--dim)}
+/* 長い文章なので、×は高さ0の帯に入れてスクロールしても上に残す（本文の位置は動かさない） */
+.about-bar{position:sticky;top:0;z-index:2;height:0}
+.about-bar .modal-close{background:rgba(10,10,23,.85)}
+.about-lead{margin-top:28px;font-size:19px;font-weight:700;letter-spacing:.04em;color:#fff}
+.about-text{margin-top:14px;font-size:14px;line-height:2;color:var(--dim)}
+.about-text p+p{margin-top:12px}
+.about-text strong{color:var(--ink)}
+.about-h{margin-top:40px;padding-top:28px;border-top:1px solid var(--line);font-size:17px;font-weight:700;letter-spacing:.04em}
+.about-who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.about-who>div{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.about-who>div:last-child{grid-column:1/-1}
+.about-who dt{font-size:13px;font-weight:700;color:var(--pink);letter-spacing:.04em}
+.about-who dd{margin-top:6px;font-size:12.5px;line-height:1.85;color:var(--dim)}
+.about-can{list-style:none;display:grid;gap:8px;margin-top:14px}
+.about-can li{padding:12px 16px;border-left:2px solid var(--violet);background:rgba(255,255,255,.025);border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.85;color:var(--dim)}
+.about-can b{display:block;margin-bottom:2px;font-size:14px;color:var(--ink)}
 
 /* =========================================================
    放送予定（当日のスケジュールのモーダル / schedule.html）
@@ -495,6 +510,8 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .about-body{padding:32px 22px 30px}
   .about-logo{font-size:30px}
+  .about-who{grid-template-columns:minmax(0,1fr)}
+  .about-lead{font-size:17px}
   .oa-day{margin-top:24px}
   .oa-day-head{font-size:14px}
   .oa-row{grid-template-columns:3.3em minmax(0,1fr);gap:0 11px}

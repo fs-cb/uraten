@@ -229,15 +229,60 @@
   </div>
 </div>
 
-<!-- URATENとは（説明は準備中） -->
+<!-- URATENとは（長いので、×はスクロールしても上に残す） -->
 <div class="modal" id="aboutModal" onclick="if(event.target===this)closeAbout()">
-  <div class="modal-card about-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-    <button class="modal-close" type="button" onclick="closeAbout()" aria-label="閉じる">×</button>
+  <div class="modal-card about-card" id="aboutCard" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="about-bar"><button class="modal-close" type="button" onclick="closeAbout()" aria-label="閉じる">×</button></div>
     <div class="about-body">
       <span class="modal-cat">ABOUT</span>
       <div class="about-logo">URATEN</div>
       <h2 class="about-title" id="aboutTitle">URATENとは</h2>
-      <p class="about-ph">URATEN の紹介は準備中です。<br>公開まで、もうしばらくお待ちください。</p>
+
+      <p class="about-lead">好きなことを、もっと面白く。</p>
+      <div class="about-text">
+        <p>URATENは、福岡から全国へ、音楽やアート、エンタメなど、さまざまな活動や作品を届けるWebプラットフォームです。</p>
+        <p>誰かの作品を聴いたり、眺めたり。気になる活動者を見つけたり、自分の活動を発信したり。</p>
+        <p>つくる人も、表現する人も、楽しむ人も、応援する人も。</p>
+        <p>いろんな「好き」が集まる、ちょっと変わった遊び場です。</p>
+      </div>
+
+      <h3 class="about-h">こんな人たち、集まれ！</h3>
+      <dl class="about-who">
+        <div><dt>音楽・サウンド</dt><dd>歌い手、シンガー、バンド、アイドル、地下アイドル、演奏家、DJ、作詞家、作曲家、トラックメーカー、MIX師、音楽プロデューサーなど。</dd></div>
+        <div><dt>イラスト・創作</dt><dd>イラストレーター、絵師、漫画家、デザイナー、同人作家、ハンドメイド作家、グッズ制作者、映像クリエイターなど。</dd></div>
+        <div><dt>ステージ・パフォーマンス</dt><dd>劇団、役者、声優、ナレーター、ダンサー、コスプレイヤー、パフォーマー、舞台制作者、脚本家など。</dd></div>
+        <div><dt>配信・エンタメ</dt><dd>VTuber、ストリーマー、ゲーム実況者、動画投稿者、配信者、タレント、モデル、被写体、カメラマンなど。</dd></div>
+        <div><dt>お店・イベント・コミュニティ</dt><dd>コンセプトカフェ、メイドカフェ、ライブハウス、イベント主催者、イベントプロデューサー、企画・制作スタッフ、サークル運営者など。</dd></div>
+      </dl>
+      <div class="about-text">
+        <p>もちろん、ここに書かれていない活動も大歓迎！</p>
+        <p>プロでも、趣味でも、始めたばかりでも。</p>
+        <p><strong>「好きでやってる！」そんな気持ちがあれば、それで十分。</strong></p>
+      </div>
+
+      <h3 class="about-h">URATENで何ができるの？</h3>
+      <p class="about-text">例えば、こんな楽しみ方があります。</p>
+      <ul class="about-can">
+        <li><b>音楽を届ける！</b>オリジナル楽曲を放送したり、公式番組で紹介してもらったり。</li>
+        <li><b>自分たちの番組を放送！</b>トーク、バラエティ、音声ドラマなど、自分たちで企画・制作した番組をURATENで流したり。</li>
+        <li><b>CMでアピール！</b>アイドルや劇団の公演、お店やイベントの宣伝CMを流したり、URATENに読み上げてもらったり。</li>
+        <li><b>作品を見せる！</b>自慢のイラストをギャラリーに展示したり。</li>
+        <li><b>活動を知ってもらう！</b>自分やグループ、お店の魅力を紹介してもらったり、公式番組のトーク企画に出演したり。</li>
+        <li><b>イベントを広める！</b>ライブ、舞台公演、展示会、交流会などの情報を発信したり。</li>
+        <li><b>仲間とつながる！</b>活動者同士で交流したり、一緒に何かをつくる仲間を探したり。</li>
+        <li><b>新しい「推し」を見つける！</b>まだ知らなかった作品や活動者に出会って、応援したり。</li>
+      </ul>
+      <p class="about-text">もちろん、聴くだけ、見るだけ、のぞくだけでも大歓迎！</p>
+
+      <h3 class="about-h">「好き」の、その先へ。</h3>
+      <div class="about-text">
+        <p>URATENが目指しているのは、ただ作品や活動を紹介するだけの場所ではありません。</p>
+        <p>作品をきっかけに誰かと出会う。<br>応援してくれる人が増える。<br>新しい仲間ができて、次の作品や活動につながる。</p>
+        <p>そんな小さなきっかけが、ここからたくさん生まれてほしいと思っています。</p>
+        <p><strong>まだ知られていない才能も、これから始まる挑戦も。</strong></p>
+        <p>URATENは、みんなの「好き」が次の可能性につながる場所を目指しています。</p>
+        <p>さあ、あなたもURATENをのぞいてみませんか？</p>
+      </div>
     </div>
   </div>
 </div>
