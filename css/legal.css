@@ -1,6 +1,7 @@
 /* =========================================================
    URATEN LEGAL PAGES — 共通スタイル
    terms.html / tokushoho.html / refund.html で共有。
+   （privacy.html・rights.html は新デザインの base.css に移した）
    トーンは menu.css を踏襲。ただし背景は「モバイル軽量版」を
    全デバイス共通で使用（PC/SP の出し分けをしない）。
    長文の規約を読みやすくする設定を優先。
