@@ -1,10 +1,10 @@
 /* =========================================================
    URATEN 全ページ共通スタイル
-   （index.html / calendar.html / schedule.html / menu.html / bgm.html / bgm-dl.html / rights.html）
+   （index.html / calendar.html / schedule.html / menu.html / bgm.html / bgm-dl.html / rights.html / privacy.html）
 
    色の変数・リセット・背景・ヘッダー・セクション見出し・ボタン・フッター・下部タブ・文書（.doc）。
    ページ系統ごとの CSS（style.css / menu.css / bgm.css）はこのあとに読み込む。
-   変更したら、読み込んでいる7ページすべてを確認する。
+   変更したら、読み込んでいる8ページすべてを確認する。
 ========================================================= */
 :root{
   --bg:#05050c; --bg2:#0a0a17; --panel:#0e0e1c; --panel2:#141427;
@@ -92,18 +92,33 @@ button{font:inherit;color:inherit}
 /* ---------- スマホ下部タブ（index.html・menu.html） ---------- */
 .tabbar{display:none}
 
-/* ---------- 文書（rights.html。法務ページも新デザインに移すときはこれを使う） ---------- */
+/* ---------- 文書（rights.html・privacy.html。法務ページも新デザインに移すときはこれを使う） ---------- */
 .doc-page{margin-top:30px}
 .doc{max-width:820px;padding:30px 36px 34px;border-radius:16px;border:1px solid var(--line);background:rgba(14,14,28,.7)}
 .doc-lead{font-size:15px;line-height:2.1;font-weight:500}
+.doc .doc-updated{font-size:12px;color:var(--dim)}
 .doc h2{display:flex;align-items:center;gap:12px;margin:36px 0 12px;font-size:18px;font-weight:700;letter-spacing:.06em;line-height:1.5}
 .doc h2::before{content:"";flex:none;width:4px;height:1.1em;border-radius:2px;background:linear-gradient(180deg,var(--pink),var(--violet))}
 .doc h2:first-child{margin-top:0}
+.doc h3{margin:26px 0 8px;font-size:15px;font-weight:700;letter-spacing:.04em;line-height:1.6;color:#c9bcff}
 .doc p{font-size:14px;line-height:2;color:#d9d5ef}
-.doc p + p{margin-top:12px}
+.doc p + p,.doc ol + p,.doc ul + p,.doc .table-scroll + p{margin-top:12px}
+.doc li{font-size:14px;line-height:1.9;color:#d9d5ef}
 .doc ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.doc li{position:relative;padding-left:18px;font-size:14px;line-height:1.9;color:#d9d5ef}
-.doc li::before{content:"";position:absolute;left:3px;top:.8em;width:6px;height:6px;border-radius:50%;border:1px solid var(--violet)}
+.doc ul > li{position:relative;padding-left:18px}
+.doc ul > li::before{content:"";position:absolute;left:3px;top:.8em;width:6px;height:6px;border-radius:50%;border:1px solid var(--violet)}
+/* 番号付きの条項。入れ子は（1）（2）… */
+.doc ol{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding-left:1.6em}
+.doc ol > li::marker{color:var(--dim)}
+.doc ol ol{list-style:none;counter-reset:sub;padding-left:0;margin-top:8px}
+.doc ol ol > li{position:relative;padding-left:2.6em;counter-increment:sub}
+.doc ol ol > li::before{content:"（" counter(sub) "）";position:absolute;left:0;color:var(--dim)}
+.doc .table-scroll{margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.doc table{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.8}
+.doc th,.doc td{padding:11px 14px;border:1px solid var(--line);text-align:left;vertical-align:top}
+.doc thead th{background:rgba(139,108,255,.10);font-weight:700;letter-spacing:.06em}
+.doc tbody th{width:34%;font-weight:500;background:rgba(255,255,255,.02)}
+.doc td{color:#d9d5ef}
 .doc a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
 .doc a:hover{color:#fff}
 .doc hr{margin:32px 0 20px;border:0;border-top:1px solid var(--line)}
@@ -138,6 +153,15 @@ button{font:inherit;color:inherit}
   .doc-lead{font-size:14px}
   .doc h2{margin-top:30px;font-size:16.5px}
   .doc p,.doc li{font-size:13.5px}
+  .doc h3{margin-top:22px;font-size:14.5px}
+  .doc ol{padding-left:1.4em}
+  .doc table{font-size:12.5px}
+  .doc th,.doc td{padding:9px 10px}
+  /* 見出し列が長い表は、スマホでは1行ずつ「見出し→内容」の順に積む */
+  .doc table.table-stack thead{display:none}
+  .doc table.table-stack tr,.doc table.table-stack th,.doc table.table-stack td{display:block;width:auto}
+  .doc table.table-stack td{border-top:0}
+  .doc table.table-stack tr + tr th{border-top:0}
 
   body.has-tabbar{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
   .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;padding:6px 6px calc(6px + env(safe-area-inset-bottom));
