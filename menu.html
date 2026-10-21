@@ -4,426 +4,438 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>メニュー｜URATEN</title>
-<meta name="description" content="URATENの放送枠・レギュラー枠・CM枠・歌い手枠・イラスト枠・イベントカレンダー掲載枠の料金と申込み方法。">
+<meta name="description" content="URATENのサービスメニュー。ギャラリー・プロフィール・イベントカレンダーへの無料掲載から、スライドショー、楽曲・CMのローテーション、公式番組での紹介、放送枠まで。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="./css/base.css">
 <link rel="stylesheet" href="./css/menu.css">
 </head>
-<body>
-<div class="lux-lines" aria-hidden="true"></div>
-<div class="wrap">
-
-  <div class="hero">
-    <div class="logo">URATEN</div>
-    <h1>SERVICE MENU</h1>
-    <p class="hero-catch">つくったものを、電波にのせる。</p>
-    <p>URATENは、福岡・天神のクリエイターのための24時間Webラジオです。<br>番組・CM・楽曲・イラスト・イベント情報を、それぞれの枠で受け付けています。</p>
-    <p class="hero-tax">表示価格はすべて税込です。</p>
+<body class="has-tabbar">
+<!-- 演出（共鳴ビジュアル）は読み込まない静的なページ。js/app.js・js/env.js も読まない -->
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="./index.html" aria-label="URATEN トップ">
+      <span class="logo-row">
+        <span class="logo-word">URATEN</span>
+        <svg class="logo-pulse" viewBox="0 0 60 22" fill="none" aria-hidden="true">
+          <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#ff3ea5" stop-opacity=".2"/><stop offset=".5" stop-color="#ff3ea5"/><stop offset="1" stop-color="#8b6cff" stop-opacity=".2"/></linearGradient></defs>
+          <path d="M0 11h16l3-5 3 11 4-16 4 18 3-12 2 4h25" stroke="url(#pg)" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+    <nav class="gnav" aria-label="メイン">
+      <a href="./index.html"><b>URATENとは</b><small>ABOUT</small></a>
+      <a href="./index.html#player"><b>放送</b><small>ON AIR</small></a>
+      <a href="./index.html#showcase"><b>ショーケース</b><small>SHOWCASE</small></a>
+      <a href="./index.html#profile"><b>プロフィール</b><small>PROFILE</small></a>
+      <a href="./index.html#event"><b>イベント</b><small>EVENT</small></a>
+    </nav>
+    <div class="hd-side">
+      <a class="join join--dc" href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4a18 18 0 0 0-4.5-1.4l-.2.4A12 12 0 0 1 18 4.5 17 17 0 0 0 6 4.5a12 12 0 0 1 2.7-1.1l-.2-.4A18 18 0 0 0 4 4 18 18 0 0 0 1 17a18 18 0 0 0 5.5 2.8l.4-.6a12 12 0 0 1-1.9-.9l.5-.4a13 13 0 0 0 11 0l.5.4a12 12 0 0 1-1.9.9l.4.6A18 18 0 0 0 23 17 18 18 0 0 0 20 4ZM8.4 14.3c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm7.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z"/></svg>
+        参加する
+      </a>
+      <a class="join" href="#price" aria-current="page">＋ 参加する</a>
+    </div>
+    <button class="menu-btn" type="button" id="menuBtn" aria-label="メニューを開く" aria-expanded="false" aria-controls="drawer">
+      <i></i><i></i><i></i><small>MENU</small>
+    </button>
   </div>
+  <nav class="drawer" id="drawer" aria-label="メニュー">
+    <a href="./index.html">URATENとは<small>ABOUT</small></a>
+    <a href="./index.html#showcase">ショーケース<small>SHOWCASE</small></a>
+    <a href="./index.html#profile">プロフィール<small>PROFILE</small></a>
+    <a href="./index.html#event">イベント<small>EVENT</small></a>
+    <a href="#price" aria-current="page">メニュー<small>MENU</small></a>
+    <a href="./calendar.html" target="_blank" rel="noopener">イベントカレンダー<small>CALENDAR</small></a>
+    <a href="./rights.html" target="_blank" rel="noopener noreferrer">権利について<small>RIGHTS</small></a>
+    <a class="drawer-dc" href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">Discord に参加する<small>DISCORD</small></a>
+  </nav>
+</header>
 
-  <!-- ============ 01 放送枠 ============ -->
-  <section class="group" id="broadcast">
-    <div class="group-head"><div class="group-num">01</div><h2 class="group-title">放送枠</h2></div>
-    <p class="group-sub">自分の番組をURATENで放送する枠です。収録した音源をご提出いただき、編成に組み込んで放送します。</p>
+<main class="wrap">
 
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">10分枠</div>
-        <div class="item-desc">短くまとめたトークやコーナーに。</div>
+  <!-- ============ 冒頭 ============ -->
+  <section class="sec mn-hero">
+    <div class="sec-head">
+      <h1 class="sec-title">SERVICE MENU</h1>
+      <span class="sec-ja">サービスメニュー</span>
+      <span class="sec-line"></span>
+    </div>
+    <p class="mn-catch">載せる。流す。出会う。</p>
+    <p class="mn-lead">URATENは、福岡・天神から活動する人と、まだその人を知らない誰かをつなぐ場所です。<br>自分に合ったかたちで参加してください。</p>
+    <p class="mn-tax">表示価格はすべて税込です。</p>
+  </section>
+
+  <!-- ============ 料金一覧（メニュー名は下の各カードへのページ内リンク） ============ -->
+  <section class="sec" id="price" aria-labelledby="priceTitle">
+    <div class="sec-head">
+      <h2 class="sec-title" id="priceTitle">PRICE</h2>
+      <span class="sec-ja">料金一覧</span>
+      <span class="sec-line"></span>
+    </div>
+    <div class="mn-price">
+      <!-- 無料の行は目立たせる（無料ではじめられることが最初に伝わるように） -->
+      <div class="mn-price-row is-free">
+        <div class="mn-price-val">無料</div>
+        <ul class="mn-price-items">
+          <li><a href="#gallery">イラスト／フォトギャラリー</a></li>
+          <li><a href="#profile">クリエイタープロフィール</a></li>
+          <li><a href="#calendar">イベントカレンダー掲載</a></li>
+        </ul>
       </div>
-      <div class="price"><div class="price-main">5,000<small>円</small></div></div>
-    </div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">20分枠</div>
-        <div class="item-desc">標準的な番組の長さです。</div>
+      <div class="mn-price-row">
+        <div class="mn-price-val">1,000<small>円</small></div>
+        <ul class="mn-price-items">
+          <li><a href="#slideshow">スライドショー</a></li>
+          <li><a href="#profile-slideshow">プロフィールスライドショー</a></li>
+          <li><a href="#event-notice">イベント告知</a></li>
+          <li><a href="#song-rotation">楽曲ローテーション</a></li>
+          <li><a href="#cm-rotation">CMローテーション</a></li>
+        </ul>
       </div>
-      <div class="price"><div class="price-main">10,000<small>円</small></div></div>
-    </div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">30分枠</div>
-        <div class="item-desc">ゲストを迎える回や、じっくり話したい内容に。</div>
+      <div class="mn-price-row">
+        <div class="mn-price-val">2,000<small>円</small></div>
+        <ul class="mn-price-items">
+          <li><a href="#song-intro">楽曲紹介</a></li>
+          <li><a href="#creator-intro">クリエイター紹介</a></li>
+          <li><a href="#cm-read">CM読み上げ</a></li>
+        </ul>
       </div>
-      <div class="price"><div class="price-main">15,000<small>円</small></div></div>
-    </div>
-
-    <div class="slot-rules">
-      <p>使える音源は、URATENが用意したBGMか、自分が権利を持っているものです。</p>
-      <p>他の人からもらった音源は、<b>「ラジオで流していい」許可があるか</b>確認してください。</br>動画への投稿がOKでも、ラジオはまた別の許可が必要なことがあります。</p>
-    </div>
-
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（3項目）</summary>
-      <dl>
-        <dt>放送の日時と順序について</dt>
-        <dd>放送の日時・順序は編成の都合で決まります。</br>お申込みの直後に放送されるものではありません。</dd>
-
-        <dt>権利の確認について</dt>
-        <dd>音源の権利関係の確認は、URATENでは行いません。</br>判断に迷う素材はお使いにならないでください。</br>掲載後に権利上の問題が判明した場合は、放送を取りやめます。</dd>
-
-        <dt>日付のある告知を番組に含める場合</dt>
-        <dd>開催日の20日前までに、お申込みと素材のご提出をお願いします。</br>それ以降もお受けしますが、開催日より前の放送はお約束できません。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：放送枠フォーム -->
-      <a class="cta" href="https://tally.so/r/81VrAl">放送枠を申し込む</a>
-      <!-- リンク先：BGM試聴ページ -->
-      <a class="cta ghost mini" href="./bgm.html" target="_blank" rel="noopener noreferrer">BGM試聴</a>
+      <div class="mn-price-row">
+        <div class="mn-price-val">5,000<small>円</small></div>
+        <ul class="mn-price-items">
+          <li><a href="#talk">トーク出演</a></li>
+        </ul>
+      </div>
+      <div class="mn-price-row">
+        <div class="mn-price-val">5,000<small>円〜</small></div>
+        <ul class="mn-price-items">
+          <li><a href="#broadcast-slot">放送枠</a></li>
+        </ul>
+      </div>
+      <div class="mn-price-row">
+        <div class="mn-price-val is-text">個別にご相談</div>
+        <ul class="mn-price-items">
+          <li><a href="#regular">レギュラー枠</a></li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- ============ 02 レギュラー枠 ============ -->
-  <section class="group" id="regular">
-    <div class="group-head"><div class="group-num">02</div><h2 class="group-title">レギュラー枠</h2></div>
-    <p class="group-sub">毎週おなじ曜日・おなじ時間帯に、4回続けて放送する枠です。お店やグループの「定番の時間」をつくります。</p>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">レギュラー枠（15分／4回）</div>
-        <div class="item-desc">1回あたりの番組は14分。週替わりの告知やキャスト紹介に。</div>
-      </div>
-      <div class="price"><div class="price-main">36,000<small>円</small></div></div>
+  <!-- ============ 01 載せる ============ -->
+  <section class="sec" id="post" aria-labelledby="postTitle">
+    <div class="sec-head">
+      <span class="mn-num">01</span>
+      <h2 class="mn-gtitle" id="postTitle">載せる</h2>
+      <span class="sec-line"></span>
     </div>
+    <p class="page-intro">作品やプロフィールをサイトに掲載します。</p>
 
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">レギュラー枠（30分／4回）</div>
-        <div class="item-desc">1回あたりの番組は28分。じっくり話す番組に。</div>
-      </div>
-      <div class="price"><div class="price-main">60,000<small>円</small></div></div>
+    <div class="mn-cards">
+      <article class="mn-card is-free" id="gallery">
+        <div class="mn-card-head">
+          <h3 class="mn-name">イラスト／フォトギャラリー</h3>
+          <p class="mn-yen is-free">無料</p>
+        </div>
+        <p class="mn-desc">作品をギャラリーに掲載します。</p>
+        <ul class="mn-points">
+          <li>作品1点＋リンク1件</li>
+          <li>掲載期限なし</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（ギャラリー掲載フォーム・未作成） -->
+          <a class="btn btn-push" href="#">ギャラリーに掲載する</a>
+        </div>
+      </article>
+
+      <article class="mn-card is-free" id="profile">
+        <div class="mn-card-head">
+          <h3 class="mn-name">クリエイタープロフィール</h3>
+          <p class="mn-yen is-free">無料</p>
+        </div>
+        <p class="mn-desc">活動者のライブラリーに、プロフィールカードを掲載します。</p>
+        <ul class="mn-points">
+          <li>自己紹介200文字まで＋リンク1件</li>
+          <li>掲載期限なし</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（プロフィール登録フォーム・未作成） -->
+          <a class="btn btn-push" href="#">プロフィールを登録する</a>
+        </div>
+      </article>
+
+      <article class="mn-card" id="slideshow">
+        <div class="mn-card-head">
+          <h3 class="mn-name">スライドショー</h3>
+          <p class="mn-yen">1,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">作品をトップページに7日間掲載します。</p>
+        <ul class="mn-points">
+          <li>作品説明＋リンク2件</li>
+          <li>期間後はギャラリーに掲載</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（スライドショーのフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
+
+      <article class="mn-card" id="profile-slideshow">
+        <div class="mn-card-head">
+          <h3 class="mn-name">プロフィールスライドショー</h3>
+          <p class="mn-yen">1,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">トップページに7日間掲載し、あなたのプロフィールページをつくります。</p>
+        <ul class="mn-points">
+          <li>質問に答えて書く自己紹介＋サムネイル＋リンク2件</li>
+          <li>期間後もライブラリーに残ります</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（プロフィールスライドショーのフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
     </div>
+    <p class="mn-note">ギャラリーとスライドショーは合わせてお一人1点です。新しく申し込むと、掲載中の作品と入れ替わります。</p>
+  </section>
 
-    <div class="slot-rules">
-      <p>お店・グループ・団体の方に向けた枠です。毎週コンテンツをご用意いただく必要があります。</p>
-      <p>音源は、<b>URATENがお示しする期日（目安：各放送日の10日前）まで</b>に1回分ずつご提出ください。ご提出がなかった回は放送されず、その回の返金もありません。</p>
-      <p><b>フォームを送っただけでは、まだお支払いは発生しません。</b></br>URATENから曜日・時間帯・4回の放送日をご提示し、ご同意いただいてからお支払いに進みます。お支払いのあとのキャンセル・返金は承れません。</p>
+  <!-- ============ 02 イベント ============ -->
+  <section class="sec" id="event" aria-labelledby="eventTitle">
+    <div class="sec-head">
+      <span class="mn-num">02</span>
+      <h2 class="mn-gtitle" id="eventTitle">イベント</h2>
+      <span class="sec-line"></span>
     </div>
+    <p class="page-intro">主催・出演するイベントを、天神のサブカルイベントカレンダーに掲載します。</p>
 
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（4項目）</summary>
-      <dl>
-        <dt>曜日・時間帯の決め方</dt>
-        <dd>現在の受付時間帯は22時台です（編成の状況により変更・拡大する場合があります）。ご希望をうかがったうえで、URATENからご提示します。ご希望に沿えない場合があります。</dd>
+    <div class="mn-cards">
+      <article class="mn-card is-free" id="calendar">
+        <div class="mn-card-head">
+          <h3 class="mn-name">イベントカレンダー掲載</h3>
+          <p class="mn-yen is-free">無料</p>
+        </div>
+        <p class="mn-desc">イベント情報をカレンダーに掲載します。</p>
+        <ul class="mn-points">
+          <li>1回のお申込みで1件</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（カレンダー掲載フォーム・未作成） -->
+          <a class="btn btn-push" href="#">カレンダーに掲載する</a>
+        </div>
+      </article>
 
-        <dt>開始時刻について</dt>
-        <dd>開始時刻は編成の都合で前後します。15分枠は、時間帯の前半か後半のどちらかになります。</dd>
-
-        <dt>回数と更新について</dt>
-        <dd>お申込み1件につき4回です。同じ曜日が月に5回ある月でも、放送は4回です。自動更新はありません。</dd>
-
-        <dt>契約が成立する時点</dt>
-        <dd>クレジットカードはご同意と同時に決済された時点、銀行振込はご入金を確認した時点です。</br>それより前であれば、費用のご負担なく取りやめられます。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：レギュラー枠フォーム（未作成） -->
-      <a class="cta" href="#">レギュラー枠を申し込む</a>
-      <!-- リンク先：BGM試聴ページ -->
-      <a class="cta ghost mini" href="./bgm.html" target="_blank" rel="noopener noreferrer">BGM試聴</a>
+      <article class="mn-card" id="event-notice">
+        <div class="mn-card-head">
+          <h3 class="mn-name">イベント告知</h3>
+          <p class="mn-yen">1,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">チラシ付きでカレンダーに掲載し、トップページにも表示します。</p>
+        <ul class="mn-points">
+          <li>開催日の7日前からトップページに表示</li>
+          <li>チケット発売などに合わせて、好きな日から7日間の表示も追加</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（イベント告知のフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
     </div>
   </section>
 
-  <!-- ============ 03 歌い手枠 ============ -->
-  <section class="group" id="singer">
-    <div class="group-head"><div class="group-num">03</div><h2 class="group-title">歌い手枠</h2></div>
-    <p class="group-sub">歌唱した楽曲を放送する枠です。複数の方の楽曲をまとめて、ひとつの番組として編成します。</p>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">歌い手枠（1曲）</div>
-        <div class="item-desc">1回のお申込みにつき1曲です。</div>
-      </div>
-      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
+  <!-- ============ 03 流す ============ -->
+  <section class="sec" id="rotation" aria-labelledby="rotationTitle">
+    <div class="sec-head">
+      <span class="mn-num">03</span>
+      <h2 class="mn-gtitle" id="rotationTitle">流す</h2>
+      <span class="sec-line"></span>
     </div>
+    <p class="page-intro">楽曲やCMを、24時間放送で7日間くり返し流します。</p>
 
-    <div class="slot-rules">
-      <p>自分の曲か、<b>「ラジオで流していいよ」と権利者に言ってもらえた曲だけ！</b>動画への投稿がOKでも、ラジオはまた別の許可が必要なことがあります。</p>
-      <p>人が歌う・音声合成ソフト・生成AIによる歌唱、どれも歓迎します。メインの歌唱がどれにあたるかだけ、お申込み時に教えてください。</p>
-    </div>
+    <div class="mn-cards">
+      <article class="mn-card" id="song-rotation">
+        <div class="mn-card-head">
+          <h3 class="mn-name">楽曲ローテーション</h3>
+          <p class="mn-yen">1,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">1曲を7日間、放送の合間に流します。</p>
+        <ul class="mn-points">
+          <li>6分までの楽曲1曲</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（楽曲ローテーションのフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
 
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（3項目）</summary>
-      <dl>
-        <dt>音源のご用意について</dt>
-        <dd>この枠ではURATEN提供のBGMは使いません。音源はご自身でご用意ください。</dd>
-
-        <dt>歌唱の申告について</dt>
-        <dd>申告に応じて編成を分けることがあります。</br>音声合成ソフトをお使いの場合、URATEN上の表示では「音声合成ソフトウェアを使用」と記載します（キャラクター名は使用しません）。</br>ご自身のSNS等での紹介にはこの制限はかかりません。</dd>
-
-        <dt>権利の確認について</dt>
-        <dd>楽曲の権利関係の確認は、URATENでは行いません。</br>判断に迷う素材はお使いにならないでください。放送の日時・順序は編成の都合で決まります。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：歌い手枠フォーム -->
-      <a class="cta" href="https://tally.so/r/7RYeE2">歌い手枠を申し込む</a>
-    </div>
-  </section>
-
-  <!-- ============ 04 CM枠 ============ -->
-  <section class="group" id="cm">
-    <div class="group-head"><div class="group-num">04</div><h2 class="group-title">CM枠</h2></div>
-    <p class="group-sub">活動・イベント・お店・作品を30秒のCMで紹介する枠です。放送の合間に流します。</p>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">CM枠（小）</div>
-        <div class="item-desc">CM音源1本。</div>
-      </div>
-      <div class="price"><div class="price-main">1,200<small>円</small></div></div>
-    </div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">CM枠（大）</div>
-        <div class="item-desc">CM音源3本まで。内容を変えて複数出したい方に。</div>
-      </div>
-      <div class="price"><div class="price-main">2,500<small>円</small></div></div>
-    </div>
-
-    <div class="slot-rules">
-      <p>BGMはURATENが用意したものを使って、ご自身で制作してください。声とBGMを合わせた完成音源でご提出をお願いします。</p>
-      <p>宣伝する内容は実在するものに限ります。誇大な表現や、事実と異なる内容は放送できません。</p>
-    </div>
-
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（5項目）</summary>
-      <dl>
-        <dt>放送の保証について</dt>
-        <dd>それぞれの音源について、放送期間中に最低1回の放送を保証します。日時・回数・順序は編成の都合で決まります。</dd>
-
-        <dt>審査通過と放送日のお知らせ</dt>
-        <dd>審査を通過したら、承認のお知らせをメールでお送りします。放送日は、それぞれの音源の初回の放送日の直前（当日〜2日前）にメールでお知らせします。2回目以降の放送はお知らせしません。</dd>
-
-        <dt>BGMの入手方法</dt>
-        <dd>お申込み後、URATEN提供のBGMをダウンロードできるようになります。URATENでの編集や合成は行いません。</dd>
-
-        <dt>CM枠（大）のご提出</dt>
-        <dd>3本までを一度にまとめてご提出ください。後からの追加はできません。</dd>
-
-        <dt>日付のある告知CMの場合</dt>
-        <dd>開催日の20日前までに、お申込みと素材のご提出をお願いします。</br>それ以降もお受けしますが、開催日より前の放送はお約束できません。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：CM枠フォーム -->
-      <a class="cta" href="https://tally.so/r/VLayX6">CM枠を申し込む</a>
-      <!-- リンク先：BGM試聴ページ -->
-      <a class="cta ghost mini" href="./bgm.html" target="_blank" rel="noopener noreferrer">BGM試聴</a>
+      <article class="mn-card" id="cm-rotation">
+        <div class="mn-card-head">
+          <h3 class="mn-name">CMローテーション</h3>
+          <p class="mn-yen">1,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">活動・イベント・お店を紹介するCMを7日間流します。</p>
+        <ul class="mn-points">
+          <li>30秒までのCM1本</li>
+          <li>URATENのBGMを使って制作できます</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（CMローテーションのフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+          <a class="btn btn-x" href="./bgm.html" target="_blank" rel="noopener noreferrer">BGM試聴</a>
+        </div>
+      </article>
     </div>
   </section>
 
-  <!-- ============ 05 イラスト枠 ============ -->
-  <section class="group" id="illust">
-    <div class="group-head"><div class="group-num">05</div><h2 class="group-title">イラスト枠</h2></div>
-    <p class="group-sub">作品をURATENのサイトに掲載し、X・pixivなどご自身の発表の場へご案内します。</p>
-
-    <div class="item free">
-      <div class="item-main">
-        <div class="item-name">ギャラリー掲載</div>
-        <div class="item-desc">サムネイルから外部リンクへ。掲載は14日ごとの更新制で、掲載できるのはお一人1点です。更新や作品の差し替えはいつでも無料で、回数の制限もありません。</div>
-      </div>
-      <div class="price"><div class="price-main free">無料</div></div>
+  <!-- ============ 04 番組に出る ============ -->
+  <section class="sec" id="program" aria-labelledby="programTitle">
+    <div class="sec-head">
+      <span class="mn-num">04</span>
+      <h2 class="mn-gtitle" id="programTitle">番組に出る</h2>
+      <span class="sec-line"></span>
     </div>
+    <p class="page-intro">URATENの公式番組で、パーソナリティがあなたを紹介します。</p>
 
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">スライドショー枠</div>
-        <div class="item-desc">トップページに巡回掲載（14日）。自己紹介文と外部リンクを2件まで掲載できます。<b>ギャラリーへの掲載（14日）も含みます。</b></div>
-      </div>
-      <div class="price"><div class="price-main">2,000<small>円</small></div></div>
-    </div>
+    <div class="mn-cards">
+      <article class="mn-card" id="song-intro">
+        <div class="mn-card-head">
+          <h3 class="mn-name">楽曲紹介</h3>
+          <p class="mn-yen">2,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">公式番組であなたの楽曲を流し、パーソナリティが紹介します。</p>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（楽曲紹介のフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
 
-    <div class="slot-rules">
-      <p>掲載できるのは、<b>ご本人が制作した全年齢向けの作品だけ</b>です。生成AIによって生成された作品は掲載できません。</p>
-      <p>二次創作は、原作の権利者が定めるガイドラインの範囲内かどうかを、ご自身でご確認ください。URATENでは可否の判断を行いません。</p>
-      <p>ギャラリー・スライドショーとも、掲載できるのは<b>お一人1点</b>です。新しく申し込んだ作品が掲載されると、それまでの作品と入れ替わります。</p>
-    </div>
+      <article class="mn-card" id="creator-intro">
+        <div class="mn-card-head">
+          <h3 class="mn-name">クリエイター紹介</h3>
+          <p class="mn-yen">2,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">あなたの紹介文をもとに、パーソナリティが活動を紹介します。</p>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（クリエイター紹介のフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
 
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（3項目）</summary>
-      <dl>
-        <dt>ご提出いただくもの</dt>
-        <dd>サムネイル画像1枚（10MBまで）と、作品を掲載しているページのリンクです。</dd>
+      <article class="mn-card" id="cm-read">
+        <div class="mn-card-head">
+          <h3 class="mn-name">CM読み上げ</h3>
+          <p class="mn-yen">2,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">あなたのCM原稿を、パーソナリティが番組内で読み上げます。</p>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（CM読み上げのフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
 
-        <dt>成人向けの活動をされている方へ</dt>
-        <dd>ご参加は歓迎しています。掲載できるのは全年齢向けの作品に限ります。</dd>
-
-        <dt>掲載の順序について</dt>
-        <dd>スライドショー枠の掲載の順序は、URATENが決定します。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：イラスト（無料）フォーム -->
-      <a class="cta" href="https://tally.so/r/Y5B0vz">ギャラリーに掲載する</a>
-      <!-- リンク先：スライドショー枠フォーム -->
-      <a class="cta" href="https://tally.so/r/eqG1eO">スライドショー枠を申し込む</a>
-    </div>
-  </section>
-
-  <!-- ============ 06 イベントカレンダー掲載枠 ============ -->
-  <section class="group" id="calendar">
-    <div class="group-head"><div class="group-num">06</div><h2 class="group-title">イベントカレンダー掲載枠</h2></div>
-    <p class="group-sub">主催・出演されるイベントを、天神のサブカルイベントを横断するカレンダーに掲載します。</p>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">1〜2件</div>
-      </div>
-      <div class="price"><div class="price-main">1,000<small>円</small></div></div>
-    </div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">3〜6件</div>
-        <div class="item-desc">毎月イベントを開催されている方に。</div>
-      </div>
-      <div class="price"><div class="price-main">2,000<small>円</small></div></div>
-    </div>
-
-    <div class="item">
-      <div class="item-main">
-        <div class="item-name">7〜10件</div>
-        <div class="item-desc">ライブハウス・イベントスペースの月間スケジュールに。</div>
-      </div>
-      <div class="price"><div class="price-main">3,000<small>円</small></div></div>
-    </div>
-
-    <div class="slot-rules">
-      <p>掲載できるのは、<b>ご自身が主催・出演するイベントだけ</b>です。</br>まとめてお申込みいただけるのは同じ主催者のイベントに限り、掲載枠を他の方へ譲ることはできません。</p>
-      <p>開催日より前の掲載をご希望の場合は、開催日の7日前までのお申込みをおすすめします。</p>
-    </div>
-
-    <details class="slot-notes">
-      <summary>お申込みの前に必ずお読みください（3項目）</summary>
-      <dl>
-        <dt>ご提出いただく情報</dt>
-        <dd>イベント名・日時・会場・出演者・料金・参加方法と、詳しい情報を掲載しているページのリンクです。</dd>
-
-        <dt>7日前を過ぎたお申込みについて</dt>
-        <dd>お受けしますが、開催日より前の掲載はお約束できません。</dd>
-
-        <dt>変更・中止があった場合</dt>
-        <dd>お早めにご連絡ください。開催が終わったイベントも、実績として掲載できます。</dd>
-      </dl>
-    </details>
-
-    <div class="cta-row">
-      <!-- リンク先：カレンダー1〜2件フォーム -->
-      <a class="cta" href="https://tally.so/r/0Qzjv6">1〜2件を申し込む</a>
-      <!-- リンク先：カレンダー3〜6件フォーム -->
-      <a class="cta" href="https://tally.so/r/eqP1aE">3〜6件</a>
-      <!-- リンク先：カレンダー7〜10件フォーム -->
-      <a class="cta" href="https://tally.so/r/rjR0VR">7〜10件</a>
+      <article class="mn-card" id="talk">
+        <div class="mn-card-head">
+          <h3 class="mn-name">トーク出演</h3>
+          <p class="mn-yen">5,000<small>円</small></p>
+        </div>
+        <p class="mn-desc">公式番組にゲスト出演し、パーソナリティと5分ほどお話しします。</p>
+        <ul class="mn-points">
+          <li>収録はオンライン</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（トーク出演のフォーム・未作成） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+        </div>
+      </article>
     </div>
   </section>
 
-  <!-- ============ 07 お申込みから放送・掲載まで ============ -->
-  <section class="group" id="flow">
-    <div class="group-head"><div class="group-num">07</div><h2 class="group-title">お申込みから放送・掲載まで</h2></div>
-    <p class="group-sub">この流れは、放送枠・歌い手枠・CM枠・イラスト枠・イベントカレンダー掲載枠のものです。</br>レギュラー枠は流れがちがうので、下に分けて書いています。</p>
+  <!-- ============ 05 自分の番組を持つ ============ -->
+  <section class="sec" id="broadcast" aria-labelledby="broadcastTitle">
+    <div class="sec-head">
+      <span class="mn-num">05</span>
+      <h2 class="mn-gtitle" id="broadcastTitle">自分の番組を持つ</h2>
+      <span class="sec-line"></span>
+    </div>
 
-    <ol class="flow">
-      <li>
-        <b>お申込みとお支払い</b>
-        <span>クレジットカードはお申込みと同時に決済されます。銀行振込は申込みから7日以内にお願いします。</span>
-      </li>
-      <li>
-        <b>受付のご連絡</b>
-        <span>お申込みを受け付けたら、素材のご提出方法と提出の期日をメールでお送りします（目安：お申込みから5日以内）。期日までにご提出がない場合は、キャンセルとして扱い、決済にかかった費用を差し引いて返金します（イベントカレンダーなど、お申込みと同時に情報をいただく枠を除きます）。お支払いを確認したら、受領金額などをメールでお知らせします。</span>
-      </li>
-      <li>
-        <b>素材のご提出</b>
-        <span>お示しした期日までに、音源・作品・掲載情報をご提出ください。</span>
-      </li>
-      <li>
-        <b>審査結果の連絡</b>
-        <span>素材の提出完了後、メールでお知らせします（目安：10日以内）。修正の依頼も、審査結果の連絡に含みます。修正の依頼では、理由と、修正内容を出していただく期日をお示しします（修正は1回まで）。</span>
-      </li>
-      <li>
-        <b>放送・掲載</b>
-        <span>放送枠・歌い手枠は素材の提出完了後60日以内、CM枠・スライドショー枠は素材の提出完了後30日以内、イベントカレンダーは情報の提出完了後14日以内に放送・掲載します。修正の依頼を行った場合は、素材または情報の提出完了に代えて、修正内容の受領から計算します。日数は、初日を算入せず、その翌日から数えます。CM枠は、それぞれの音源の初回の放送日の直前（当日〜2日前）にメールでお知らせします（2回目以降はお知らせしません）。</span>
-      </li>
-    </ol>
+    <div class="mn-cards">
+      <article class="mn-card" id="broadcast-slot">
+        <div class="mn-card-head">
+          <h3 class="mn-name">放送枠</h3>
+          <p class="mn-yen">5,000<small>円〜</small></p>
+        </div>
+        <p class="mn-desc">収録した番組をURATENで放送します。</p>
+        <ul class="mn-points">
+          <li>10分枠 5,000円／20分枠 10,000円／30分枠 15,000円</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（放送枠のフォーム。新フォームに差し替えるかは未定） -->
+          <a class="btn btn-push" href="#">申し込む</a>
+          <a class="btn btn-x" href="./bgm.html" target="_blank" rel="noopener noreferrer">BGM試聴</a>
+        </div>
+      </article>
 
-    <h3 class="group-title">レギュラー枠の流れ</h3>
-    <p class="group-sub">お支払いのタイミングと音源のご提出が、上の流れとちがいます。</p>
-
-    <ol class="flow">
-      <li>
-        <b>お申込み</b>
-        <span>フォームをご送信ください。この時点ではお支払いは発生しません。</span>
-      </li>
-      <li>
-        <b>枠のご提示</b>
-        <span>曜日・時間帯・4回の放送日と、各回の音源を出していただく期日・ご提出方法を、メールでご提示します（目安：お申込みから5日以内）。</span>
-      </li>
-      <li>
-        <b>ご同意とお支払い</b>
-        <span>ご提示のときにお示しする期日（目安：ご提示から3日）までにご同意ください。クレジットカードはご同意と同時に決済されます。銀行振込は同意の日から7日以内にお願いします。</span>
-      </li>
-      <li>
-        <b>契約成立のご連絡</b>
-        <span>クレジットカードはご同意と同時に、銀行振込はご入金を確認した時点で契約成立です。契約成立のあと、音源の審査を行います。契約が成立しなかった場合、お送りいただいた音源は使わずに削除します。</span>
-      </li>
-      <li>
-        <b>音源のご提出</b>
-        <span>ご提示のときにお示しした期日（目安：各放送日の10日前）までに、1回分ずつご提出ください。</span>
-      </li>
-      <li>
-        <b>審査結果の連絡</b>
-        <span>契約成立のあと、音源の審査結果をお知らせします（目安：音源の受け取りから5日以内）。修正が必要なときは、理由と修正の期日をお示しします（修正は1回まで）。</span>
-      </li>
-      <li>
-        <b>放送</b>
-        <span>ご提示した4回の放送日に放送します。</span>
-      </li>
-    </ol>
+      <article class="mn-card" id="regular">
+        <div class="mn-card-head">
+          <h3 class="mn-name">レギュラー枠</h3>
+          <p class="mn-yen is-text">個別にご相談</p>
+        </div>
+        <p class="mn-desc">毎週おなじ時間に、4回続けて放送します。お店や団体の「定番の時間」に。</p>
+        <ul class="mn-points">
+          <li>目安：15分×4回 36,000円〜／30分×4回 60,000円〜</li>
+        </ul>
+        <div class="mn-actions">
+          <!-- TODO: リンク先（相談窓口。contact@ura-ten.jp かフォームかは未定） -->
+          <a class="btn btn-push" href="#">相談する</a>
+        </div>
+      </article>
+    </div>
   </section>
 
-  <!-- ============ 08 お申込みの前に ============ -->
-  <section class="group" id="notes">
-    <div class="group-head"><div class="group-num">08</div><h2 class="group-title">お申込みの前に</h2></div>
-
-    <ul class="list">
-      <li>すべての枠で審査を行います。内容やリンク先を確認したうえで、お受けできない場合があります。有料の枠では、お支払いのあとに審査を行うことがあります。</li>
-      <li>ご提出いただく素材の権利は、ご自身でご確認ください。URATENでは権利関係の確認は行いません。<b>「商用利用ができる」ことと「放送・配信に使える」ことは別の許諾です。</b>判断に迷う素材はお使いにならないでください。</li>
-      <li>18歳未満の方は、保護者の同意を得たうえでお申込みください。お申込みフォームで確認します。</li>
-      <li>放送・掲載の可否や時間帯、順序は、URATENが決定します。ランキングや放送回数の保証、収益の分配は行っていません（CM枠の最低1回の放送保証を除きます）。</li>
-      <li>放送・掲載のために、尺の調整や音量の調整など、必要な範囲で編集を行うことがあります。</li>
-      <li>キャンセルはいつでもお申し出いただけます。<b>審査結果の連絡</b>の前であれば、決済にかかった費用を差し引いて返金します。修正の依頼も、審査結果の連絡に含みます。審査を通過しなかった場合は全額を返金します。</li>
-      <li>修正の依頼を行った場合の期日と返金の扱いは、すべての有料枠で共通です（利用規約第18条）。<b>修正の依頼でお示しした期日までに修正内容の提出がない場合や、修正後も不備が解消しない場合は、放送・掲載は行わず、返金もありません。</b></li>
-      <li>レギュラー枠は、キャンセルの扱いがちがいます。<b>契約成立より前</b>（クレジットカードはご同意の前、銀行振込はご入金の確認の前）であれば、費用のご負担なく取りやめられます。契約成立後のキャンセル・返金は承れません。修正が必要な回は、URATENがお示しする期日まで、1回に限り修正をお受けします（利用規約第18条）。期日までに修正がなかった回、修正後も不備が残った回、審査を通過しなかった回は放送されず、その回の返金もありません。</li>
+  <!-- ============ お申込みの前に ============ -->
+  <section class="sec" id="notes" aria-labelledby="notesTitle">
+    <div class="sec-head">
+      <h2 class="sec-title" id="notesTitle">NOTES</h2>
+      <span class="sec-ja">お申込みの前に</span>
+      <span class="sec-line"></span>
+    </div>
+    <ul class="mn-list">
+      <li>すべての枠で審査があります。</li>
+      <li>作品や音源の権利は、ご自身で確認してください。URATENでは確認しません。</li>
+      <li>掲載・放送のあとの内容の修正はできません（リンクの変更のみ受け付けます）。</li>
+      <li>詳しい条件はお申込みフォームでご案内し、同意をいただきます。</li>
     </ul>
-
-    <div class="note">
-      <b>URATEN Picks（無料・任意）</b>お申込みのときに登録すると、URATENが選んだ番組・楽曲を独立の番組として再放送する「URATEN Picks」の対象になります。登録は無料で、有料の枠でも無料の枠でも登録できます。登録しなくても不利になることはありません。<b>再放送をお約束するものではありませんし、選ぶ基準も公開していません。</b>放送する場合は、事前にメールでご連絡します。<b>お知らせに書いた期日（目安：お知らせから7日）までにお返事がなければ、そのまま放送します。</b>放送をご希望でないときは、その期日までにお知らせください。登録の取り消しは、いつでもお申し出いただけます。
-    </div>
-
-    <div class="note flag">
-      詳しい条件は、<a href="./terms.html">利用規約</a>・<a href="./tokushoho.html">特定商取引法に基づく表記</a>・<a href="./refund.html">返金・キャンセルポリシー</a>をご確認ください。お申込みの際に同意していただきます。
-    </div>
+    <nav class="mn-docs" aria-label="規約・ポリシー">
+      <a class="btn btn-x" href="./terms.html">利用規約</a>
+      <a class="btn btn-x" href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a class="btn btn-x" href="./refund.html">返金・キャンセルポリシー</a>
+      <a class="btn btn-x" href="./rights.html">権利について</a>
+      <a class="btn btn-x" href="./privacy.html">プライバシーポリシー</a>
+    </nav>
   </section>
 
-  <footer>
-    <div class="legal-links">
+  <footer class="ft">
+    <div class="ft-logo">URATEN</div>
+    <div class="ft-links">
       <a href="./terms.html">利用規約</a>
       <a href="./tokushoho.html">特定商取引法に基づく表記</a>
       <a href="./refund.html">返金・キャンセルポリシー</a>
       <a href="./privacy.html">プライバシーポリシー</a>
+      <a href="./rights.html">権利について</a>
     </div>
   </footer>
-</div>
+</main>
+
+<!-- スマホ下部タブ（トップと同じ並び。リンク先はトップの各セクション） -->
+<nav class="tabbar" aria-label="タブ">
+  <a href="./index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/></svg>ホーム</a>
+  <a href="./index.html#player"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>放送</a>
+  <a href="./index.html#showcase"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>ショーケース</a>
+  <a href="./index.html#event"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>イベント</a>
+  <a class="is-active" href="#price" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>参加</a>
+</nav>
+
 <script src="./js/menu.js"></script>
 </body>
 </html>

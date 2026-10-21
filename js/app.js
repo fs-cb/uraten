@@ -162,9 +162,9 @@
   const SHOW_MS = 12000;
   const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
   const SHOWCASE = {
-    illust: { en:'ILLUSTRATION', ja:'イラストレーション', offset:0,    wanted:'イラスト枠 掲載募集中', href:'./menu.html#illust' },
-    photo:  { en:'PHOTO',        ja:'フォト',             offset:4000, wanted:'フォト枠 掲載募集中',   href:'./menu.html' },
-    info:   { en:'INFO',         ja:'イベント告知',       offset:8000, wanted:'告知枠 掲載募集中',     href:'./menu.html' }
+    illust: { en:'ILLUSTRATION', ja:'イラストレーション', offset:0,    wanted:'イラスト枠 掲載募集中', href:'./menu.html#slideshow' },
+    photo:  { en:'PHOTO',        ja:'フォト',             offset:4000, wanted:'フォト枠 掲載募集中',   href:'./menu.html#slideshow' },
+    info:   { en:'INFO',         ja:'イベント告知',       offset:8000, wanted:'告知枠 掲載募集中',     href:'./menu.html#event-notice' }
   };
   const SHOW_DOTS_MAX = 8;
   const ICON_HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2 0 3.4 1.1 4.4 2.5C12 6.1 13.4 5 15.4 5 19 5 21 8.6 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>';

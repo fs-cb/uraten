@@ -4,76 +4,92 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BGM試聴｜URATEN</title>
-<meta name="description" content="URATENが放送枠・CM枠向けに提供しているBGMの試聴ページ。CM用・トーク用を、雰囲気とテンポで絞り込んで聴けます。">
+<meta name="description" content="URATENが放送枠・CMローテーション向けに提供しているBGMの試聴ページ。CM用・トーク用を、雰囲気とテンポで絞り込んで聴けます。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="./css/menu.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="./css/base.css">
 <link rel="stylesheet" href="./css/bgm.css">
 </head>
 <body>
-<div class="lux-lines" aria-hidden="true"></div>
-<div class="wrap">
-
-  <div class="hero">
-    <div class="logo">URATEN</div>
-    <h1>BGM LIBRARY</h1>
-    <p class="hero-catch">番組の下じきを、先に聴く。</p>
-    <p>URATENが番組とCMのためにご用意しているBGMです。<br>お申込みの前に、どんな音があるかをここで確かめられます。</p>
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="./index.html" aria-label="URATEN トップ">
+      <span class="logo-row">
+        <span class="logo-word">URATEN</span>
+        <svg class="logo-pulse" viewBox="0 0 60 22" fill="none" aria-hidden="true">
+          <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#ff3ea5" stop-opacity=".2"/><stop offset=".5" stop-color="#ff3ea5"/><stop offset="1" stop-color="#8b6cff" stop-opacity=".2"/></linearGradient></defs>
+          <path d="M0 11h16l3-5 3 11 4-16 4 18 3-12 2 4h25" stroke="url(#pg)" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
   </div>
+</header>
 
-  <!-- ============ 01 BGMを試聴する ============ -->
-  <section class="group" id="library">
-    <div class="group-head"><div class="group-num">01</div><h2 class="group-title">BGMを試聴する</h2></div>
-    <p class="group-sub">用途を選び、雰囲気とテンポで絞り込めます。左の再生ボタンで試聴できます。</p>
+<main class="wrap">
 
-    <div class="bgm-tabs" id="bgmTabs" role="tablist" aria-label="用途">
-      <button type="button" class="bgm-tab is-on" role="tab" aria-selected="true" aria-controls="bgmList" data-category="cm">CM用</button>
-      <button type="button" class="bgm-tab" role="tab" aria-selected="false" aria-controls="bgmList" data-category="talk">トーク用</button>
+  <!-- ============ BGMを試聴する ============ -->
+  <section class="sec bgm-top" id="library">
+    <div class="sec-head">
+      <h1 class="sec-title">BGM LIBRARY</h1>
+      <span class="sec-ja">BGM試聴</span>
+      <span class="sec-line"></span>
     </div>
+    <p class="bgm-catch">番組の下じきを、先に聴く。</p>
+    <p class="page-intro">URATENが番組とCMのためにご用意しているBGMです。お申込みの前に、どんな音があるかをここで確かめられます。<br>用途を選び、雰囲気とテンポで絞り込めます。左の再生ボタンで試聴できます。</p>
 
-    <div class="bgm-filter" id="bgmFilter"></div>
+    <div class="bgm-panel">
+      <div class="bgm-tabs" id="bgmTabs" role="tablist" aria-label="用途">
+        <button type="button" class="bgm-tab is-on" role="tab" aria-selected="true" aria-controls="bgmList" data-category="cm">CM用</button>
+        <button type="button" class="bgm-tab" role="tab" aria-selected="false" aria-controls="bgmList" data-category="talk">トーク用</button>
+      </div>
 
-    <div class="bgm-bar">
-      <p class="bgm-count" id="bgmCount">読み込み中です。</p>
-      <button type="button" class="bgm-clear" id="bgmClear" hidden>絞り込みを解除</button>
+      <div class="bgm-filter" id="bgmFilter"></div>
+
+      <div class="bgm-bar">
+        <p class="bgm-count" id="bgmCount">読み込み中です。</p>
+        <button type="button" class="bgm-clear" id="bgmClear" hidden>絞り込みを解除</button>
+      </div>
+
+      <p class="bgm-excerpt" id="bgmExcerpt" hidden>トーク用の試聴は、約75秒の抜粋です。表示している尺は原本の長さです。</p>
+
+      <div class="bgm-list" id="bgmList" role="tabpanel"></div>
+      <p class="bgm-msg" id="bgmMsg">読み込み中です。</p>
     </div>
-
-    <p class="bgm-excerpt" id="bgmExcerpt" hidden>トーク用の試聴は、約75秒の抜粋です。表示している尺は原本の長さです。</p>
-
-    <div class="bgm-list" id="bgmList" role="tabpanel"></div>
-    <p class="bgm-msg" id="bgmMsg">読み込み中です。</p>
   </section>
 
-  <!-- ============ 02 お申込みについて ============ -->
-  <section class="group" id="apply">
-    <div class="group-head"><div class="group-num">02</div><h2 class="group-title">お申込みについて</h2></div>
-    <p class="group-sub">BGMのご利用は、枠のお申込みに含まれます。単体での販売は行っていません。</p>
+  <!-- ============ お申込みについて ============ -->
+  <section class="sec" id="apply" aria-labelledby="applyTitle">
+    <div class="sec-head">
+      <h2 class="sec-title" id="applyTitle">APPLY</h2>
+      <span class="sec-ja">お申込みについて</span>
+      <span class="sec-line"></span>
+    </div>
+    <p class="page-intro">BGMのご利用は、枠のお申込みに含まれます。単体での販売は行っていません。</p>
 
-    <ul class="list">
-      <li>ここで試聴できるBGMは、<b>放送枠・CM枠のご利用に利用権が含まれます。</b>別途の料金はかかりません。</li>
+    <ul class="bgm-notes">
+      <li>ここで試聴できるBGMは、<b>放送枠・レギュラー枠・CMローテーションのご利用に利用権が含まれます。</b>別途の料金はかかりません。</li>
       <li><b>原本のダウンロードは、お申込みのあとにご案内します。</b>このページで配信しているのは試聴用の音源です。</li>
-      <li><b>歌い手枠では、提供BGMを使用しません。</b>楽曲そのものを放送する枠のため、対象外です。</li>
     </ul>
 
-    <div class="note flag">
-      料金と申込み方法は<a href="./menu.html">メニュー</a>をご覧ください。ご利用の条件は<a href="./terms.html">利用規約</a>の「提供BGMの利用条件」に定めています。
-    </div>
+    <p class="bgm-note">料金と申込み方法は<a href="./menu.html">メニュー</a>をご覧ください。ご利用の条件は<a href="./terms.html">利用規約</a>の「提供BGMの利用条件」に定めています。</p>
 
-    <div class="cta-row">
-      <a class="cta" href="./menu.html">メニューを見る</a>
+    <div class="bgm-actions">
+      <a class="btn btn-push" href="./menu.html">メニューを見る</a>
     </div>
   </section>
 
-  <footer>
-    <div class="legal-links">
+  <footer class="ft">
+    <div class="ft-logo">URATEN</div>
+    <div class="ft-links">
       <a href="./terms.html">利用規約</a>
       <a href="./tokushoho.html">特定商取引法に基づく表記</a>
       <a href="./refund.html">返金・キャンセルポリシー</a>
       <a href="./privacy.html">プライバシーポリシー</a>
+      <a href="./rights.html">権利について</a>
     </div>
   </footer>
-</div>
+</main>
 <script src="./js/bgm.js"></script>
 <script>
   uratenBgm.init({
