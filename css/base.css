@@ -1,0 +1,130 @@
+/* =========================================================
+   URATEN 全ページ共通スタイル
+   （index.html / calendar.html / schedule.html / menu.html / bgm.html / bgm-dl.html）
+
+   色の変数・リセット・背景・ヘッダー・セクション見出し・ボタン・フッター・下部タブ。
+   ページ系統ごとの CSS（style.css / menu.css / bgm.css）はこのあとに読み込む。
+   変更したら、読み込んでいる6ページすべてを確認する。
+========================================================= */
+:root{
+  --bg:#05050c; --bg2:#0a0a17; --panel:#0e0e1c; --panel2:#141427;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+  --ink:#f7f4ff; --dim:#aaa6cb; --mute:#6e6a92;
+  --pink:#ff3ea5; --violet:#8b6cff; --cyan:#3fe3ff;
+  --accent:var(--pink);
+  --gut:32px; --maxw:1240px;
+  --display:"Montserrat","Zen Kaku Gothic New",sans-serif;
+  --jp:"Zen Kaku Gothic New","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* display を指定している部品にも hidden 属性を効かせる（無い項目は欄ごと出さない） */
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--jp);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+/* 背景の光は静止画。常に動く演出は置かない（軽さ優先） */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(48vw 36vw at 8% 0%,rgba(255,62,165,.16),transparent 62%),
+    radial-gradient(44vw 34vw at 96% 12%,rgba(63,227,255,.10),transparent 62%),
+    radial-gradient(50vw 40vw at 50% 110%,rgba(139,108,255,.16),transparent 62%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 120px)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---------- ヘッダ ---------- */
+.hd{position:sticky;top:0;z-index:50;background:rgba(5,5,12,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hd-in{max-width:var(--maxw);margin:0 auto;padding:14px var(--gut);display:flex;align-items:center;gap:28px}
+.logo{display:flex;flex:none}
+.logo-row{display:flex;align-items:center;gap:6px}
+.logo-word{font-family:var(--display);font-weight:200;font-size:30px;line-height:1;letter-spacing:.34em;margin-right:-.34em;
+  background:linear-gradient(90deg,#fff 0%,#fff 55%,#ffb4dc 80%,var(--pink) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px rgba(255,62,165,.35))}
+.logo-pulse{width:58px;height:22px;flex:none;margin-left:8px}
+.gnav{display:flex;gap:6px;margin:0 auto}
+.gnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;position:relative;color:var(--dim);transition:color .2s;cursor:pointer}
+.gnav a b{font-size:14px;font-weight:500;letter-spacing:.08em}
+.gnav a small{font-family:var(--display);font-size:8.5px;font-weight:500;letter-spacing:.22em}
+.gnav a:hover,.gnav a.is-active{color:var(--ink)}
+.gnav a.is-active::after{content:"";position:absolute;bottom:-4px;left:50%;width:4px;height:4px;border-radius:50%;background:var(--pink);box-shadow:0 0 8px var(--pink);transform:translateX(-50%)}
+.hd-side{display:flex;align-items:center;gap:10px;flex:none}
+.join{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;font-size:13px;font-weight:700;letter-spacing:.06em;
+  border:1px solid rgba(255,62,165,.7);color:#fff;background:rgba(255,62,165,.10);box-shadow:0 0 18px rgba(255,62,165,.22),inset 0 0 12px rgba(255,62,165,.12);transition:.2s}
+.join:hover{background:rgba(255,62,165,.22)}
+.join svg{width:18px;height:18px;flex:none}
+.join--dc{border-color:rgba(88,101,242,.85);background:rgba(88,101,242,.14);box-shadow:0 0 18px rgba(88,101,242,.3),inset 0 0 12px rgba(88,101,242,.14)}
+.join--dc:hover{background:rgba(88,101,242,.28)}
+.menu-btn{display:none;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.menu-btn i{display:block;width:28px;height:2px;background:#fff;border-radius:2px}
+.menu-btn small{font-family:var(--display);font-size:9px;letter-spacing:.2em;margin-top:2px}
+/* 三本線で開くメニュー（index.html は js/app.js、menu.html は js/menu.js の toggleMenu / closeMenu） */
+.drawer{display:none;border-top:1px solid var(--line);padding:8px var(--gut) 16px}
+.drawer.open{display:block}
+.drawer a{display:flex;justify-content:space-between;padding:13px 2px;border-bottom:1px solid var(--line);font-size:14px;color:var(--dim);cursor:pointer}
+.drawer a small{font-family:var(--display);font-size:10px;letter-spacing:.2em;color:var(--mute)}
+
+/* ---------- 共通の枠 ---------- */
+.wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut) 80px}
+
+/* ---------- セクション見出し ---------- */
+.sec{margin-top:56px;scroll-margin-top:96px}
+.sec-head{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.sec-title{font-family:var(--display);font-weight:200;font-size:28px;letter-spacing:.24em;line-height:1}
+.sec-ja{font-size:11px;letter-spacing:.3em;color:var(--dim);white-space:nowrap}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--pink),transparent 60%);opacity:.6}
+.sec-more{font-family:var(--display);font-size:11px;font-weight:500;letter-spacing:.18em;color:var(--dim);white-space:nowrap}
+.sec-more:hover{color:#fff}
+.page-intro{font-size:13px;color:var(--dim);line-height:1.9;max-width:720px;margin-bottom:18px}
+
+/* ---------- ボタン ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer}
+.btn-push{border:1.5px solid var(--pink);background:rgba(255,62,165,.12);color:#fff}
+.btn-push:hover{background:rgba(255,62,165,.24)}
+.btn-x{border:1.5px solid var(--line2);color:var(--dim)}
+.btn-x:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ---------- フッタ ---------- */
+.ft{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.ft-logo{font-family:var(--display);font-weight:200;letter-spacing:.34em;font-size:16px}
+.ft-links{display:flex;gap:6px 20px;flex-wrap:wrap;font-size:11.5px;color:var(--dim)}
+.ft-links a:hover{color:var(--cyan)}
+
+/* ---------- スマホ下部タブ（index.html・menu.html） ---------- */
+.tabbar{display:none}
+
+/* =========================================================
+   タブレット・スマホ
+========================================================= */
+@media (max-width:1240px){
+  .hd-in{gap:16px}
+  .logo-word{font-size:24px}
+  .logo-pulse{width:44px}
+  .gnav{gap:0}
+  .gnav a{padding:6px 10px}
+  .join{padding:8px 14px;font-size:12px}
+}
+@media (max-width:1040px){
+  .gnav,.hd-side{display:none}
+  .menu-btn{display:flex;margin-left:auto}
+}
+@media (max-width:860px){
+  :root{--gut:16px}
+  .hd-in{padding:12px var(--gut);gap:12px}
+  .logo-word{font-size:26px}
+  .logo-pulse{width:40px}
+
+  .sec{margin-top:40px}
+  .sec-title{font-size:22px;letter-spacing:.18em}
+  .ft{flex-direction:column;align-items:flex-start}
+
+  body.has-tabbar{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    background:rgba(6,6,14,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;font-size:10px;letter-spacing:.06em;color:var(--mute);cursor:pointer}
+  .tabbar a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .tabbar a.is-active{color:var(--pink)}
+  .tabbar a.is-active svg{filter:drop-shadow(0 0 6px rgba(255,62,165,.7))}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
