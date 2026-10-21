@@ -36,7 +36,7 @@
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4a18 18 0 0 0-4.5-1.4l-.2.4A12 12 0 0 1 18 4.5 17 17 0 0 0 6 4.5a12 12 0 0 1 2.7-1.1l-.2-.4A18 18 0 0 0 4 4 18 18 0 0 0 1 17a18 18 0 0 0 5.5 2.8l.4-.6a12 12 0 0 1-1.9-.9l.5-.4a13 13 0 0 0 11 0l.5.4a12 12 0 0 1-1.9.9l.4.6A18 18 0 0 0 23 17 18 18 0 0 0 20 4ZM8.4 14.3c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm7.2 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z"/></svg>
         参加する
       </a>
-      <a class="join" href="#price" aria-current="page">＋ 参加する</a>
+      <a class="join" href="#top" aria-current="page">＋ 参加する</a>
     </div>
     <button class="menu-btn" type="button" id="menuBtn" aria-label="メニューを開く" aria-expanded="false" aria-controls="drawer">
       <i></i><i></i><i></i><small>MENU</small>
@@ -47,14 +47,14 @@
     <a href="./index.html#showcase">ショーケース<small>SHOWCASE</small></a>
     <a href="./index.html#profile">プロフィール<small>PROFILE</small></a>
     <a href="./index.html#event">イベント<small>EVENT</small></a>
-    <a href="#price" aria-current="page">メニュー<small>MENU</small></a>
+    <a href="#top" aria-current="page">メニュー<small>MENU</small></a>
     <a href="./calendar.html" target="_blank" rel="noopener">イベントカレンダー<small>CALENDAR</small></a>
     <a href="./rights.html" target="_blank" rel="noopener noreferrer">権利について<small>RIGHTS</small></a>
     <a class="drawer-dc" href="https://discord.gg/AB87TDuyt" target="_blank" rel="noopener noreferrer">Discord に参加する<small>DISCORD</small></a>
   </nav>
 </header>
 
-<main class="wrap">
+<main class="wrap" id="top">
 
   <!-- ============ 冒頭 ============ -->
   <section class="sec mn-hero">
@@ -66,62 +66,6 @@
     <p class="mn-catch">載せる。流す。出会う。</p>
     <p class="mn-lead">URATENは、福岡・天神から活動する人と、まだその人を知らない誰かをつなぐ場所です。<br>自分に合ったかたちで参加してください。</p>
     <p class="mn-tax">表示価格はすべて税込です。</p>
-  </section>
-
-  <!-- ============ 料金一覧（メニュー名は下の各カードへのページ内リンク） ============ -->
-  <section class="sec" id="price" aria-labelledby="priceTitle">
-    <div class="sec-head">
-      <h2 class="sec-title" id="priceTitle">PRICE</h2>
-      <span class="sec-ja">料金一覧</span>
-      <span class="sec-line"></span>
-    </div>
-    <div class="mn-price">
-      <!-- 無料の行は目立たせる（無料ではじめられることが最初に伝わるように） -->
-      <div class="mn-price-row is-free">
-        <div class="mn-price-val">無料</div>
-        <ul class="mn-price-items">
-          <li><a href="#gallery">イラスト／フォトギャラリー</a></li>
-          <li><a href="#profile">クリエイタープロフィール</a></li>
-          <li><a href="#calendar">イベントカレンダー掲載</a></li>
-        </ul>
-      </div>
-      <div class="mn-price-row">
-        <div class="mn-price-val">1,000<small>円</small></div>
-        <ul class="mn-price-items">
-          <li><a href="#slideshow">スライドショー</a></li>
-          <li><a href="#profile-slideshow">プロフィールスライドショー</a></li>
-          <li><a href="#event-notice">イベント告知</a></li>
-          <li><a href="#song-rotation">楽曲ローテーション</a></li>
-          <li><a href="#cm-rotation">CMローテーション</a></li>
-        </ul>
-      </div>
-      <div class="mn-price-row">
-        <div class="mn-price-val">2,000<small>円</small></div>
-        <ul class="mn-price-items">
-          <li><a href="#song-intro">楽曲紹介</a></li>
-          <li><a href="#creator-intro">クリエイター紹介</a></li>
-          <li><a href="#cm-read">CM読み上げ</a></li>
-        </ul>
-      </div>
-      <div class="mn-price-row">
-        <div class="mn-price-val">5,000<small>円</small></div>
-        <ul class="mn-price-items">
-          <li><a href="#talk">トーク出演</a></li>
-        </ul>
-      </div>
-      <div class="mn-price-row">
-        <div class="mn-price-val">5,000<small>円〜</small></div>
-        <ul class="mn-price-items">
-          <li><a href="#broadcast-slot">放送枠</a></li>
-        </ul>
-      </div>
-      <div class="mn-price-row">
-        <div class="mn-price-val is-text">個別にご相談</div>
-        <ul class="mn-price-items">
-          <li><a href="#regular">レギュラー枠</a></li>
-        </ul>
-      </div>
-    </div>
   </section>
 
   <!-- ============ 01 載せる ============ -->
@@ -168,7 +112,7 @@
 
       <article class="mn-card" id="slideshow">
         <div class="mn-card-head">
-          <h3 class="mn-name">スライドショー</h3>
+          <h3 class="mn-name">イラスト／フォトスライドショー</h3>
           <p class="mn-yen">1,000<small>円</small></p>
         </div>
         <p class="mn-desc">作品をトップページに7日間掲載します。</p>
@@ -177,7 +121,7 @@
           <li>期間後はギャラリーに掲載</li>
         </ul>
         <div class="mn-actions">
-          <!-- TODO: リンク先（スライドショーのフォーム・未作成） -->
+          <!-- TODO: リンク先（イラスト／フォトスライドショーのフォーム・未作成） -->
           <a class="btn btn-push" href="#">申し込む</a>
         </div>
       </article>
@@ -433,7 +377,7 @@
   <a href="./index.html#player"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>放送</a>
   <a href="./index.html#showcase"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>ショーケース</a>
   <a href="./index.html#event"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>イベント</a>
-  <a class="is-active" href="#price" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>参加</a>
+  <a class="is-active" href="#top" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>参加</a>
 </nav>
 
 <script src="./js/menu.js"></script>
