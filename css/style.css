@@ -531,6 +531,6 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .vcard--sm .vc-go{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  /* 番組名・出演者の横スクロールも止める（animation はインライン指定なので !important） */
+  /* 放送時間・番組名・出演者の横スクロールも止める（animation はインライン指定なので !important） */
   .is-scrolling > .mq-in{animation:none !important}
 }

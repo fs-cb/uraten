@@ -548,11 +548,19 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
   // 止まる時間を「秒」で揃えるには、はみ出し量ごとにキーフレームの % を変える必要がある
   // （@keyframes の % は var() にできない）。そのため要素ごとの定義をここで書き出し、
-  // animation は内側の span にインラインで指定する。対象は番組名と出演者の2行だけ。
+  // animation は内側の span にインラインで指定する。対象は放送時間・番組名・出演者の3行。
   const mqStyle = document.createElement('style');
   document.head.appendChild(mqStyle);
   const mqRules = {};
   let mqSeq = 0;
+  // 幅が変わると収まり方も変わるので測り直す。行の枠（画面幅・イラスト一覧から戻ったとき）と
+  // 中の文字（Webフォントの読み込み）の両方を見る。transform は大きさを変えないので、測り直しで再発火しない
+  const mqObserver = ('ResizeObserver' in window)
+    ? new ResizeObserver(entries => {
+        const lines = new Set(entries.map(e => e.target.classList.contains('mq-in') ? e.target.parentElement : e.target));
+        lines.forEach(measureLine);
+      })
+    : null;
   function setLine(el, text){
     if(!el) return;
     let inner = el.firstElementChild;
@@ -561,8 +569,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       inner = document.createElement('span');
       inner.className = 'mq-in';
       el.appendChild(inner);
+      if(mqObserver){ mqObserver.observe(el); mqObserver.observe(inner); }
     }
-    inner.textContent = text || '';
+    // 20秒ごとのポーリングで同じ文字が来ても、流れている途中から先頭に戻さない
+    const next = text || '';
+    if(inner.textContent === next && inner.dataset.mq) return;
+    inner.dataset.mq = '1';
+    inner.textContent = next;
     measureLine(el);
   }
   function measureLine(el){
@@ -587,12 +600,14 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     inner.style.animation = name + ' ' + dur.toFixed(2) + 's linear infinite';
     el.classList.add('is-scrolling');
   }
-  // 幅が変わると収まり方も変わるので測り直す
-  let mqTimer = null;
-  window.addEventListener('resize', ()=>{
-    clearTimeout(mqTimer);
-    mqTimer = setTimeout(()=>{ measureLine(titleEl); measureLine(artistEl); }, 200);
-  });
+  // ResizeObserver が無い古いブラウザは、画面幅の変化でだけ測り直す
+  if(!mqObserver){
+    let mqTimer = null;
+    window.addEventListener('resize', ()=>{
+      clearTimeout(mqTimer);
+      mqTimer = setTimeout(()=>{ measureLine(timeEl); measureLine(titleEl); measureLine(artistEl); }, 200);
+    });
+  }
 
   // --- 表示反映 ---
   // v = {mode:'program'|'bgm'|'offline', title, cast, url, songsId, art, time}
@@ -606,7 +621,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     // 出演者は空でも行を残す（.pl-detail-row と同じく位置を固定するため）
     setLine(artistEl, v.cast || '');
     // 番組なら放送時間、BGM なら「URATEN ミュージック」をこの行に出す
-    if(timeEl) timeEl.textContent = v.time || '';
+    setLine(timeEl, v.time || '');
     // 紹介URLがあれば外部リンク、無くて曲目があれば曲目モーダルのボタン。
     // 歌い手枠は url が null なので、曲目モーダル側が出る。
     songsModalId = v.songsId || '';
