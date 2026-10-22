@@ -123,6 +123,14 @@ button{font:inherit;color:inherit}
 .doc a:hover{color:#fff}
 .doc hr{margin:32px 0 20px;border:0;border-top:1px solid var(--line)}
 .doc .doc-note{font-size:12.5px;color:var(--dim)}
+.doc h2[id]{scroll-margin-top:96px}
+/* 目次（規約など長い文書の冒頭） */
+.doc .toc{margin-top:20px;padding:16px 20px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
+.doc .toc-title{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--dim)}
+.doc .toc ol{margin-top:8px;gap:2px}
+.doc .toc li{font-size:13.5px}
+.doc .toc a{color:#d9d5ef;text-decoration:none}
+.doc .toc a:hover{color:var(--cyan);text-decoration:underline}
 
 /* =========================================================
    タブレット・スマホ
