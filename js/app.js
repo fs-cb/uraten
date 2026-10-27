@@ -185,6 +185,12 @@
       s.text.appendChild(s.name);
     }
     s.text.appendChild(s.bio);
+    if(key === 'profile'){
+      // ジャンルと活動地域のタグ（プロフィールページ・ライブラリーと同じ）
+      s.tags = mk('ul', 'pf-tags vc-tags');
+      s.tags.hidden = true;
+      s.text.appendChild(s.tags);
+    }
     s.btn = mk('a', 'vc-btn');
     s.btn.target = '_blank';
     s.btn.rel = 'noopener noreferrer';
@@ -254,6 +260,12 @@
     if(s.icon) fillIcon(s.icon, w);
     s.bio.textContent = w.bio || '';
     s.bio.hidden = !w.bio;
+    if(s.tags){
+      s.tags.textContent = '';
+      w.genres.forEach(g=>s.tags.appendChild(mk('li', 'pf-tag', g)));
+      if(w.area) s.tags.appendChild(mk('li', 'pf-tag pf-area', w.area));
+      s.tags.hidden = !s.tags.children.length;
+    }
     if(w.url) s.btn.href = w.url;
     else s.btn.removeAttribute('href');
     s.btn.hidden = !w.url;
@@ -334,11 +346,11 @@
   }
 
   // --- PROFILE のスライドショー（有料プロフィール。profile.json の slideshow の順のまま、時計で番号を決める） ---
-  // 掲載名・ひとこと（catch）・「推す」（url）・サムネイル。枠を押すとプロフィールページ。
+  // 掲載名・ひとこと（catch）・ジャンルと活動地域・「推す」（url）・サムネイル。枠を押すとプロフィールページ。
   // 空・読み込み失敗のときは募集の案内（menu.html#profile-slideshow）
   function toProfileSlide(pf){
     return { kind:'profile', p:pf.p, name:pf.name, icon:pf.icon, bio:pf.catch, url:pf.url,
-             image:pf.thumb, w:pf.thumb_w, h:pf.thumb_h };
+             genres:pf.genres, area:pf.area, image:pf.thumb, w:pf.thumb_w, h:pf.thumb_h };
   }
   function startProfileShow(list){
     const box = document.getElementById('profileShow');
