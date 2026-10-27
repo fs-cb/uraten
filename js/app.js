@@ -16,80 +16,12 @@
   function closeAbout(){ const m = document.getElementById('aboutModal'); if(m) m.classList.remove('open'); }
 
   // ===== 作品（イラスト・フォト）：トップのスライドショー・#galleryPage の一覧 =====
-  // データは種類ごとに公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）1ファイルずつ。形は同じ。
-  // ページを開いたときに1回だけ読み、トップと一覧で同じデータを使う。
+  // データの読み込み・正規化・カード・詳細モーダルは js/works.js（profile.html と共用）に置いてある。
+  // ページを開いたときに種類ごとに1回だけ読み、トップと一覧で同じデータを使う。
   //   items     … 一覧に出す作品（1人1点）
   //   slideshow … 今トップのスライドショーに出す作品（掲載が古い順。この順番のまま使う）
-  // - url・image が http(s) 以外の作品は出さない。url2 も http(s) のときだけリンクにする
-  // - 申請由来の文字列は textContent / プロパティで入れる（innerHTML に展開しない）
-  // - 作品には kind（illust | photo）を持たせ、一覧・モーダル・SHOWCASE は kind で見え方だけを変える
-  const WORK_KINDS = {
-    illust: { src:'https://media.ura-ten.jp/gallery/gallery.json', en:'ILLUSTRATION', ja:'イラストギャラリー', alt:'のイラスト',
-              intro:'URATENに参加している絵師の作品です。サムネをタップすると作品が大きく開き、「推す」から絵師の紹介ページ（X／pixiv など）へ移動できます。気になった絵師はそのまま依頼へ。' },
-    photo:  { src:'https://media.ura-ten.jp/gallery/photo.json',   en:'PHOTO',        ja:'フォトギャラリー',   alt:'の写真',
-              intro:'URATENの参加者たちの写真作品です。' }
-  };
-
-  function isHttp(u){ return typeof u === 'string' && /^https?:\/\//i.test(u); }
-  function posInt(v){ return (Number.isInteger(v) && v > 0) ? v : 0; }
-  // 2つ目のボタンの文言（リンク先のホスト名。先頭の www. は外す）
-  function hostLabel(u){
-    try{ return new URL(u).hostname.replace(/^www\./i, ''); }catch(e){ return ''; }
-  }
-
-  function shuffle(list){
-    for(let i = list.length - 1; i > 0; i--){
-      const r = Math.floor(Math.random() * (i + 1));
-      [list[i], list[r]] = [list[r], list[i]];
-    }
-    return list;
-  }
-
-  function normWorks(src, kind){
-    if(!Array.isArray(src)) return [];
-    return src
-      .filter(it=>it && isHttp(it.url) && isHttp(it.image))
-      .map(it=>({
-        kind,
-        name:  (typeof it.name === 'string') ? it.name : '',
-        url:   it.url,
-        url2:  (isHttp(it.url2) && hostLabel(it.url2)) ? it.url2 : null,
-        bio:   (typeof it.bio === 'string' && it.bio.trim()) ? it.bio : null,
-        image: it.image,
-        w:     posInt(it.w),
-        h:     posInt(it.h)
-      }));
-  }
-
-  function setImg(img, w){
-    img.alt = w.name + WORK_KINDS[w.kind].alt;
-    if(w.w && w.h){ img.width = w.w; img.height = w.h; }
-    else { img.removeAttribute('width'); img.removeAttribute('height'); }
-    img.src = w.image;
-  }
-  function workImg(w, lazy){
-    const img = document.createElement('img');
-    img.className = 'work-img';
-    if(lazy) img.loading = 'lazy';
-    img.decoding = 'async';
-    setImg(img, w);
-    return img;
-  }
-
-  // 自己紹介・2つ目のリンクは、あるときだけ欄ごと出す（トップの大枠とモーダルで共用）
-  function fillExtras(bioEl, link2El, w){
-    bioEl.textContent = w.bio || '';
-    bioEl.hidden = !w.bio;
-    if(w.url2){
-      link2El.href = w.url2;
-      link2El.textContent = hostLabel(w.url2);
-      link2El.hidden = false;
-    }else{
-      link2El.removeAttribute('href');
-      link2El.textContent = '';
-      link2El.hidden = true;
-    }
-  }
+  // 作品には kind（illust | photo）があり、一覧・モーダル・SHOWCASE は kind で見え方だけを変える
+  const { WORK_KINDS, shuffle, setImg, workCard, openWork, closeWork, fetchWorks } = window.uratenWorks;
 
   // 種類ごとのデータ。items は読み込み前は null（一覧用にシャッフル済み）、slides は slideshow（並びはそのまま）
   const works = { illust:{ items:null, slides:[] }, photo:{ items:null, slides:[] } };
@@ -140,42 +72,12 @@
       return;
     }
     galleryEmpty.hidden = true;
-    list.forEach(w=>{
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.onclick = ()=>openWork(w);
-      const art = document.createElement('div');
-      art.className = 'card-art work-art';
-      art.appendChild(workImg(w, true));
-      const foot = document.createElement('div');
-      foot.className = 'card-foot';
-      const name = document.createElement('b');
-      name.textContent = w.name;
-      foot.appendChild(name);
-      el.appendChild(art);
-      el.appendChild(foot);
-      grid.appendChild(el);
-    });
+    list.forEach(w=>grid.appendChild(workCard(w)));
   }
   function toggleGalleryFilter(){
     galleryFilterOn = !galleryFilterOn;
     renderGallery();
   }
-
-  // --- 作品の詳細モーダル（大枠・一覧、イラスト・フォトで共用） ---
-  const workModal = document.getElementById('workModal');
-  function openWork(w){
-    workModal.dataset.kind = w.kind;
-    document.getElementById('wCat').textContent = WORK_KINDS[w.kind].en;
-    const art = document.getElementById('wArt');
-    art.textContent = '';
-    art.appendChild(workImg(w, false));
-    document.getElementById('wName').textContent = w.name;
-    document.getElementById('wLink').href = w.url;
-    fillExtras(document.getElementById('wBio'), document.getElementById('wLink2'), w);
-    workModal.classList.add('open');
-  }
-  function closeWork(){ workModal.classList.remove('open'); }
 
   // --- トップの SHOWCASE（ILLUSTRATION / PHOTO / INFO の3枠） ---
   // 3枠はそれぞれ独立したスライドショー。大・小・小のどこに入るかは、ページを開くたびにランダムで決める。
@@ -404,11 +306,10 @@
   // --- 読み込み（種類ごとに1回だけ。SHOWCASE は両方そろってから組み立てる） ---
   function loadWorks(kind){
     const d = works[kind];
-    return fetch(WORK_KINDS[kind].src, { cache: 'no-store' })
-      .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-      .then(data=>{
-        d.items = shuffle(normWorks(data && data.items, kind));
-        d.slides = normWorks(data && data.slideshow, kind);
+    return fetchWorks(kind)
+      .then(r=>{
+        d.items = shuffle(r.items);
+        d.slides = r.slides;
       })
       .catch(()=>{ d.items = []; d.slides = []; })
       .then(()=>{ if(galleryKind === kind) renderGallery(); });

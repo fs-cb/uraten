@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プロフィール｜URATEN</title>
+<meta name="description" content="URATENに参加している活動者のプロフィール。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="./index.html" aria-label="URATEN トップ">
+      <span class="logo-row">
+        <span class="logo-word">URATEN</span>
+        <svg class="logo-pulse" viewBox="0 0 60 22" fill="none" aria-hidden="true">
+          <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#ff3ea5" stop-opacity=".2"/><stop offset=".5" stop-color="#ff3ea5"/><stop offset="1" stop-color="#8b6cff" stop-opacity=".2"/></linearGradient></defs>
+          <path d="M0 11h16l3-5 3 11 4-16 4 18 3-12 2 4h25" stroke="url(#pg)" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+  </div>
+</header>
+
+<!-- プロフィール（profile.html?p=12文字。中身は js/profile.js が gallery/profile.json から組み立てる） -->
+<div class="wrap">
+  <main class="pf">
+    <p class="pf-status" id="pfStatus">読み込んでいます…</p>
+
+    <article class="pf-body" id="pfBody" hidden>
+      <div class="pf-thumb" id="pfThumb" hidden></div>
+      <div class="pf-head">
+        <div class="pf-icon" id="pfIcon" aria-hidden="true"></div>
+        <div class="pf-id">
+          <span class="pf-cat">PROFILE</span>
+          <h1 class="pf-name" id="pfName"></h1>
+          <p class="pf-catch" id="pfCatch" hidden></p>
+          <ul class="pf-tags" id="pfTags" aria-label="ジャンル・活動地域"></ul>
+        </div>
+      </div>
+      <p class="pf-bio" id="pfBio" hidden></p>
+      <div class="pf-actions">
+        <a class="btn btn-push" id="pfLink" target="_blank" rel="noopener noreferrer" hidden>♥ 推す</a>
+        <a class="btn btn-x" id="pfLink2" target="_blank" rel="noopener noreferrer" hidden></a>
+      </div>
+
+      <section class="sec" id="pfInterview" hidden>
+        <div class="sec-head">
+          <h2 class="sec-title">INTERVIEW</h2>
+          <span class="sec-ja">インタビュー</span>
+          <span class="sec-line"></span>
+        </div>
+        <dl class="pf-qa" id="pfQa"></dl>
+      </section>
+
+      <section class="sec" id="pfWorks" hidden>
+        <div class="sec-head">
+          <h2 class="sec-title">WORKS</h2>
+          <span class="sec-ja">掲載中の作品</span>
+          <span class="sec-line"></span>
+        </div>
+        <div class="grid pf-grid" id="pfGrid"></div>
+      </section>
+    </article>
+
+    <a class="back" href="./index.html">← トップに戻る</a>
+  </main>
+
+  <footer class="ft">
+    <div class="ft-logo">URATEN</div>
+    <div class="ft-links">
+      <a href="./terms.html">利用規約</a>
+      <a href="./tokushoho.html">特定商取引法に基づく表記</a>
+      <a href="./refund.html">返金・キャンセルポリシー</a>
+      <a href="./privacy.html">プライバシーポリシー</a>
+    </div>
+  </footer>
+</div>
+
+<!-- 作品の詳細モーダル（index.html と同じ作り。中身は js/works.js の openWork） -->
+<div class="modal" id="workModal" data-kind="illust" onclick="if(event.target===this)uratenWorks.closeWork()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wName">
+    <button class="modal-close" type="button" onclick="uratenWorks.closeWork()" aria-label="閉じる">×</button>
+    <div class="modal-art work-art" id="wArt"></div>
+    <div class="modal-body">
+      <span class="modal-cat" id="wCat">ILLUSTRATION</span>
+      <div class="modal-name" id="wName"></div>
+      <div class="modal-bio" id="wBio" hidden></div>
+      <div class="modal-actions">
+        <a class="btn btn-push" id="wLink" target="_blank" rel="noopener noreferrer">♥ 推す</a>
+        <a class="btn btn-x" id="wLink2" target="_blank" rel="noopener noreferrer" hidden></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./js/works.js"></script>
+<script src="./js/profile.js"></script>
+</body>
+</html>

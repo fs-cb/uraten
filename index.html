@@ -188,7 +188,7 @@
   <a href="./menu.html" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>参加</a>
 </nav>
 
-<!-- 作品の詳細モーダル（SHOWCASE のイラスト・フォト枠、ギャラリーで共用。gallery.json・photo.json 由来） -->
+<!-- 作品の詳細モーダル（SHOWCASE のイラスト・フォト枠、ギャラリーで共用。gallery.json・photo.json 由来。中身は js/works.js の openWork。profile.html にも同じ作りで置く） -->
 <div class="modal" id="workModal" data-kind="illust" onclick="if(event.target===this)closeWork()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wName">
     <button class="modal-close" type="button" onclick="closeWork()" aria-label="閉じる">×</button>
@@ -200,6 +200,7 @@
       <div class="modal-actions">
         <a class="btn btn-push" id="wLink" target="_blank" rel="noopener noreferrer">♥ 推す</a>
         <a class="btn btn-x" id="wLink2" target="_blank" rel="noopener noreferrer" hidden></a>
+        <a class="btn btn-x" id="wProfile" target="_blank" rel="noopener" hidden>プロフィールを見る →</a>
       </div>
     </div>
   </div>
@@ -290,6 +291,7 @@
 <script src="./js/env.js"></script>
 <script src="./js/calendar.js"></script>
 <script src="./js/onair.js"></script>
+<script src="./js/works.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
