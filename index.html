@@ -110,18 +110,13 @@
   <section class="visual" id="visual" aria-labelledby="showcaseTitle">
     <p class="show-status" id="showStatus">読み込んでいます…</p>
   </section>
-  <nav class="gallery-links" aria-label="ギャラリー・ライブラリー">
+  <nav class="gallery-links" aria-label="ギャラリー">
     <a class="gl-btn" data-cat="illust" href="#" onclick="showGallery('illust');return false">
       <span class="gl-text"><small>ILLUSTRATION</small><b>イラストギャラリーを見る</b></span>
       <span class="gl-arrow" aria-hidden="true">→</span>
     </a>
     <a class="gl-btn" data-cat="photo" href="#" onclick="showGallery('photo');return false">
       <span class="gl-text"><small>PHOTO</small><b>フォトギャラリーを見る</b></span>
-      <span class="gl-arrow" aria-hidden="true">→</span>
-    </a>
-    <!-- ライブラリーは別ページ。放送を止めないよう新しいタブで開く -->
-    <a class="gl-btn" data-cat="profile" href="./library.html" target="_blank" rel="noopener">
-      <span class="gl-text"><small>PROFILE</small><b>ライブラリーを見る</b></span>
       <span class="gl-arrow" aria-hidden="true">→</span>
     </a>
   </nav>
@@ -137,6 +132,13 @@
       <b>COMING SOON</b>
       <span>このコーナーは準備中です。公開まで、もうしばらくお待ちください。</span>
     </div>
+    <!-- ライブラリーは別ページ。放送を止めないよう新しいタブで開く -->
+    <nav class="gallery-links gallery-links--one" aria-label="プロフィール">
+      <a class="gl-btn" data-cat="profile" href="./library.html" target="_blank" rel="noopener">
+        <span class="gl-text"><small>LIBRARY</small><b>プロフィールライブラリーを見る</b></span>
+        <span class="gl-arrow" aria-hidden="true">→</span>
+      </a>
+    </nav>
   </section>
 
   <!-- イベント（直近5件。js/calendar.js の renderTop） -->
