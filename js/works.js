@@ -1,5 +1,5 @@
 /* =========================================================
-   URATEN 作品（イラスト・フォト）とプロフィール（index.html / profile.html 共用）
+   URATEN 作品（イラスト・フォト）とプロフィール（index.html / profile.html / library.html 共用）
 
    - データは uraten-ops が承認済みの掲載だけを R2 に置いた公開JSON
        gallery/gallery.json … イラスト   gallery/photo.json … フォト（同じ形）
@@ -73,8 +73,9 @@
       }));
   }
 
-  function setImg(img, w){
-    img.alt = w.name + WORK_KINDS[w.kind].alt;
+  // alt を渡さないときは「{掲載名}のイラスト／の写真」
+  function setImg(img, w, alt){
+    img.alt = (alt != null) ? alt : w.name + WORK_KINDS[w.kind].alt;
     if(w.w && w.h){ img.width = w.w; img.height = w.h; }
     else { img.removeAttribute('width'); img.removeAttribute('height'); }
     img.src = w.image;
@@ -210,6 +211,19 @@
   function fetchProfiles(){
     return getJson(PROFILE_SRC).then(data=>normProfiles(data && data.profiles));
   }
+  // トップのプロフィールのスライドショーに出すプロフィール（profile.json の slideshow の順のまま）。
+  // slideshow は p の配列。profiles に無い p・有料（page）でないもの・サムネイルが無いものは出さない。同じ p は1回だけ。
+  // 読めないときは reject
+  function fetchProfileSlides(){
+    return getJson(PROFILE_SRC).then(data=>{
+      const byP = new Map(normProfiles(data && data.profiles).map(pf=>[pf.p, pf]));
+      const seen = new Set();
+      return (Array.isArray(data && data.slideshow) ? data.slideshow : [])
+        .filter(p=>isProfileKey(p) && !seen.has(p) && seen.add(p))
+        .map(p=>byP.get(p))
+        .filter(pf=>pf && pf.type === 'page' && pf.thumb);
+    });
+  }
 
   // アイコン（円形の枠に入れる）。無いときは掲載名の1文字目（profile.html と library.html で共用）
   function fillIcon(el, pf){
@@ -232,6 +246,6 @@
     WORK_KINDS, isHttp, hostLabel, shuffle,
     isProfileKey, profileHref, setHereProfile,
     setImg, workImg, workCard, fillExtras, openWork, closeWork,
-    fetchWorks, allWorks, fetchProfiles, fillIcon
+    fetchWorks, allWorks, fetchProfiles, fetchProfileSlides, fillIcon
   };
 })(window);

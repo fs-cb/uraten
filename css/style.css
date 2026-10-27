@@ -268,11 +268,17 @@
 .gl-btn:hover .gl-arrow{background:color-mix(in srgb,var(--accent) 30%,transparent)}
 
 
-/* 準備中のエリア（PROFILE） */
-.soon{display:grid;place-content:center;gap:8px;text-align:center;min-height:180px;padding:32px 20px;border-radius:16px;
-  border:1px dashed var(--line2);background:rgba(14,14,28,.55)}
-.soon b{font-family:var(--display);font-weight:300;font-size:15px;letter-spacing:.3em;color:var(--ink)}
-.soon span{font-size:12.5px;line-height:1.8;color:var(--dim)}
+/* PROFILE のスライドショー（有料プロフィール。SHOWCASE の .vcard--lg を横長の1枠で使う）
+     サムネイルは右寄せに収め、左の余白（ぼかし）に掲載名・ひとことを重ねる */
+.pshow{display:grid;height:clamp(340px,34vw,460px)}
+.pshow .vcard--lg{grid-row:auto}
+.vcard[data-cat="profile"]{--accent:var(--cyan)}
+.vcard[data-cat="profile"] .vc-img{object-position:right center}
+.vcard[data-cat="profile"] .vc-go{display:grid}
+.vc-who{display:flex;align-items:center;gap:12px;margin-top:9px;min-width:0}
+.vc-who .vc-name{margin-top:0;min-width:0}
+.pf-icon.vc-icon{width:48px;height:48px}
+.pf-icon.vc-icon span{font-size:19px}
 
 /* =========================================================
    イベントカレンダー（index.html の直近5件 / calendar.html の全件）
@@ -566,6 +572,11 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .vcard--sm .vc-wanted{padding:14px}
   .vcard--sm .vc-wanted b{font-size:13px}
   .vcard--sm .vc-wanted span{font-size:10.5px}
+  .pshow{height:auto}
+  .pshow .vcard--lg{grid-column:auto}
+  .vcard[data-cat="profile"] .vc-img{object-position:center}
+  .pf-icon.vc-icon{width:40px;height:40px}
+  .pf-icon.vc-icon span{font-size:16px}
   .gallery-links{grid-template-columns:minmax(0,1fr);gap:10px;margin-top:12px}
   .gl-btn{padding:13px 14px 13px 18px}
   .gl-text b{font-size:14px}
