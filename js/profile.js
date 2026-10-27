@@ -95,13 +95,7 @@
 
   // --- 掲載中の作品（イラスト→フォトの順。読めなかった種類は出さない） ---
   function renderWorks(p, lists){
-    const seen = new Set();
-    const mine = [];
-    lists.forEach(list=>list.forEach(w=>{
-      if(w.profile !== p || seen.has(w.image)) return;
-      seen.add(w.image);
-      mine.push(w);
-    }));
+    const mine = [].concat(...lists).filter(w=>w.profile === p);
     const grid = $('pfGrid');
     grid.textContent = '';
     mine.forEach(w=>grid.appendChild(W.workCard(w)));
@@ -115,7 +109,7 @@
 
     // 作品は、プロフィールが見つかってから並べる。種類ごとに、読めなければ空として扱う
     const works = Object.keys(W.WORK_KINDS).map(kind=>
-      W.fetchWorks(kind).then(r=>r.items.concat(r.slides), ()=>[]));
+      W.fetchWorks(kind).then(W.allWorks, ()=>[]));
 
     W.fetchProfiles()
       .then(list=>{

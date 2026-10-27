@@ -18,20 +18,21 @@
   // ===== 作品（イラスト・フォト）：トップのスライドショー・#galleryPage の一覧 =====
   // データの読み込み・正規化・カード・詳細モーダルは js/works.js（profile.html と共用）に置いてある。
   // ページを開いたときに種類ごとに1回だけ読み、トップと一覧で同じデータを使う。
-  //   items     … 一覧に出す作品（1人1点）
+  //   items     … ギャラリーに掲載中の作品（1人1点）
   //   slideshow … 今トップのスライドショーに出す作品（掲載が古い順。この順番のまま使う）
+  // 一覧（絞り込みオフ）には両方を合わせて出す（スライドショー掲載中の作品も一覧に載る）
   // 作品には kind（illust | photo）があり、一覧・モーダル・SHOWCASE は kind で見え方だけを変える
-  const { WORK_KINDS, shuffle, setImg, workCard, openWork, closeWork, fetchWorks } = window.uratenWorks;
+  const { WORK_KINDS, shuffle, setImg, workCard, openWork, closeWork, fetchWorks, allWorks } = window.uratenWorks;
 
-  // 種類ごとのデータ。items は読み込み前は null（一覧用にシャッフル済み）、slides は slideshow（並びはそのまま）
+  // 種類ごとのデータ。items は読み込み前は null（items＋slideshow を一覧用にシャッフル済み）、slides は slideshow（並びはそのまま）
   const works = { illust:{ items:null, slides:[] }, photo:{ items:null, slides:[] } };
   let galleryKind = 'illust';
   let galleryFilterOn = false;
 
   // --- 一覧（#galleryPage。イラストとフォトで共用） ---
   // 一覧の画像はトップを開いた時点では読ませたくないので、ギャラリーを開いたときに初めて描く。
-  // - オフ：items を読み込みごとにシャッフルした順（掲載の間で露出に偏りを作らないため）
-  // - オン：slideshow をそのままの順
+  // - オフ：items とスライドショー掲載中の作品を合わせ、読み込みごとにシャッフルした順（掲載の間で露出に偏りを作らないため）
+  // - オン：slideshow（スライドショー掲載中）だけを、そのままの順
   // - カードは掲載名だけ（有料・無料で見た目に差を付けない）
   // - 0件・読み込み失敗はどちらも「まだ掲載はありません」
   const galleryPage = document.getElementById('galleryPage');
@@ -308,7 +309,7 @@
     const d = works[kind];
     return fetchWorks(kind)
       .then(r=>{
-        d.items = shuffle(r.items);
+        d.items = shuffle(allWorks(r));
         d.slides = r.slides;
       })
       .catch(()=>{ d.items = []; d.slides = []; })

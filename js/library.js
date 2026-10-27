@@ -5,8 +5,8 @@
    - 並びは読み込みごとにシャッフルする（いつも先頭に出る人を作らない）。絞り込んでもその順のまま
    - カードはアイコン・掲載名・ジャンル・活動地域。無料（card）と有料（page）で枠・大きさ・並びに差を付けない
      有料には、インタビューがあることを示す小さなラベル（INTERVIEW）だけを付ける
-   - 絞り込み：活動名（部分一致。＊・？のワイルドカード可）× ジャンル × 活動地域
-     ジャンル・活動地域はそれぞれ「どれかに当てはまる」（OR）、3つの条件どうしは「すべて」（AND）
+   - 絞り込み：活動名（部分一致。＊・？のワイルドカード可）× ジャンル × 活動地域 × INTERVIEW（有料のみ）
+     ジャンル・活動地域はそれぞれ「どれかに当てはまる」（OR）、条件どうしは「すべて」（AND）
    - ジャンル・活動地域のボタンはフォームの選択肢の順。掲載が1件も無い項目はボタンを出さない
    - 申請由来の文字列は textContent で入れる（innerHTML に展開しない）。条件はブラウザに保存しない
 ========================================================= */
@@ -28,7 +28,7 @@
 
   const $ = id=>document.getElementById(id);
   let all = [];
-  const picked = { genre: new Set(), area: new Set() };
+  const picked = { genre: new Set(), area: new Set(), page: false };
 
   // --- 活動名の検索 ---
   // 全角・半角、大文字・小文字、カタカナ・ひらがなの違いを無視する
@@ -92,17 +92,18 @@
 
   function render(){
     const terms = compile($('libQ').value);
-    const g = picked.genre, ar = picked.area;
+    const g = picked.genre, ar = picked.area, pg = picked.page;
     const hits = all.filter(x=>
       terms.every(re=>re.test(x.key)) &&
       (!g.size || x.pf.genres.some(v=>g.has(v))) &&
-      (!ar.size || ar.has(x.pf.area)));
+      (!ar.size || ar.has(x.pf.area)) &&
+      (!pg || x.pf.type === 'page'));
 
     const grid = $('libGrid');
     grid.textContent = '';
     hits.forEach(x=>grid.appendChild(x.el));
 
-    const filtering = terms.length || g.size || ar.size;
+    const filtering = terms.length || g.size || ar.size || pg;
     $('libClear').disabled = !filtering;
     $('libCount').textContent = filtering ? (all.length + '件中 ' + hits.length + '件') : (all.length + '件');
     $('libCount').hidden = false;
@@ -114,6 +115,7 @@
     $('libQ').value = '';
     picked.genre.clear();
     picked.area.clear();
+    picked.page = false;
     document.querySelectorAll('.lib-chip').forEach(b=>b.setAttribute('aria-pressed', 'false'));
     render();
   }
@@ -124,6 +126,13 @@
       all = W.shuffle(list).map(pf=>({ pf, key: fold(pf.name), el: card(pf) }));
       chips($('libGenres'), 'genre', GENRES, list.flatMap(pf=>pf.genres));
       chips($('libAreas'), 'area', AREAS, list.map(pf=>pf.area).filter(Boolean));
+      // INTERVIEW（有料）が1件も無いときは出さない
+      $('libPageGroup').hidden = !list.some(pf=>pf.type === 'page');
+      $('libPage').onclick = ()=>{
+        picked.page = !picked.page;
+        $('libPage').setAttribute('aria-pressed', String(picked.page));
+        render();
+      };
       $('libQ').addEventListener('input', render);
       $('libClear').onclick = clear;
       $('libTools').hidden = false;

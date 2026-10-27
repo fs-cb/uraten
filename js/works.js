@@ -160,6 +160,11 @@
     return fetch(src, { cache: 'no-store' })
       .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); });
   }
+  // 一覧に出す全作品：items とスライドショー掲載中の作品を合わせ、同じ画像は1回だけにする（並べ方は使う側で決める）
+  function allWorks(r){
+    const seen = new Set();
+    return r.items.concat(r.slides).filter(w=>!seen.has(w.image) && seen.add(w.image));
+  }
   // { items, slides }（items はシャッフルしない。並べ方は使う側で決める）。読めないときは reject
   function fetchWorks(kind){
     return getJson(WORK_KINDS[kind].src).then(data=>({
@@ -227,6 +232,6 @@
     WORK_KINDS, isHttp, hostLabel, shuffle,
     isProfileKey, profileHref, setHereProfile,
     setImg, workImg, workCard, fillExtras, openWork, closeWork,
-    fetchWorks, fetchProfiles, fillIcon
+    fetchWorks, allWorks, fetchProfiles, fillIcon
   };
 })(window);
