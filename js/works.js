@@ -206,10 +206,27 @@
     return getJson(PROFILE_SRC).then(data=>normProfiles(data && data.profiles));
   }
 
+  // アイコン（円形の枠に入れる）。無いときは掲載名の1文字目（profile.html と library.html で共用）
+  function fillIcon(el, pf){
+    el.textContent = '';
+    if(pf.icon){
+      const img = document.createElement('img');
+      img.alt = '';
+      img.decoding = 'async';
+      img.src = pf.icon;
+      el.appendChild(img);
+    }else{
+      const s = document.createElement('span');
+      s.textContent = Array.from(pf.name.trim())[0] || '?';
+      el.appendChild(s);
+    }
+    return el;
+  }
+
   global.uratenWorks = {
     WORK_KINDS, isHttp, hostLabel, shuffle,
     isProfileKey, profileHref, setHereProfile,
     setImg, workImg, workCard, fillExtras, openWork, closeWork,
-    fetchWorks, fetchProfiles
+    fetchWorks, fetchProfiles, fillIcon
   };
 })(window);

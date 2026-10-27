@@ -53,16 +53,7 @@
     thumb.hidden = !pf.thumb;
 
     // アイコン（円形に切り抜く）。無いときは掲載名の1文字目
-    const icon = $('pfIcon');
-    icon.textContent = '';
-    if(pf.icon){
-      const img = mk('img');
-      img.alt = '';
-      img.src = pf.icon;
-      icon.appendChild(img);
-    }else{
-      icon.appendChild(mk('span', null, Array.from(pf.name.trim())[0] || '?'));
-    }
+    W.fillIcon($('pfIcon'), pf);
 
     $('pfName').textContent = pf.name;
     $('pfCatch').textContent = pf.catch || '';

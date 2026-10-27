@@ -121,17 +121,19 @@
     </a>
   </nav>
 
-  <!-- PROFILE（準備中） -->
+  <!-- PROFILE（ライブラリーへの入口。放送を止めないよう新しいタブで開く） -->
   <section class="sec" id="profile">
     <div class="sec-head">
       <h2 class="sec-title">PROFILE</h2>
       <span class="sec-ja">プロフィール</span>
       <span class="sec-line"></span>
     </div>
-    <div class="soon">
-      <b>COMING SOON</b>
-      <span>このコーナーは準備中です。公開まで、もうしばらくお待ちください。</span>
-    </div>
+    <nav class="gallery-links gallery-links--one" aria-label="プロフィール">
+      <a class="gl-btn" data-cat="profile" href="./library.html" target="_blank" rel="noopener">
+        <span class="gl-text"><small>LIBRARY</small><b>プロフィールライブラリーを見る</b></span>
+        <span class="gl-arrow" aria-hidden="true">→</span>
+      </a>
+    </nav>
   </section>
 
   <!-- イベント（直近5件。js/calendar.js の renderTop） -->
