@@ -26,8 +26,8 @@
   const WORK_KINDS = {
     illust: { src:'https://media.ura-ten.jp/gallery/gallery.json', en:'ILLUSTRATION', ja:'イラストギャラリー', alt:'のイラスト',
               intro:'URATENに参加している絵師の作品です。サムネをタップすると作品が大きく開き、「推す」から絵師の紹介ページ（X／pixiv など）へ移動できます。気になった絵師はそのまま依頼へ。' },
-    photo:  { src:'https://media.ura-ten.jp/photo/photo.json',     en:'PHOTO',        ja:'フォトギャラリー',   alt:'の写真',
-              intro:'URATENに参加しているフォトグラファーの作品です。サムネをタップすると写真が大きく開き、「推す」から撮影者の紹介ページ（X／Instagram など）へ移動できます。気になった撮影者には、そのまま撮影の相談を。' }
+    photo:  { src:'https://media.ura-ten.jp/gallery/photo.json',   en:'PHOTO',        ja:'フォトギャラリー',   alt:'の写真',
+              intro:'URATENの参加者たちの写真作品です。' }
   };
 
   function isHttp(u){ return typeof u === 'string' && /^https?:\/\//i.test(u); }
