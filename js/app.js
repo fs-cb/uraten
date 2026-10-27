@@ -22,7 +22,8 @@
   //   slideshow … 今トップのスライドショーに出す作品（掲載が古い順。この順番のまま使う）
   // 一覧（絞り込みオフ）には両方を合わせて出す（スライドショー掲載中の作品も一覧に載る）
   // 作品には kind（illust | photo）があり、一覧・モーダル・SHOWCASE は kind で見え方だけを変える
-  const { WORK_KINDS, shuffle, setImg, workCard, openWork, closeWork, fetchWorks, allWorks } = window.uratenWorks;
+  const { WORK_KINDS, shuffle, setImg, workCard, openWork, closeWork, fetchWorks, allWorks,
+          profileHref, fetchProfileSlides, fillIcon } = window.uratenWorks;
 
   // 種類ごとのデータ。items は読み込み前は null（items＋slideshow を一覧用にシャッフル済み）、slides は slideshow（並びはそのまま）
   const works = { illust:{ items:null, slides:[] }, photo:{ items:null, slides:[] } };
@@ -92,6 +93,7 @@
   //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
   // INFO はまだ公開データが無いので、募集の案内だけを出す（画像は読まない）。
   // ILLUSTRATION・PHOTO も、slideshow が空・読み込み失敗のときは募集の案内になる。
+  // PROFILE のブロックのスライドショー（有料プロフィール）も同じ作り・同じ時計で、枠は1つ（startProfileShow）。
   const SHOW_MS = 12000;
   const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
   const SHOWCASE = {
@@ -99,6 +101,9 @@
     photo:  { en:'PHOTO',        ja:'フォト',             offset:4000, wanted:'フォト枠 掲載募集中',   href:'./menu.html#slideshow' },
     info:   { en:'INFO',         ja:'イベント告知',       offset:8000, wanted:'告知枠 掲載募集中',     href:'./menu.html#event-notice' }
   };
+  // プロフィールのスライドショー。offset は SHOWCASE の3枠と切り替えが重ならない位置にする
+  const PROFILE_SHOW = { en:'INTERVIEW', ja:'インタビュー', offset:6000, wanted:'プロフィール枠 掲載募集中', href:'./menu.html#profile-slideshow',
+                         invite:'この場所で、あなたの活動を紹介しませんか →' };
   const SHOW_DOTS_MAX = 8;
   const ICON_HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2 0 3.4 1.1 4.4 2.5C12 6.1 13.4 5 15.4 5 19 5 21 8.6 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>';
   const ICON_GO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
@@ -117,9 +122,12 @@
   }
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
+  // 画像の alt と、枠を押したときの読み上げ（作品は「{掲載名}のイラスト」、プロフィールは「{掲載名}のプロフィール」）
+  function slideAlt(w){ return w.name + (w.kind === 'profile' ? 'のプロフィール' : WORK_KINDS[w.kind].alt); }
+
   // 1枠分を組み立てる。list が空なら募集の案内だけを出す
-  function makeSlot(key, size, list){
-    const cat = SHOWCASE[key];
+  // key：illust | photo | info | profile（profile の list はプロフィールを toProfileSlide したもの）
+  function makeSlot(key, cat, size, list){
     const root = mk('article', 'vcard vcard--' + size);
     root.dataset.cat = key;
 
@@ -140,7 +148,7 @@
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
       a.appendChild(mk('b', null, cat.wanted));
-      a.appendChild(mk('span', null, 'この場所で、あなたの作品を紹介しませんか →'));
+      a.appendChild(mk('span', null, cat.invite || 'この場所で、あなたの作品を紹介しませんか →'));
       root.appendChild(head);
       root.appendChild(a);
       return s;
@@ -166,7 +174,16 @@
     s.bio  = mk('p', 'vc-bio');
     s.bio.hidden = true;
     s.text.appendChild(mk('span', 'vc-eyebrow', 'NOW SHOWING'));
-    s.text.appendChild(s.name);
+    if(key === 'profile'){
+      // プロフィールはアイコン（無いときは掲載名の1文字目）と掲載名を並べる
+      const who = mk('div', 'vc-who');
+      s.icon = mk('span', 'pf-icon vc-icon');
+      who.appendChild(s.icon);
+      who.appendChild(s.name);
+      s.text.appendChild(who);
+    }else{
+      s.text.appendChild(s.name);
+    }
     s.text.appendChild(s.bio);
     s.btn = mk('a', 'vc-btn');
     s.btn.target = '_blank';
@@ -190,10 +207,15 @@
     root.appendChild(prog);
     root.appendChild(s.dots);
 
-    // 枠を押すと作品の詳細モーダル（一覧と共用）
+    // 枠を押すと作品の詳細モーダル（一覧と共用）。プロフィールはプロフィールページを新しいタブで（放送を止めないため）
     root.tabIndex = 0;
     root.setAttribute('role', 'button');
-    const open = ()=>{ if(s.cur >= 0) openWork(s.list[s.cur]); };
+    const open = ()=>{
+      if(s.cur < 0) return;
+      const w = s.list[s.cur];
+      if(w.kind === 'profile') window.open(profileHref(w.p), '_blank', 'noopener');
+      else openWork(w);
+    };
     root.addEventListener('click', open);
     root.addEventListener('keydown', e=>{
       if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
@@ -209,7 +231,7 @@
     if(L.idx === idx) return L.ready;
     L.idx = idx;
     const w = s.list[idx];
-    setImg(L.img, w);
+    setImg(L.img, w, slideAlt(w));
     L.blur.src = w.image;
     L.ready = (typeof L.img.decode === 'function' ? L.img.decode() : Promise.resolve())
       .then(()=>L.idx === idx, ()=>false);
@@ -229,10 +251,13 @@
     s.cur = idx;
 
     s.name.textContent = w.name;
+    if(s.icon) fillIcon(s.icon, w);
     s.bio.textContent = w.bio || '';
     s.bio.hidden = !w.bio;
-    s.btn.href = w.url;
-    s.root.setAttribute('aria-label', w.name + WORK_KINDS[w.kind].alt + 'を開く');
+    if(w.url) s.btn.href = w.url;
+    else s.btn.removeAttribute('href');
+    s.btn.hidden = !w.url;
+    s.root.setAttribute('aria-label', slideAlt(w) + 'を開く');
     s.count.textContent = '';
     s.count.appendChild(mk('b', null, pad2(idx + 1)));
     s.count.appendChild(document.createTextNode(' / ' + pad2(s.list.length)));
@@ -278,13 +303,8 @@
     }
   }
 
-  function startShow(){
-    const box = document.getElementById('visual');
-    box.textContent = '';
-    const data = { illust:works.illust.slides, photo:works.photo.slides, info:[] };
-    const slots = shuffle(Object.keys(SHOWCASE)).map((key, i)=>makeSlot(key, i === 0 ? 'lg' : 'sm', data[key]));
-    slots.forEach(s=>box.appendChild(s.root));
-
+  // 見えている間だけ動かす（裏タブ・画面外・ギャラリー表示中は止める）
+  function runSlots(slots){
     const live = slots.filter(s=>s.list.length);
     if(!live.length) return;
     if('IntersectionObserver' in window){
@@ -303,6 +323,32 @@
     }
     document.addEventListener('visibilitychange', ()=>live.forEach(slotUpdate));
   }
+
+  function startShow(){
+    const box = document.getElementById('visual');
+    box.textContent = '';
+    const data = { illust:works.illust.slides, photo:works.photo.slides, info:[] };
+    const slots = shuffle(Object.keys(SHOWCASE)).map((key, i)=>makeSlot(key, SHOWCASE[key], i === 0 ? 'lg' : 'sm', data[key]));
+    slots.forEach(s=>box.appendChild(s.root));
+    runSlots(slots);
+  }
+
+  // --- PROFILE のスライドショー（有料プロフィール。profile.json の slideshow の順のまま、時計で番号を決める） ---
+  // 掲載名・ひとこと（catch）・「推す」（url）・サムネイル。枠を押すとプロフィールページ。
+  // 空・読み込み失敗のときは募集の案内（menu.html#profile-slideshow）
+  function toProfileSlide(pf){
+    return { kind:'profile', p:pf.p, name:pf.name, icon:pf.icon, bio:pf.catch, url:pf.url,
+             image:pf.thumb, w:pf.thumb_w, h:pf.thumb_h };
+  }
+  function startProfileShow(list){
+    const box = document.getElementById('profileShow');
+    if(!box) return;
+    box.textContent = '';
+    const s = makeSlot('profile', PROFILE_SHOW, 'lg', list.map(toProfileSlide));
+    box.appendChild(s.root);
+    runSlots([s]);
+  }
+  fetchProfileSlides().then(startProfileShow, ()=>startProfileShow([]));
 
   // --- 読み込み（種類ごとに1回だけ。SHOWCASE は両方そろってから組み立てる） ---
   function loadWorks(kind){

@@ -121,16 +121,15 @@
     </a>
   </nav>
 
-  <!-- PROFILE（準備中。有料のプロフィールのスライドショーを置く予定） -->
+  <!-- PROFILE（有料プロフィールのスライドショー。js/app.js の startProfileShow が組み立てる） -->
   <section class="sec" id="profile">
     <div class="sec-head">
       <h2 class="sec-title">PROFILE</h2>
       <span class="sec-ja">プロフィール</span>
       <span class="sec-line"></span>
     </div>
-    <div class="soon">
-      <b>COMING SOON</b>
-      <span>このコーナーは準備中です。公開まで、もうしばらくお待ちください。</span>
+    <div class="pshow" id="profileShow" aria-label="プロフィールのスライドショー">
+      <p class="show-status">読み込んでいます…</p>
     </div>
     <!-- ライブラリーは別ページ。放送を止めないよう新しいタブで開く -->
     <nav class="gallery-links gallery-links--one" aria-label="プロフィール">
