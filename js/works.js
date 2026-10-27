@@ -41,12 +41,13 @@
 
   // --- プロフィールの URL ---
   function isProfileKey(p){ return typeof p === 'string' && PROFILE_KEY.test(p); }
-  // 作品の profile（URL）から p を取り出す。ura-ten.jp/profile.html 以外は null
+  // 作品の profile（URL）から p を取り出す。ura-ten.jp/profile(.html) 以外は null
+  // （Pages は profile.html を /profile に転送するので、アドレスバーからコピーした形も受け付ける）
   function profileKeyOf(u){
     if(typeof u !== 'string') return null;
     try{
       const x = new URL(u);
-      if(x.origin !== PROFILE_ORIGIN || x.pathname !== '/profile.html') return null;
+      if(x.origin !== PROFILE_ORIGIN || !/^\/profile(\.html)?$/.test(x.pathname)) return null;
       const p = x.searchParams.get('p');
       return isProfileKey(p) ? p : null;
     }catch(e){ return null; }
