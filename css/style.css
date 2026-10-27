@@ -385,10 +385,10 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 
 /* =========================================================
    プロフィールライブラリー（library.html）
+   幅と列数はギャラリー（#galleryPage）と同じ（.wrap いっぱい・一覧は .grid）
    js/library.js が組み立てる。カードはアイコン・掲載名・ジャンル・活動地域だけ（無料・有料で差を付けない）
    絞り込みのボタンは押すたびにオン・オフ。ジャンルはピンク、活動地域はシアン
 ========================================================= */
-.lib{max-width:1080px;margin:30px auto 0}
 .lib-tools{display:grid;gap:14px;margin-bottom:22px;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:rgba(14,14,28,.7)}
 .lib-search{display:flex;gap:8px}
 .lib-q{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);padding:10px 16px;border-radius:99px;border:1px solid var(--line2);background:rgba(255,255,255,.04);outline:none;transition:border-color .2s}
@@ -407,7 +407,6 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .lib-chip:hover{color:var(--ink);border-color:var(--accent)}
 .lib-chip[aria-pressed="true"]{color:#fff;background:color-mix(in srgb,var(--accent) 22%,transparent);border-color:var(--accent);box-shadow:0 0 14px color-mix(in srgb,var(--accent) 28%,transparent)}
 .lib-count{margin-bottom:12px;font-size:12px;color:var(--dim);text-align:right}
-.lib-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .lib-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 16px 20px;text-align:center;border-radius:14px;border:1px solid var(--line);background:rgba(14,14,28,.78);transition:transform .2s,border-color .2s,box-shadow .2s}
 .lib-label-page{position:absolute;top:10px;right:10px;font-family:var(--display);font-size:9px;font-weight:600;letter-spacing:.16em;padding:3px 8px;border-radius:99px;color:var(--dim);border:1px solid var(--line2);background:rgba(255,255,255,.03)}
 .lib-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--pink) 55%,transparent);box-shadow:0 14px 32px rgba(0,0,0,.4),0 0 22px color-mix(in srgb,var(--pink) 18%,transparent)}
@@ -583,11 +582,9 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .pf-icon span{font-size:28px}
   .pf-name{font-size:22px}
   .pf-qa-item{padding:15px 16px}
-  .lib{margin-top:20px}
   .lib-tools{padding:14px;gap:12px}
   .lib-group{grid-template-columns:minmax(0,1fr);gap:6px}
   .lib-label{padding-top:0}
-  .lib-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .lib-card{padding:18px 10px 16px;gap:10px}
   .lib-label-page{top:7px;right:7px;font-size:8px;padding:2px 7px}
   .lib-icon{width:64px;height:64px}
