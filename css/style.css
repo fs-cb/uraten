@@ -252,15 +252,21 @@
 .vc-wanted:hover span{color:var(--accent)}
 .vcard--lg .vc-wanted b{font-size:20px}
 
-/* ギャラリーへのボタン（3枠の下に2つ並べる。スマホは縦） */
-.gallery-links{margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+/* ギャラリー・ライブラリーへのボタン（3枠の下に3つ並べる。スマホは縦） */
+.gallery-links{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .gl-btn{--accent:var(--pink);display:flex;align-items:center;gap:16px;padding:16px 20px 16px 24px;border-radius:14px;cursor:pointer;
   border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);
   background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 16%,transparent),transparent 75%),rgba(14,14,28,.75);transition:.2s}
 .gl-btn:hover{border-color:var(--accent);box-shadow:0 0 24px color-mix(in srgb,var(--accent) 30%,transparent)}
 .gl-btn[data-cat="photo"]{--accent:var(--violet)}
 .gl-btn[data-cat="profile"]{--accent:var(--cyan)}
-.gallery-links--one{grid-template-columns:minmax(0,1fr);margin-top:0}
+
+
+/* 準備中のエリア（PROFILE） */
+.soon{display:grid;place-content:center;gap:8px;text-align:center;min-height:180px;padding:32px 20px;border-radius:16px;
+  border:1px dashed var(--line2);background:rgba(14,14,28,.55)}
+.soon b{font-family:var(--display);font-weight:300;font-size:15px;letter-spacing:.3em;color:var(--ink)}
+.soon span{font-size:12.5px;line-height:1.8;color:var(--dim)}
 .gl-text{flex:1;min-width:0}
 .gl-text small{display:block;font-family:var(--display);font-size:10.5px;font-weight:600;letter-spacing:.24em;color:var(--accent)}
 .gl-text b{display:block;margin-top:4px;font-size:15px;font-weight:700;letter-spacing:.06em}
@@ -509,6 +515,10 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .pl-up .up + .up{display:none}
   .pl-next-more{display:block;margin-left:auto}
   .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .gallery-links{gap:12px}
+  .gl-btn{gap:10px;padding:14px 14px 14px 18px}
+  .gl-text b{font-size:13.5px;letter-spacing:.04em}
+  .gl-arrow{width:34px;height:34px}
 }
 @media (max-width:860px){
 
@@ -560,7 +570,6 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .vcard--sm .vc-wanted b{font-size:13px}
   .vcard--sm .vc-wanted span{font-size:10.5px}
   .gallery-links{grid-template-columns:minmax(0,1fr);gap:10px;margin-top:12px}
-  .gallery-links--one{margin-top:0}
   .gl-btn{padding:13px 14px 13px 18px}
   .gl-text b{font-size:14px}
   .gl-arrow{width:34px;height:34px}

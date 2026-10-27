@@ -110,7 +110,7 @@
   <section class="visual" id="visual" aria-labelledby="showcaseTitle">
     <p class="show-status" id="showStatus">読み込んでいます…</p>
   </section>
-  <nav class="gallery-links" aria-label="ギャラリー">
+  <nav class="gallery-links" aria-label="ギャラリー・ライブラリー">
     <a class="gl-btn" data-cat="illust" href="#" onclick="showGallery('illust');return false">
       <span class="gl-text"><small>ILLUSTRATION</small><b>イラストギャラリーを見る</b></span>
       <span class="gl-arrow" aria-hidden="true">→</span>
@@ -119,21 +119,24 @@
       <span class="gl-text"><small>PHOTO</small><b>フォトギャラリーを見る</b></span>
       <span class="gl-arrow" aria-hidden="true">→</span>
     </a>
+    <!-- ライブラリーは別ページ。放送を止めないよう新しいタブで開く -->
+    <a class="gl-btn" data-cat="profile" href="./library.html" target="_blank" rel="noopener">
+      <span class="gl-text"><small>PROFILE</small><b>ライブラリーを見る</b></span>
+      <span class="gl-arrow" aria-hidden="true">→</span>
+    </a>
   </nav>
 
-  <!-- PROFILE（ライブラリーへの入口。放送を止めないよう新しいタブで開く） -->
+  <!-- PROFILE（準備中。有料のプロフィールのスライドショーを置く予定） -->
   <section class="sec" id="profile">
     <div class="sec-head">
       <h2 class="sec-title">PROFILE</h2>
       <span class="sec-ja">プロフィール</span>
       <span class="sec-line"></span>
     </div>
-    <nav class="gallery-links gallery-links--one" aria-label="プロフィール">
-      <a class="gl-btn" data-cat="profile" href="./library.html" target="_blank" rel="noopener">
-        <span class="gl-text"><small>LIBRARY</small><b>プロフィールライブラリーを見る</b></span>
-        <span class="gl-arrow" aria-hidden="true">→</span>
-      </a>
-    </nav>
+    <div class="soon">
+      <b>COMING SOON</b>
+      <span>このコーナーは準備中です。公開まで、もうしばらくお待ちください。</span>
+    </div>
   </section>
 
   <!-- イベント（直近5件。js/calendar.js の renderTop） -->
