@@ -264,10 +264,6 @@
 .gl-text b{display:block;margin-top:4px;font-size:15px;font-weight:700;letter-spacing:.06em}
 .gl-arrow{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--accent);color:#fff;transition:.2s}
 .gl-btn:hover .gl-arrow{background:color-mix(in srgb,var(--accent) 30%,transparent)}
-/* 準備中（押せない） */
-.gl-btn.is-soon{cursor:default;opacity:.55}
-.gl-btn.is-soon:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:none}
-.gl-soon{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:99px;border:1px solid var(--line2);color:var(--dim)}
 
 
 /* 準備中のエリア（PROFILE） */
@@ -324,21 +320,24 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .cal-done .cal{margin-top:6px;padding-bottom:6px}
 
 /* =========================================================
-   イラスト一覧（#galleryPage）と作品の詳細モーダル
+   ギャラリー（#galleryPage。イラスト／フォト共用）と作品の詳細モーダル
    js/app.js（renderGallery / openWork）が組み立てる：
      .card > .card-art.work-art > img.work-img / .card-foot > b
    作品は比率がまちまちなので、トリミングせず contain で収める
+   色は data-kind（illust | photo）で SHOWCASE の枠と同じアクセントにする
 ========================================================= */
+#galleryPage,#workModal{--accent:var(--pink)}
+#galleryPage[data-kind="photo"],#workModal[data-kind="photo"]{--accent:var(--violet)}
 .gallery-tools{display:flex;gap:8px;margin:0 0 16px}
 .gallery-filter{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.06em;padding:8px 16px;border-radius:99px;cursor:pointer;
   color:var(--dim);background:rgba(255,255,255,.04);border:1px solid var(--line2);transition:.2s}
 .gallery-filter::before{content:"";width:7px;height:7px;border-radius:50%;border:1px solid currentColor}
-.gallery-filter:hover{color:var(--ink);border-color:var(--pink)}
-.gallery-filter[aria-pressed="true"]{color:#fff;background:rgba(255,62,165,.2);border-color:var(--pink);box-shadow:0 0 16px rgba(255,62,165,.3)}
+.gallery-filter:hover{color:var(--ink);border-color:var(--accent)}
+.gallery-filter[aria-pressed="true"]{color:#fff;background:color-mix(in srgb,var(--accent) 20%,transparent);border-color:var(--accent);box-shadow:0 0 16px color-mix(in srgb,var(--accent) 30%,transparent)}
 .gallery-filter[aria-pressed="true"]::before{background:currentColor}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
 .card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(14,14,28,.78);cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}
-.card:hover{transform:translateY(-3px);border-color:rgba(255,62,165,.55);box-shadow:0 14px 32px rgba(0,0,0,.4),0 0 22px rgba(255,62,165,.18)}
+.card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 14px 32px rgba(0,0,0,.4),0 0 22px color-mix(in srgb,var(--accent) 18%,transparent)}
 .card-art{position:relative;aspect-ratio:16 / 9}
 .work-art{background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.05),transparent 70%),var(--bg2)}
 .card-art .work-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
@@ -362,7 +361,7 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .modal-art.work-art{display:flex;align-items:center;justify-content:center;padding:18px 18px 0;background:transparent}
 .modal-art .work-img{display:block;width:auto;height:auto;max-width:100%;max-height:min(62vh,640px);object-fit:contain;border-radius:8px}
 .modal-body{padding:22px 24px 26px}
-.modal-cat{font-family:var(--display);font-size:10.5px;font-weight:600;letter-spacing:.24em;color:var(--pink)}
+.modal-cat{font-family:var(--display);font-size:10.5px;font-weight:600;letter-spacing:.24em;color:var(--accent,var(--pink))}
 .modal-name{margin-top:6px;font-size:22px;font-weight:700}
 .modal-bio{margin-top:12px;font-size:13px;line-height:1.9;color:var(--dim);white-space:pre-line}
 .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}

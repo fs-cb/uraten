@@ -1,7 +1,7 @@
   // ===== ページ切替 =====
   function showTop(){document.getElementById('topPage').classList.add('active');document.getElementById('galleryPage').classList.remove('active');window.scrollTo(0,0)}
-  // ギャラリーは絞り込みオフで開く（「スライドショー」の絞り込みは一覧の中のボタンでだけ切り替える）
-  function showGallery(){galleryFilterOn=false;document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0);renderGallery()}
+  // ギャラリー（kind＝illust | photo）は絞り込みオフで開く（「スライドショー」の絞り込みは一覧の中のボタンでだけ切り替える）
+  function showGallery(kind){setGalleryKind(kind);galleryFilterOn=false;document.getElementById('galleryPage').classList.add('active');document.getElementById('topPage').classList.remove('active');window.scrollTo(0,0);renderGallery()}
   // ヘッダー・タブ・メニューのページ内リンク。イラスト一覧を開いているときはトップに戻してから移動する
   function goSec(id){
     closeMenu();
@@ -15,14 +15,20 @@
   function openAbout(){ closeMenu(); document.getElementById('aboutModal').classList.add('open'); document.getElementById('aboutCard').scrollTop = 0; }
   function closeAbout(){ const m = document.getElementById('aboutModal'); if(m) m.classList.remove('open'); }
 
-  // ===== イラスト（トップのスライドショー・#galleryPage の一覧） =====
-  // データは公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）1ファイルだけ。
+  // ===== 作品（イラスト・フォト）：トップのスライドショー・#galleryPage の一覧 =====
+  // データは種類ごとに公開JSON（uraten-ops が承認済みの掲載だけを R2 に置く）1ファイルずつ。形は同じ。
   // ページを開いたときに1回だけ読み、トップと一覧で同じデータを使う。
   //   items     … 一覧に出す作品（1人1点）
   //   slideshow … 今トップのスライドショーに出す作品（掲載が古い順。この順番のまま使う）
   // - url・image が http(s) 以外の作品は出さない。url2 も http(s) のときだけリンクにする
   // - 申請由来の文字列は textContent / プロパティで入れる（innerHTML に展開しない）
-  const GALLERY_URL = 'https://media.ura-ten.jp/gallery/gallery.json';
+  // - 作品には kind（illust | photo）を持たせ、一覧・モーダル・SHOWCASE は kind で見え方だけを変える
+  const WORK_KINDS = {
+    illust: { src:'https://media.ura-ten.jp/gallery/gallery.json', en:'ILLUSTRATION', ja:'イラストギャラリー', alt:'のイラスト',
+              intro:'URATENに参加している絵師の作品です。サムネをタップすると作品が大きく開き、「推す」から絵師の紹介ページ（X／pixiv など）へ移動できます。気になった絵師はそのまま依頼へ。' },
+    photo:  { src:'https://media.ura-ten.jp/photo/photo.json',     en:'PHOTO',        ja:'フォトギャラリー',   alt:'の写真',
+              intro:'URATENに参加しているフォトグラファーの作品です。サムネをタップすると写真が大きく開き、「推す」から撮影者の紹介ページ（X／Instagram など）へ移動できます。気になった撮影者には、そのまま撮影の相談を。' }
+  };
 
   function isHttp(u){ return typeof u === 'string' && /^https?:\/\//i.test(u); }
   function posInt(v){ return (Number.isInteger(v) && v > 0) ? v : 0; }
@@ -39,11 +45,12 @@
     return list;
   }
 
-  function normWorks(src){
+  function normWorks(src, kind){
     if(!Array.isArray(src)) return [];
     return src
       .filter(it=>it && isHttp(it.url) && isHttp(it.image))
       .map(it=>({
+        kind,
         name:  (typeof it.name === 'string') ? it.name : '',
         url:   it.url,
         url2:  (isHttp(it.url2) && hostLabel(it.url2)) ? it.url2 : null,
@@ -55,7 +62,7 @@
   }
 
   function setImg(img, w){
-    img.alt = w.name + 'のイラスト';
+    img.alt = w.name + WORK_KINDS[w.kind].alt;
     if(w.w && w.h){ img.width = w.w; img.height = w.h; }
     else { img.removeAttribute('width'); img.removeAttribute('height'); }
     img.src = w.image;
@@ -84,28 +91,48 @@
     }
   }
 
-  let galleryItems = null;      // 読み込み前は null。一覧用にシャッフル済み
-  let slides = [];              // slideshow（並びはそのまま）
+  // 種類ごとのデータ。items は読み込み前は null（一覧用にシャッフル済み）、slides は slideshow（並びはそのまま）
+  const works = { illust:{ items:null, slides:[] }, photo:{ items:null, slides:[] } };
+  let galleryKind = 'illust';
   let galleryFilterOn = false;
 
-  // --- 一覧（#galleryPage） ---
+  // --- 一覧（#galleryPage。イラストとフォトで共用） ---
   // 一覧の画像はトップを開いた時点では読ませたくないので、ギャラリーを開いたときに初めて描く。
   // - オフ：items を読み込みごとにシャッフルした順（掲載の間で露出に偏りを作らないため）
   // - オン：slideshow をそのままの順
   // - カードは掲載名だけ（有料・無料で見た目に差を付けない）
   // - 0件・読み込み失敗はどちらも「まだ掲載はありません」
+  const galleryPage = document.getElementById('galleryPage');
   const grid = document.getElementById('galleryGrid');
   const galleryEmpty = document.getElementById('galleryEmpty');
   const galleryFilterBtn = document.getElementById('galleryFilter');
 
+  // 見出し・説明文を種類に合わせる。種類が変わったら前の一覧は消して「読み込んでいます…」から
+  function setGalleryKind(kind){
+    if(!WORK_KINDS[kind]) kind = 'illust';
+    const k = WORK_KINDS[kind];
+    galleryPage.dataset.kind = kind;
+    document.getElementById('galleryTitle').textContent = k.en;
+    document.getElementById('galleryJa').textContent = k.ja;
+    document.getElementById('galleryIntro').textContent = k.intro;
+    if(kind !== galleryKind){
+      grid.textContent = '';
+      galleryEmpty.textContent = '読み込んでいます…';
+      galleryEmpty.hidden = false;
+      galleryFilterBtn.hidden = true;
+    }
+    galleryKind = kind;
+  }
+
   function renderGallery(){
-    if(galleryItems === null) return;                     // 読み込み中は「読み込んでいます…」のまま
-    if(!document.getElementById('galleryPage').classList.contains('active')) return;
-    galleryFilterBtn.hidden = !slides.length;
-    if(!slides.length) galleryFilterOn = false;
+    const d = works[galleryKind];
+    if(d.items === null) return;                          // 読み込み中は「読み込んでいます…」のまま
+    if(!galleryPage.classList.contains('active')) return;
+    galleryFilterBtn.hidden = !d.slides.length;
+    if(!d.slides.length) galleryFilterOn = false;
     galleryFilterBtn.setAttribute('aria-pressed', galleryFilterOn ? 'true' : 'false');
 
-    const list = galleryFilterOn ? slides : galleryItems;
+    const list = galleryFilterOn ? d.slides : d.items;
     grid.textContent = '';
     if(!list.length){
       galleryEmpty.textContent = 'まだ掲載はありません';
@@ -135,9 +162,11 @@
     renderGallery();
   }
 
-  // --- 作品の詳細モーダル（大枠・一覧で共用） ---
+  // --- 作品の詳細モーダル（大枠・一覧、イラスト・フォトで共用） ---
   const workModal = document.getElementById('workModal');
   function openWork(w){
+    workModal.dataset.kind = w.kind;
+    document.getElementById('wCat').textContent = WORK_KINDS[w.kind].en;
     const art = document.getElementById('wArt');
     art.textContent = '';
     art.appendChild(workImg(w, false));
@@ -158,7 +187,8 @@
   //     （ぼかした背景は同じ画像なので、通信は1枚分で済む）
   //   - 次の1枚は切り替えの少し前に先読み＋decode() しておき、切替時は class の付け替えだけにする
   //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
-  // PHOTO・INFO はまだ公開データが無いので、募集の案内だけを出す（画像は読まない）。
+  // INFO はまだ公開データが無いので、募集の案内だけを出す（画像は読まない）。
+  // ILLUSTRATION・PHOTO も、slideshow が空・読み込み失敗のときは募集の案内になる。
   const SHOW_MS = 12000;
   const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
   const SHOWCASE = {
@@ -299,7 +329,7 @@
     s.bio.textContent = w.bio || '';
     s.bio.hidden = !w.bio;
     s.btn.href = w.url;
-    s.root.setAttribute('aria-label', w.name + 'のイラストを開く');
+    s.root.setAttribute('aria-label', w.name + WORK_KINDS[w.kind].alt + 'を開く');
     s.count.textContent = '';
     s.count.appendChild(mk('b', null, pad2(idx + 1)));
     s.count.appendChild(document.createTextNode(' / ' + pad2(s.list.length)));
@@ -348,7 +378,7 @@
   function startShow(){
     const box = document.getElementById('visual');
     box.textContent = '';
-    const data = { illust:slides, photo:[], info:[] };
+    const data = { illust:works.illust.slides, photo:works.photo.slides, info:[] };
     const slots = shuffle(Object.keys(SHOWCASE)).map((key, i)=>makeSlot(key, i === 0 ? 'lg' : 'sm', data[key]));
     slots.forEach(s=>box.appendChild(s.root));
 
@@ -371,15 +401,19 @@
     document.addEventListener('visibilitychange', ()=>live.forEach(slotUpdate));
   }
 
-  // --- 読み込み（1回だけ） ---
-  fetch(GALLERY_URL, { cache: 'no-store' })
-    .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-    .then(data=>{
-      galleryItems = shuffle(normWorks(data && data.items));
-      slides = normWorks(data && data.slideshow);
-    })
-    .catch(()=>{ galleryItems = []; slides = []; })
-    .then(()=>{ startShow(); renderGallery(); });
+  // --- 読み込み（種類ごとに1回だけ。SHOWCASE は両方そろってから組み立てる） ---
+  function loadWorks(kind){
+    const d = works[kind];
+    return fetch(WORK_KINDS[kind].src, { cache: 'no-store' })
+      .then(res=>{ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+      .then(data=>{
+        d.items = shuffle(normWorks(data && data.items, kind));
+        d.slides = normWorks(data && data.slideshow, kind);
+      })
+      .catch(()=>{ d.items = []; d.slides = []; })
+      .then(()=>{ if(galleryKind === kind) renderGallery(); });
+  }
+  Promise.all(Object.keys(works).map(loadWorks)).then(startShow);
 
   // ===== 放送予定（このあと・当日のスケジュール） =====
   // 読み込み・放送日の判定・描画は js/onair.js（schedule.html と共用）に置いてある。
