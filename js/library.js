@@ -3,7 +3,8 @@
 
    - gallery/profile.json の全員をカードで並べ、各カードから profile.html?p=… へ
    - 並びは読み込みごとにシャッフルする（いつも先頭に出る人を作らない）。絞り込んでもその順のまま
-   - カードはアイコン・掲載名・ジャンル・活動地域だけ。無料（card）と有料（page）で見た目に差を付けない
+   - カードはアイコン・掲載名・ジャンル・活動地域。無料（card）と有料（page）で枠・大きさ・並びに差を付けない
+     有料には、インタビューがあることを示す小さなラベル（INTERVIEW）だけを付ける
    - 絞り込み：活動名（部分一致。＊・？のワイルドカード可）× ジャンル × 活動地域
      ジャンル・活動地域はそれぞれ「どれかに当てはまる」（OR）、3つの条件どうしは「すべて」（AND）
    - ジャンル・活動地域のボタンはフォームの選択肢の順。掲載が1件も無い項目はボタンを出さない
@@ -46,6 +47,13 @@
     const a = document.createElement('a');
     a.className = 'lib-card';
     a.href = W.profileHref(pf.p);
+    // 有料（page）はページの中身（サムネイル・インタビュー）が多いことを、小さなラベルで伝えるだけ。枠・大きさ・並びは同じ
+    if(pf.type === 'page'){
+      const tag = document.createElement('span');
+      tag.className = 'lib-label-page';
+      tag.textContent = 'INTERVIEW';
+      a.appendChild(tag);
+    }
     a.appendChild(W.fillIcon(Object.assign(document.createElement('div'), { className:'pf-icon lib-icon' }), pf));
     const name = document.createElement('b');
     name.className = 'lib-name';
