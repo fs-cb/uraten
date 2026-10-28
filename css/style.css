@@ -138,8 +138,8 @@
 .fx-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 /* Presence の光の玉だけは、パネルに隠れないよう中身より手前（ヘッダー・タブバー・モーダルより奥）に描く */
 .fx-front{z-index:45}
-.fx-ready .player,.fx-ready .vcard,.fx-ready .cal-row,.fx-ready .gl-btn{--fxa:0}
-.fx-on .player,.fx-on .vcard,.fx-on .cal-row,.fx-on .gl-btn{--fxa:1}
+.fx-ready .player,.fx-ready .vcard,.fx-ready .cal-row,.fx-ready .evt-card,.fx-ready .gl-btn{--fxa:0}
+.fx-on .player,.fx-on .vcard,.fx-on .cal-row,.fx-on .evt-card,.fx-on .gl-btn{--fxa:1}
 .fx-ready .player{transition:--fxa 6s ease;
   background:
     radial-gradient(440px 240px at 6% 70%,rgba(255,62,165,.22),transparent 70%) padding-box,
@@ -149,8 +149,8 @@
 .fx-ready .vcard{transition:box-shadow .25s,--fxa 6s ease;
   background:linear-gradient(rgba(14,14,28,calc(1 - .58 * var(--fxa,0))),rgba(14,14,28,calc(1 - .58 * var(--fxa,0)))) padding-box,
              linear-gradient(140deg,var(--accent),rgba(139,108,255,.55) 45%,rgba(63,227,255,.35)) border-box}
-.fx-ready .cal-row{transition:all .2s,--fxa 6s ease;background:rgba(14,14,28,calc(.7 - .25 * var(--fxa,0)))}
-.fx-ready a.cal-row:hover{background:rgba(20,20,40,.8)}
+.fx-ready .cal-row,.fx-ready .evt-card{transition:all .2s,--fxa 6s ease;background:rgba(14,14,28,calc(.7 - .25 * var(--fxa,0)))}
+.fx-ready a.cal-row:hover,.fx-ready a.evt-card:hover{background:rgba(20,20,40,.8)}
 .fx-ready .gl-btn{transition:all .2s,--fxa 6s ease;
   background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 16%,transparent),transparent 75%),rgba(14,14,28,calc(.75 - .3 * var(--fxa,0)))}
 .fx-ready .hd,.fx-ready .modal{transition:background-color 6s ease}
@@ -287,8 +287,12 @@
    js/calendar.js（buildRow）が組み立てる：
      .cal-row（url があれば a。終了済みは .is-done）
        .cal-date > .cal-mon（「10.」）/ .cal-day（「13」「13 - 14」。期間は .is-range）/ .cal-wd
-       .cal-info > .cal-name / .cal-venue / .cal-badges > .cal-badge.is-notice
+       .cal-info > .cal-name / .cal-venue（> .cal-time「18:00〜」＋「福岡｜会場」）/ .cal-badges > .cal-badge.is-notice
+       .cal-flyer（イベント告知のチラシ。小さな正方形に切り取る。無い行には出さない）
      .cal-month（calendar.html の月見出し）/ .cal-empty（読み込み中・0件・エラー）
+   トップのイベント告知（renderFeatured）：
+     .evt-top（0件なら hidden）> .evt-head / .evt-list > .evt-card（url があれば a）
+       .evt-flyer > .evt-flyer-blur + .evt-flyer-img / .evt-info > .cal-date + .cal-info と同じ中身
 ========================================================= */
 .cal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .cal-month,.cal-empty{grid-column:1 / -1}
@@ -304,6 +308,9 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .cal-info{flex:1;min-width:0}
 .cal-name{display:block;font-size:15px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
 .cal-venue{display:block;margin-top:2px;font-size:12px;color:var(--dim);overflow-wrap:anywhere}
+.cal-time{margin-right:.9em;font-family:var(--display);font-weight:500;letter-spacing:.04em;color:var(--ink);white-space:nowrap}
+/* イベント告知のチラシ（アイコン代わり）。枠・色は足さず、ほかの行より目立たせない */
+.cal-flyer{flex:none;width:56px;height:56px;object-fit:cover;border-radius:8px;background:rgba(255,255,255,.04)}
 /* お知らせあり（中止・延期）バッジ */
 .cal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .cal-badge{font-size:10.5px;font-weight:700;letter-spacing:.06em;line-height:1.7;padding:2px 10px;border-radius:7px}
@@ -328,6 +335,18 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .cal-done>summary:hover{color:var(--ink)}
 .cal-done>summary span{margin-left:4px;font-weight:500;color:var(--mute)}
 .cal-done .cal{margin-top:6px;padding-bottom:6px}
+/* トップのイベント告知：チラシ（切り取らない・余白にぼかし）＋日付・名前・時刻・会場 */
+.evt-top{margin-bottom:22px}
+.evt-head{margin:0 0 12px;font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.24em;color:var(--cyan)}
+.evt-head span{margin-left:12px;font-size:11px;font-weight:500;letter-spacing:.16em;color:var(--dim)}
+.evt-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.evt-card{display:grid;grid-template-columns:168px minmax(0,1fr);gap:20px;align-items:center;padding:14px;border-radius:12px;border:1px solid var(--line);background:rgba(14,14,28,.7);transition:.2s;min-width:0}
+a.evt-card:hover{border-color:rgba(63,227,255,.5);background:rgba(20,20,40,.8)}
+.evt-flyer{position:relative;overflow:hidden;aspect-ratio:3 / 4;border-radius:8px;background:#0b0b16}
+.evt-flyer-blur{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;filter:blur(18px) saturate(1.2) brightness(.5)}
+.evt-flyer-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.evt-info{min-width:0}
+.evt-info .cal-date{width:auto;padding:0 0 10px;margin-bottom:10px;border-right:0;border-bottom:1px solid var(--line)}
 
 /* =========================================================
    ギャラリー（#galleryPage。イラスト／フォト共用）と作品の詳細モーダル
@@ -589,6 +608,9 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
   .cal-date{width:98px;padding-right:12px}
   .cal-day{font-size:28px}
   .cal-day.is-range{font-size:23px}
+  .cal-flyer{width:48px;height:48px}
+  .evt-list{grid-template-columns:minmax(0,1fr);gap:8px}
+  .evt-card{grid-template-columns:120px minmax(0,1fr);gap:14px;padding:12px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .pf{margin-top:20px}
   .pf-head{gap:16px}
