@@ -10,7 +10,8 @@
    - イベント名・会場は申請者が入力した文字列。必ず textContent で入れる
    - url は http(s) で始まるものだけリンクにする
    - チラシ（flyer）は FLYER_BASE で始まるものだけ使う。ほかは「チラシ無し」として扱う
-   - top（トップのイベント告知）も同じファイルに入っている。ファイルは1回だけ読む
+   - top（イベント告知）も同じファイルに入っている。トップの SHOWCASE の INFO 枠（js/app.js）が
+     loadTop で受け取る。ファイルは1ページで1回だけ読む（load を共有する）
    - 状態はブラウザに保存しない。外部ライブラリを使わない
 ========================================================= */
 (function (global) {
@@ -100,14 +101,18 @@
     return out;
   }
 
-  /* { events: カレンダー, top: トップのイベント告知 } */
+  /* { events: カレンダー, top: イベント告知 }。カレンダーと INFO 枠で同じ読み込みを使う */
+  var loading = null;
   function load() {
-    return fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }).then(function (data) {
-      return { events: normalize(data && data.events), top: normalize(data && data.top) };
-    });
+    if (!loading) {
+      loading = fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }).then(function (data) {
+        return { events: normalize(data && data.events), top: normalize(data && data.top) };
+      });
+    }
+    return loading;
   }
 
   /* ---------- 並び順 ---------- */
@@ -150,18 +155,7 @@
     box.appendChild(el('div', 'cal-empty', text));
   }
 
-  /* url があれば全体を新しいタブで開くリンクにする（行・告知の1件で共用） */
-  function linkOrBox(ev, cls) {
-    var node = el(ev.url ? 'a' : 'div', cls);
-    if (ev.url) {
-      node.href = ev.url;
-      node.target = '_blank';
-      node.rel = 'noopener noreferrer';
-    }
-    return node;
-  }
-
-  /* 日付枠は3段。上に月（「10.」）、その下に日付を大きく、いちばん下に曜日。
+    /* 日付枠は3段。上に月（「10.」）、その下に日付を大きく、いちばん下に曜日。
      期間は日付を「13 - 14」、曜日を「TUE - WED」にする。
      月をまたぐ期間だけ、月を「10. - 11.」にする */
   function buildDate(ev) {
@@ -200,70 +194,31 @@
     return info;
   }
 
-  /* チラシの画像。読めなければ onFail（既定は画像を外すだけ） */
-  function flyerImg(ev, cls, alt, onFail) {
-    var img = el('img', cls);
-    img.alt = alt;
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.onerror = onFail || function () { if (img.parentNode) img.parentNode.removeChild(img); };
-    img.src = ev.flyer;
-    return img;
-  }
-
   /* 1件分の行。url があれば行全体がリンクになる */
   function buildRow(ev, today) {
-    var row = linkOrBox(ev, 'cal-row' + (isEnded(ev, today) ? ' is-done' : ''));
+    var row = el(ev.url ? 'a' : 'div', 'cal-row' + (isEnded(ev, today) ? ' is-done' : ''));
+    if (ev.url) {
+      row.href = ev.url;
+      row.target = '_blank';
+      row.rel = 'noopener noreferrer';
+    }
     row.appendChild(buildDate(ev));
     row.appendChild(fillInfo(el('div', 'cal-info'), ev));
 
     /* イベント告知のチラシを小さく（アイコン代わり）。名前は行にあるので alt は空。
        切り取ってよい（文字は読めなくてよい）。無い行は場所を空けない */
     if (ev.flyer) {
-      var img = flyerImg(ev, 'cal-flyer', '');
+      var img = el('img', 'cal-flyer');
+      img.alt = '';
       img.width = THUMB;
       img.height = THUMB;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); };   /* 行は残す */
+      img.src = ev.flyer;
       row.appendChild(img);
     }
     return row;
-  }
-
-  /* トップのイベント告知の1件。チラシは切り取らず、余白に同じ画像のぼかしを敷く */
-  function buildFeatured(ev, onFail) {
-    var card = linkOrBox(ev, 'evt-card');
-
-    var frame = el('div', 'evt-flyer');
-    var blur = flyerImg(ev, 'evt-flyer-blur', '');
-    blur.setAttribute('aria-hidden', 'true');
-    var img = flyerImg(ev, 'evt-flyer-img', ev.name, function () { onFail(card); });
-    if (ev.w && ev.h) { img.width = ev.w; img.height = ev.h; }
-    frame.appendChild(blur);
-    frame.appendChild(img);
-
-    var info = el('div', 'evt-info');
-    info.appendChild(buildDate(ev));
-    card.appendChild(frame);
-    card.appendChild(fillInfo(info, ev));
-    return card;
-  }
-
-  /* トップのイベント告知の欄。0件・読めないときは欄ごと（見出しも）出さない */
-  function renderFeatured(top, today) {
-    var wrap = document.getElementById('eventTop');
-    var box  = document.getElementById('eventTopList');
-    if (!wrap || !box) return;
-
-    /* 掲載料をいただいているもの同士なので、同じ開催日は読み込みごとに入れ替える */
-    var list = byStart(top.filter(function (ev) { return ev.flyer && !isEnded(ev, today); }));
-    box.textContent = '';
-    wrap.hidden = !list.length;
-
-    /* チラシが読めなかった1件は外す。全部外れたら欄ごと隠す */
-    var drop = function (card) {
-      if (card.parentNode) card.parentNode.removeChild(card);
-      if (!box.children.length) wrap.hidden = true;
-    };
-    list.forEach(function (ev) { box.appendChild(buildFeatured(ev, drop)); });
   }
 
   /* 月見出しを挟みながら並べる */
@@ -279,7 +234,24 @@
     });
   }
 
-  /* ---------- トップページ（イベント告知＋直近5件） ---------- */
+  /* ---------- トップの SHOWCASE の INFO 枠（イベント告知） ---------- */
+
+  /* top のうち、チラシがあって終わっていないものを JSON の順（開催日順）のまま返す。
+     INFO 枠は時計で番号を決めるスライドショー（js/app.js）なので、ここでは入れ替えない */
+  function loadTop() {
+    return load().then(function (data) {
+      var today = todayJst();
+      return data.top.filter(function (ev) { return ev.flyer && !isEnded(ev, today); });
+    });
+  }
+
+  /* 「12.20 SUN」、期間は「12.20 SUN - 12.21 MON」 */
+  function dateLabel(ev) {
+    var one = function (d) { var p = ymd(d); return p.m + '.' + p.d + ' ' + weekday(d); };
+    return one(ev.start) + (ev.end ? ' - ' + one(ev.end) : '');
+  }
+
+  /* ---------- トップページ（直近5件） ---------- */
 
   function renderTop() {
     var box = document.getElementById('calList');
@@ -288,8 +260,6 @@
 
     load().then(function (data) {
       var today = todayJst();
-      renderFeatured(data.top, today);
-
       /* 告知のイベントも一覧から外さない（イベント告知はカレンダーにも載る） */
       var open = byStart(data.events.filter(function (ev) { return !isEnded(ev, today); }));
 
@@ -356,6 +326,8 @@
     DATA_URL: DATA_URL,
     todayJst: todayJst,
     renderTop: renderTop,
-    renderFull: renderFull
+    renderFull: renderFull,
+    loadTop: loadTop,
+    dateLabel: dateLabel
   };
 })(window);
