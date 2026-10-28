@@ -455,7 +455,29 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 /* イベント告知のモーダル（#eventModal）：色はシアン。日時と場所・PR コメントは改行をそのまま出す */
 #eventModal{--accent:var(--cyan)}
 .modal-cat-ja{margin-left:10px;font-family:var(--jp);font-size:10.5px;letter-spacing:.16em;color:var(--dim)}
-.modal-when{margin-top:8px;font-size:13px;line-height:1.8;color:var(--ink);white-space:pre-line}
+/* イベント告知の開催日（INFO 枠・モーダル共通）：数字を大きくシアンで、曜日・時刻を添える */
+.ev-when{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 9px;font-family:var(--display);line-height:1.1;color:var(--cyan)}
+.ev-md{font-weight:300;letter-spacing:.02em}
+.ev-wd{font-size:11px;font-weight:600;letter-spacing:.16em;color:var(--ink)}
+.ev-sep{font-weight:300;color:var(--dim)}
+.ev-time{font-weight:500;letter-spacing:.04em;color:var(--ink)}
+.vc-when{margin-top:10px;text-shadow:0 1px 10px rgba(0,0,0,.8)}
+.vc-when .ev-md{font-size:36px}
+.vc-when .ev-sep{font-size:24px}
+.vc-when .ev-time{font-size:18px}
+.vcard--sm .vc-when{margin:0 0 4px}
+.vcard--sm .vc-when .ev-md{font-size:21px}
+.vcard--sm .vc-when .ev-sep{font-size:15px}
+.vcard--sm .vc-when .ev-wd{font-size:9px}
+.vcard--sm .vc-when{gap:0 6px}
+.vcard--sm .vc-when .ev-time{font-size:12px}
+.modal-when{margin-top:12px}
+.modal-when .ev-md{font-size:42px}
+.modal-when .ev-sep{font-size:28px}
+.modal-when .ev-wd{font-size:12px}
+.modal-when .ev-time{font-size:20px}
+#eventModal .modal-name{margin-top:10px}
+.modal-place{margin-top:6px;font-size:13.5px;line-height:1.8;color:var(--ink)}
 #eventModal .cal-badges{margin-top:10px}
 #eventModal .modal-bio{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .btn-event{border:1.5px solid var(--cyan);background:rgba(63,227,255,.10);color:#fff}
