@@ -212,6 +212,24 @@
   </div>
 </div>
 
+<!-- イベント告知のモーダル（SHOWCASE の INFO 枠から開く。calendar.json の top 由来。中身は js/app.js の openEvent） -->
+<div class="modal" id="eventModal" onclick="if(event.target===this)closeEvent()">
+  <div class="modal-card" id="eventCard" role="dialog" aria-modal="true" aria-labelledby="eName">
+    <button class="modal-close" type="button" onclick="closeEvent()" aria-label="閉じる">×</button>
+    <div class="modal-art work-art" id="eArt"></div>
+    <div class="modal-body">
+      <span class="modal-cat">INFO<span class="modal-cat-ja">イベント告知</span></span>
+      <div class="modal-name" id="eName"></div>
+      <div class="modal-when" id="eWhen"></div>
+      <div class="cal-badges" id="eNotice" hidden><span class="cal-badge is-notice">お知らせあり・詳細はリンク先で確認</span></div>
+      <div class="modal-bio" id="ePr" hidden></div>
+      <div class="modal-actions">
+        <a class="btn btn-event" id="eLink" target="_blank" rel="noopener noreferrer">告知ページを見る →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 歌い手枠の曲目モーダル（プレーヤーの「詳細を見る」から開く） -->
 <div class="modal" id="songsModal" onclick="if(event.target===this)closeSongs()">
   <div class="modal-card is-narrow" role="dialog" aria-modal="true" aria-labelledby="songsTitle">

@@ -452,6 +452,14 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 .modal-name{margin-top:6px;font-size:22px;font-weight:700}
 .modal-bio{margin-top:12px;font-size:13px;line-height:1.9;color:var(--dim);white-space:pre-line}
 .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+/* イベント告知のモーダル（#eventModal）：色はシアン。日時と場所・PR コメントは改行をそのまま出す */
+#eventModal{--accent:var(--cyan)}
+.modal-cat-ja{margin-left:10px;font-family:var(--jp);font-size:10.5px;letter-spacing:.16em;color:var(--dim)}
+.modal-when{margin-top:8px;font-size:13px;line-height:1.8;color:var(--ink);white-space:pre-line}
+#eventModal .cal-badges{margin-top:10px}
+#eventModal .modal-bio{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.btn-event{border:1.5px solid var(--cyan);background:rgba(63,227,255,.10);color:#fff}
+.btn-event:hover{background:rgba(63,227,255,.22)}
 .modal-head{margin:8px 0 16px;font-size:20px;font-weight:700}
 
 /* URATENとは */
