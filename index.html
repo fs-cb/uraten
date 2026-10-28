@@ -140,13 +140,18 @@
     </nav>
   </section>
 
-  <!-- イベント（直近5件。js/calendar.js の renderTop） -->
+  <!-- イベント（イベント告知＋直近5件。js/calendar.js の renderTop） -->
   <section class="sec" id="event">
     <div class="sec-head">
       <h2 class="sec-title">EVENT</h2>
       <span class="sec-ja">イベント</span>
       <span class="sec-line"></span>
       <a class="sec-more" href="./calendar.html" target="_blank" rel="noopener">VIEW ALL →</a>
+    </div>
+    <!-- イベント告知（calendar.json の top）。0件・読めないときは欄ごと隠したまま -->
+    <div class="evt-top" id="eventTop" hidden>
+      <h3 class="evt-head">ANNOUNCEMENT<span>イベント告知</span></h3>
+      <div class="evt-list" id="eventTopList"></div>
     </div>
     <div class="cal" id="calList">
       <div class="cal-empty">イベント情報を読み込んでいます…</div>

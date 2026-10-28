@@ -9,15 +9,20 @@
      （リアルタイムの進行を追う用途ではないため）
    - イベント名・会場は申請者が入力した文字列。必ず textContent で入れる
    - url は http(s) で始まるものだけリンクにする
+   - チラシ（flyer）は FLYER_BASE で始まるものだけ使う。ほかは「チラシ無し」として扱う
+   - top（トップのイベント告知）も同じファイルに入っている。ファイルは1回だけ読む
    - 状態はブラウザに保存しない。外部ライブラリを使わない
 ========================================================= */
 (function (global) {
   'use strict';
 
-  var DATA_URL = 'https://media.ura-ten.jp/calendar/calendar.json';
-  var TOP_MAX  = 5;
-  var WDAY     = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  var YMD      = /^\d{4}-\d{2}-\d{2}$/;
+  var DATA_URL   = 'https://media.ura-ten.jp/calendar/calendar.json';
+  var FLYER_BASE = 'https://media.ura-ten.jp/calendar/img/';
+  var TOP_MAX    = 5;
+  var THUMB      = 56;     /* 行のチラシの表示サイズ（px。CSS の .cal-flyer と合わせる） */
+  var WDAY       = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  var YMD        = /^\d{4}-\d{2}-\d{2}$/;
+  var HHMM       = /^\d{2}:\d{2}$/;
 
   var MSG = {
     empty:  '現在掲載中のイベントはありません',
@@ -63,30 +68,46 @@
     return (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u : '';
   }
 
-  /* 表示に使う項目だけを取り出す。未知のフィールドが増えても無視して動く */
-  function normalize(data) {
-    var raw = (data && Array.isArray(data.events)) ? data.events : [];
+  /* チラシは自分たちのバケットの決まった場所に置いたものだけ */
+  function safeFlyer(u) {
+    return (typeof u === 'string' && u.indexOf(FLYER_BASE) === 0 && u.indexOf('..') < 0) ? u : '';
+  }
+
+  function size(n) { return (typeof n === 'number' && n > 0 && n % 1 === 0) ? n : null; }
+
+  /* 表示に使う項目だけを取り出す。未知のフィールドが増えても無視して動く。
+     featured（有料の印）は表示に使わない。チラシの有無は flyer で見る */
+  function normalize(raw) {
     var out = [];
-    raw.forEach(function (ev) {
+    (Array.isArray(raw) ? raw : []).forEach(function (ev) {
       if (!ev || typeof ev.start !== 'string' || !YMD.test(ev.start)) return;
       var end = (typeof ev.end === 'string' && YMD.test(ev.end) && ev.end > ev.start) ? ev.end : null;
+      var flyer = safeFlyer(ev.flyer);
       out.push({
         name:   typeof ev.name === 'string' ? ev.name : '',
         start:  ev.start,
         end:    end,
+        time:   (typeof ev.time === 'string' && HHMM.test(ev.time)) ? ev.time : null,
+        region: (typeof ev.region === 'string' && ev.region) ? ev.region : null,
         venue:  typeof ev.venue === 'string' ? ev.venue : '',
         url:    safeUrl(ev.url),
-        notice: ev.notice === true
+        notice: ev.notice === true,
+        flyer:  flyer,
+        w:      flyer ? size(ev.w) : null,
+        h:      flyer ? size(ev.h) : null
       });
     });
     return out;
   }
 
+  /* { events: カレンダー, top: トップのイベント告知 } */
   function load() {
     return fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
-    }).then(normalize);
+    }).then(function (data) {
+      return { events: normalize(data && data.events), top: normalize(data && data.top) };
+    });
   }
 
   /* ---------- 並び順 ---------- */
@@ -129,18 +150,21 @@
     box.appendChild(el('div', 'cal-empty', text));
   }
 
-  /* 1件分の行。url があれば行全体がリンクになる */
-  function buildRow(ev, today) {
-    var row = el(ev.url ? 'a' : 'div', 'cal-row' + (isEnded(ev, today) ? ' is-done' : ''));
+  /* url があれば全体を新しいタブで開くリンクにする（行・告知の1件で共用） */
+  function linkOrBox(ev, cls) {
+    var node = el(ev.url ? 'a' : 'div', cls);
     if (ev.url) {
-      row.href = ev.url;
-      row.target = '_blank';
-      row.rel = 'noopener noreferrer';
+      node.href = ev.url;
+      node.target = '_blank';
+      node.rel = 'noopener noreferrer';
     }
+    return node;
+  }
 
-    /* 日付枠は3段。上に月（「10.」）、その下に日付を大きく、いちばん下に曜日。
-       期間は日付を「13 - 14」、曜日を「TUE - WED」にする。
-       月をまたぐ期間だけ、月を「10. - 11.」にする */
+  /* 日付枠は3段。上に月（「10.」）、その下に日付を大きく、いちばん下に曜日。
+     期間は日付を「13 - 14」、曜日を「TUE - WED」にする。
+     月をまたぐ期間だけ、月を「10. - 11.」にする */
+  function buildDate(ev) {
     var s = ymd(ev.start);
     var e = ev.end ? ymd(ev.end) : null;
     var date = el('div', 'cal-date');
@@ -152,10 +176,20 @@
     }
     date.appendChild(day);
     date.appendChild(el('span', 'cal-wd', weekday(ev.start) + (e ? ' - ' + weekday(ev.end) : '')));
+    return date;
+  }
 
-    var info = el('div', 'cal-info');
+  /* 名前・「18:00〜 福岡｜会場」・お知らせあり。無い項目は出さない（「未定」とも書かない） */
+  function fillInfo(info, ev) {
     info.appendChild(el('b', 'cal-name', ev.name));        /* 申請者入力 → textContent */
-    info.appendChild(el('span', 'cal-venue', ev.venue));   /* 同上 */
+
+    var place = [ev.region, ev.venue].filter(Boolean).join('｜');   /* 同上 */
+    if (ev.time || place) {
+      var meta = el('span', 'cal-venue');
+      if (ev.time) meta.appendChild(el('span', 'cal-time', ev.time + '〜'));
+      if (place) meta.appendChild(document.createTextNode(place));
+      info.appendChild(meta);
+    }
 
     /* 中止・延期があるイベントへ誘導しないよう、トップにも一覧にも出す */
     if (ev.notice) {
@@ -163,10 +197,73 @@
       badges.appendChild(el('span', 'cal-badge is-notice', MSG.notice));
       info.appendChild(badges);
     }
+    return info;
+  }
 
-    row.appendChild(date);
-    row.appendChild(info);
+  /* チラシの画像。読めなければ onFail（既定は画像を外すだけ） */
+  function flyerImg(ev, cls, alt, onFail) {
+    var img = el('img', cls);
+    img.alt = alt;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.onerror = onFail || function () { if (img.parentNode) img.parentNode.removeChild(img); };
+    img.src = ev.flyer;
+    return img;
+  }
+
+  /* 1件分の行。url があれば行全体がリンクになる */
+  function buildRow(ev, today) {
+    var row = linkOrBox(ev, 'cal-row' + (isEnded(ev, today) ? ' is-done' : ''));
+    row.appendChild(buildDate(ev));
+    row.appendChild(fillInfo(el('div', 'cal-info'), ev));
+
+    /* イベント告知のチラシを小さく（アイコン代わり）。名前は行にあるので alt は空。
+       切り取ってよい（文字は読めなくてよい）。無い行は場所を空けない */
+    if (ev.flyer) {
+      var img = flyerImg(ev, 'cal-flyer', '');
+      img.width = THUMB;
+      img.height = THUMB;
+      row.appendChild(img);
+    }
     return row;
+  }
+
+  /* トップのイベント告知の1件。チラシは切り取らず、余白に同じ画像のぼかしを敷く */
+  function buildFeatured(ev, onFail) {
+    var card = linkOrBox(ev, 'evt-card');
+
+    var frame = el('div', 'evt-flyer');
+    var blur = flyerImg(ev, 'evt-flyer-blur', '');
+    blur.setAttribute('aria-hidden', 'true');
+    var img = flyerImg(ev, 'evt-flyer-img', ev.name, function () { onFail(card); });
+    if (ev.w && ev.h) { img.width = ev.w; img.height = ev.h; }
+    frame.appendChild(blur);
+    frame.appendChild(img);
+
+    var info = el('div', 'evt-info');
+    info.appendChild(buildDate(ev));
+    card.appendChild(frame);
+    card.appendChild(fillInfo(info, ev));
+    return card;
+  }
+
+  /* トップのイベント告知の欄。0件・読めないときは欄ごと（見出しも）出さない */
+  function renderFeatured(top, today) {
+    var wrap = document.getElementById('eventTop');
+    var box  = document.getElementById('eventTopList');
+    if (!wrap || !box) return;
+
+    /* 掲載料をいただいているもの同士なので、同じ開催日は読み込みごとに入れ替える */
+    var list = byStart(top.filter(function (ev) { return ev.flyer && !isEnded(ev, today); }));
+    box.textContent = '';
+    wrap.hidden = !list.length;
+
+    /* チラシが読めなかった1件は外す。全部外れたら欄ごと隠す */
+    var drop = function (card) {
+      if (card.parentNode) card.parentNode.removeChild(card);
+      if (!box.children.length) wrap.hidden = true;
+    };
+    list.forEach(function (ev) { box.appendChild(buildFeatured(ev, drop)); });
   }
 
   /* 月見出しを挟みながら並べる */
@@ -182,16 +279,19 @@
     });
   }
 
-  /* ---------- トップページ（直近5件） ---------- */
+  /* ---------- トップページ（イベント告知＋直近5件） ---------- */
 
   function renderTop() {
     var box = document.getElementById('calList');
     if (!box) return;
     var rest = document.getElementById('calRest');
 
-    load().then(function (events) {
+    load().then(function (data) {
       var today = todayJst();
-      var open = byStart(events.filter(function (ev) { return !isEnded(ev, today); }));
+      renderFeatured(data.top, today);
+
+      /* 告知のイベントも一覧から外さない（イベント告知はカレンダーにも載る） */
+      var open = byStart(data.events.filter(function (ev) { return !isEnded(ev, today); }));
 
       if (!open.length) {
         note(box, MSG.empty);
@@ -227,7 +327,8 @@
 
     if (doneWrap) doneWrap.hidden = true;
 
-    load().then(function (events) {
+    load().then(function (data) {
+      var events = data.events;
       var today = todayJst();
       var open = byStart(events.filter(function (ev) { return !isEnded(ev, today); }));
       var done = byStart(events.filter(function (ev) { return isEnded(ev, today); }), true);  /* 新しい順 */

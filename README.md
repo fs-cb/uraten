@@ -6,7 +6,7 @@
 
 - リポジトリ内の静的 JSON（`data/bgm.json` / `data/bgm-tags.json`）… 手で更新して push する
 - R2 の公開 JSON … `uraten-ops` の変換スクリプトが承認済みデータだけを置く。このリポジトリは読み手であり、生成側のコードは持たない
-  - `https://media.ura-ten.jp/calendar/calendar.json` … イベントカレンダー（トップ直近5件・`calendar.html`）
+  - `https://media.ura-ten.jp/calendar/calendar.json` … イベントカレンダー（トップのイベント告知＝`top`・直近5件・`calendar.html`）
   - `https://media.ura-ten.jp/gallery/gallery.json` … イラスト（トップのスライドショーとイラスト一覧の両方。`slideshow.json` は無い）
 
 ## 構成
