@@ -187,6 +187,11 @@
       who.appendChild(s.name);
       s.text.appendChild(who);
     }else{
+      if(key === 'info'){
+        // 開催日は名前の上に大きく（小枠にも出す）
+        s.when = mk('div', 'ev-when vc-when');
+        s.text.appendChild(s.when);
+      }
       s.text.appendChild(s.name);
     }
     s.text.appendChild(s.bio);
@@ -273,6 +278,7 @@
 
     s.name.textContent = w.name;
     if(s.icon) fillIcon(s.icon, w);
+    if(s.when) fillWhen(s.when, w);
     s.bio.textContent = w.bio || '';
     s.bio.hidden = !w.bio;
     if(s.tags){
@@ -353,14 +359,22 @@
   }
 
   // --- INFO（イベント告知）。calendar.json の top を、その順（開催日順）のまま時計で回す ---
-  // 日付・時刻は1行目、地域と会場は2行目（大枠だけに出る）。文字は textContent で入る
+  // 開催日と時刻は名前の上に大きく（fillWhen）、地域と会場は bio の欄（大枠だけに出る）。文字は textContent で入る
   let eventSlides = [];
   function toEventSlide(ev){
-    const cal = window.uratenCalendar;
-    const when = cal.dateLabel(ev) + (ev.time ? '　' + ev.time + '〜' : '');
-    const place = [ev.region, ev.venue].filter(Boolean).join('｜');
     return { kind:'event', name:ev.name, image:ev.flyer, w:ev.w, h:ev.h, link:ev.url, notice:ev.notice,
-             bio:[when, place].filter(Boolean).join('\n'), pr:ev.pr, url:null };
+             dates:window.uratenCalendar.dateParts(ev), time:ev.time,
+             bio:[ev.region, ev.venue].filter(Boolean).join('｜'), pr:ev.pr, url:null };
+  }
+  // 「11.20 FRI 17:00〜」。期間は「12.20 SUN - 12.21 MON」。数字を大きく、曜日・時刻は添える
+  function fillWhen(box, w){
+    box.textContent = '';
+    w.dates.forEach((d, i)=>{
+      if(i) box.appendChild(mk('span', 'ev-sep', '-'));
+      box.appendChild(mk('b', 'ev-md', d.md));
+      box.appendChild(mk('span', 'ev-wd', d.wd));
+    });
+    if(w.time) box.appendChild(mk('span', 'ev-time', w.time + '〜'));
   }
 
   // イベント告知のモーダル：チラシ（切り取らない）・名前・日時と場所・お知らせあり・PR コメント・告知ページへのボタン。
@@ -375,7 +389,10 @@
     setImg(img, w, slideAlt(w));
     art.appendChild(img);
     document.getElementById('eName').textContent = w.name;
-    document.getElementById('eWhen').textContent = w.bio;
+    fillWhen(document.getElementById('eWhen'), w);
+    const place = document.getElementById('ePlace');
+    place.textContent = w.bio;
+    place.hidden = !w.bio;
     document.getElementById('eNotice').hidden = !w.notice;
     const pr = document.getElementById('ePr');
     pr.textContent = w.pr || '';

@@ -246,10 +246,12 @@
     });
   }
 
-  /* 「12.20 SUN」、期間は「12.20 SUN - 12.21 MON」 */
-  function dateLabel(ev) {
-    var one = function (d) { var p = ymd(d); return p.m + '.' + p.d + ' ' + weekday(d); };
-    return one(ev.start) + (ev.end ? ' - ' + one(ev.end) : '');
+  /* [{ md: '12.20', wd: 'SUN' }]、期間は終了日の分も足す（INFO 枠・モーダルが大きく組む） */
+  function dateParts(ev) {
+    return [ev.start].concat(ev.end ? [ev.end] : []).map(function (d) {
+      var p = ymd(d);
+      return { md: p.m + '.' + p.d, wd: weekday(d) };
+    });
   }
 
   /* ---------- トップページ（直近5件） ---------- */
@@ -329,6 +331,6 @@
     renderTop: renderTop,
     renderFull: renderFull,
     loadTop: loadTop,
-    dateLabel: dateLabel
+    dateParts: dateParts
   };
 })(window);
