@@ -92,7 +92,7 @@
   //   - 次の1枚は切り替えの少し前に先読み＋decode() しておき、切替時は class の付け替えだけにする
   //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
   // INFO はイベント告知（calendar.json の top。読み込みは js/calendar.js の loadTop で、カレンダーと1回を共有）。
-  // 画像はチラシ。枠を押すと主催者の告知ページを新しいタブで開く（モーダルは無い。「推す」も出さない）。
+  // 画像はチラシ。枠を押すとイベント告知のモーダル（#eventModal。チラシ・内容・PR コメント）を開く。「推す」は出さない。
   // どの枠も、データが空・読み込み失敗のときは募集の案内になる。
   // PROFILE のブロックのスライドショー（有料プロフィール）も同じ作り・同じ時計で、枠は1つ（startProfileShow）。
   const SHOW_MS = 12000;
@@ -226,15 +226,15 @@
     root.appendChild(prog);
     root.appendChild(s.dots);
 
-    // 枠を押すと作品の詳細モーダル（一覧と共用）。プロフィールはプロフィールページ、
-    // イベント告知は主催者の告知ページを、新しいタブで開く（放送を止めないため）
+    // 枠を押すと作品の詳細モーダル（一覧と共用）、イベント告知はイベント告知のモーダル。
+    // プロフィールはプロフィールページを新しいタブで開く（放送を止めないため）
     root.tabIndex = 0;
     root.setAttribute('role', 'button');
     const open = ()=>{
       if(s.cur < 0) return;
       const w = s.list[s.cur];
       if(w.kind === 'profile') window.open(profileHref(w.p), '_blank', 'noopener');
-      else if(w.kind === 'event'){ if(w.link) window.open(w.link, '_blank', 'noopener'); }
+      else if(w.kind === 'event') openEvent(w);
       else openWork(w);
     };
     root.addEventListener('click', open);
@@ -285,7 +285,7 @@
     if(w.url) s.btn.href = w.url;
     else s.btn.removeAttribute('href');
     s.btn.hidden = !w.url;
-    s.root.setAttribute('aria-label', w.kind === 'event' ? w.name + 'の告知ページを開く' : slideAlt(w) + 'を開く');
+    s.root.setAttribute('aria-label', w.kind === 'event' ? w.name + 'の告知を開く' : slideAlt(w) + 'を開く');
     s.count.textContent = '';
     s.count.appendChild(mk('b', null, pad2(idx + 1)));
     s.count.appendChild(document.createTextNode(' / ' + pad2(s.list.length)));
@@ -360,7 +360,36 @@
     const when = cal.dateLabel(ev) + (ev.time ? '　' + ev.time + '〜' : '');
     const place = [ev.region, ev.venue].filter(Boolean).join('｜');
     return { kind:'event', name:ev.name, image:ev.flyer, w:ev.w, h:ev.h, link:ev.url, notice:ev.notice,
-             bio:[when, place].filter(Boolean).join('\n'), url:null };
+             bio:[when, place].filter(Boolean).join('\n'), pr:ev.pr, url:null };
+  }
+
+  // イベント告知のモーダル：チラシ（切り取らない）・名前・日時と場所・お知らせあり・PR コメント・告知ページへのボタン。
+  // 文字はすべて申込者が書いたものなので textContent で入れる
+  function openEvent(w){
+    const modal = document.getElementById('eventModal');
+    if(!modal) return;
+    const art = document.getElementById('eArt');
+    art.textContent = '';
+    const img = mk('img', 'work-img');
+    img.decoding = 'async';
+    setImg(img, w, slideAlt(w));
+    art.appendChild(img);
+    document.getElementById('eName').textContent = w.name;
+    document.getElementById('eWhen').textContent = w.bio;
+    document.getElementById('eNotice').hidden = !w.notice;
+    const pr = document.getElementById('ePr');
+    pr.textContent = w.pr || '';
+    pr.hidden = !w.pr;
+    const link = document.getElementById('eLink');
+    if(w.link) link.href = w.link;
+    else link.removeAttribute('href');
+    link.hidden = !w.link;
+    modal.classList.add('open');
+    document.getElementById('eventCard').scrollTop = 0;
+  }
+  function closeEvent(){
+    const m = document.getElementById('eventModal');
+    if(m) m.classList.remove('open');
   }
   function loadEvents(){
     const cal = window.uratenCalendar;
@@ -444,7 +473,7 @@
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeSched();closeSongs();closeAbout();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeEvent();closeSched();closeSongs();closeAbout();closeMenu()}});
 
 
 // ===== 三本線のメニュー（画面幅が狭いとき） =====

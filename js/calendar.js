@@ -95,7 +95,8 @@
         notice: ev.notice === true,
         flyer:  flyer,
         w:      flyer ? size(ev.w) : null,
-        h:      flyer ? size(ev.h) : null
+        h:      flyer ? size(ev.h) : null,
+        pr:     (typeof ev.pr === 'string' && ev.pr.trim()) ? ev.pr.trim() : null   /* イベント告知の PR コメント（改行あり） */
       });
     });
     return out;
