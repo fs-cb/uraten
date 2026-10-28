@@ -91,8 +91,9 @@
   //     （ぼかした背景は同じ画像なので、通信は1枚分で済む）
   //   - 次の1枚は切り替えの少し前に先読み＋decode() しておき、切替時は class の付け替えだけにする
   //   - 見えていない間（裏タブ・画面外・ギャラリー表示中）はタイマーを止め、戻ったら時計から計算し直す
-  // INFO はまだ公開データが無いので、募集の案内だけを出す（画像は読まない）。
-  // ILLUSTRATION・PHOTO も、slideshow が空・読み込み失敗のときは募集の案内になる。
+  // INFO はイベント告知（calendar.json の top。読み込みは js/calendar.js の loadTop で、カレンダーと1回を共有）。
+  // 画像はチラシ。枠を押すと主催者の告知ページを新しいタブで開く（モーダルは無い。「推す」も出さない）。
+  // どの枠も、データが空・読み込み失敗のときは募集の案内になる。
   // PROFILE のブロックのスライドショー（有料プロフィール）も同じ作り・同じ時計で、枠は1つ（startProfileShow）。
   const SHOW_MS = 12000;
   const SHOW_PRELOAD_MS = 1500;  // 切り替えのこれだけ前に次の画像を読み始める
@@ -123,10 +124,14 @@
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
   // 画像の alt と、枠を押したときの読み上げ（作品は「{掲載名}のイラスト」、プロフィールは「{掲載名}のプロフィール」）
-  function slideAlt(w){ return w.name + (w.kind === 'profile' ? 'のプロフィール' : WORK_KINDS[w.kind].alt); }
+  function slideAlt(w){
+    if(w.kind === 'profile') return w.name + 'のプロフィール';
+    if(w.kind === 'event') return w.name + 'のチラシ';
+    return w.name + WORK_KINDS[w.kind].alt;
+  }
 
   // 1枠分を組み立てる。list が空なら募集の案内だけを出す
-  // key：illust | photo | info | profile（profile の list はプロフィールを toProfileSlide したもの）
+  // key：illust | photo | info | profile（profile の list は toProfileSlide、info の list は toEventSlide したもの）
   function makeSlot(key, cat, size, list){
     const root = mk('article', 'vcard vcard--' + size);
     root.dataset.cat = key;
@@ -191,6 +196,14 @@
       s.tags.hidden = true;
       s.text.appendChild(s.tags);
     }
+    if(key === 'info'){
+      // 中止・延期の「お知らせあり」（カレンダーと同じく、トップでも出す）
+      s.notice = mk('span', 'cal-badge is-notice vc-notice');
+      s.notice.appendChild(document.createTextNode('お知らせあり'));
+      s.notice.appendChild(mk('span', 'vc-notice-more', '・詳細はリンク先で確認'));
+      s.notice.hidden = true;
+      s.text.appendChild(s.notice);
+    }
     s.btn = mk('a', 'vc-btn');
     s.btn.target = '_blank';
     s.btn.rel = 'noopener noreferrer';
@@ -213,13 +226,15 @@
     root.appendChild(prog);
     root.appendChild(s.dots);
 
-    // 枠を押すと作品の詳細モーダル（一覧と共用）。プロフィールはプロフィールページを新しいタブで（放送を止めないため）
+    // 枠を押すと作品の詳細モーダル（一覧と共用）。プロフィールはプロフィールページ、
+    // イベント告知は主催者の告知ページを、新しいタブで開く（放送を止めないため）
     root.tabIndex = 0;
     root.setAttribute('role', 'button');
     const open = ()=>{
       if(s.cur < 0) return;
       const w = s.list[s.cur];
       if(w.kind === 'profile') window.open(profileHref(w.p), '_blank', 'noopener');
+      else if(w.kind === 'event'){ if(w.link) window.open(w.link, '_blank', 'noopener'); }
       else openWork(w);
     };
     root.addEventListener('click', open);
@@ -266,10 +281,11 @@
       if(w.area) s.tags.appendChild(mk('li', 'pf-tag pf-area', w.area));
       s.tags.hidden = !s.tags.children.length;
     }
+    if(s.notice) s.notice.hidden = !w.notice;
     if(w.url) s.btn.href = w.url;
     else s.btn.removeAttribute('href');
     s.btn.hidden = !w.url;
-    s.root.setAttribute('aria-label', slideAlt(w) + 'を開く');
+    s.root.setAttribute('aria-label', w.kind === 'event' ? w.name + 'の告知ページを開く' : slideAlt(w) + 'を開く');
     s.count.textContent = '';
     s.count.appendChild(mk('b', null, pad2(idx + 1)));
     s.count.appendChild(document.createTextNode(' / ' + pad2(s.list.length)));
@@ -336,10 +352,28 @@
     document.addEventListener('visibilitychange', ()=>live.forEach(slotUpdate));
   }
 
+  // --- INFO（イベント告知）。calendar.json の top を、その順（開催日順）のまま時計で回す ---
+  // 日付・時刻は1行目、地域と会場は2行目（大枠だけに出る）。文字は textContent で入る
+  let eventSlides = [];
+  function toEventSlide(ev){
+    const cal = window.uratenCalendar;
+    const when = cal.dateLabel(ev) + (ev.time ? '　' + ev.time + '〜' : '');
+    const place = [ev.region, ev.venue].filter(Boolean).join('｜');
+    return { kind:'event', name:ev.name, image:ev.flyer, w:ev.w, h:ev.h, link:ev.url, notice:ev.notice,
+             bio:[when, place].filter(Boolean).join('\n'), url:null };
+  }
+  function loadEvents(){
+    const cal = window.uratenCalendar;
+    if(!cal || !cal.loadTop) return Promise.resolve();
+    return cal.loadTop()
+      .then(list=>{ eventSlides = list.map(toEventSlide); })
+      .catch(()=>{ eventSlides = []; });
+  }
+
   function startShow(){
     const box = document.getElementById('visual');
     box.textContent = '';
-    const data = { illust:works.illust.slides, photo:works.photo.slides, info:[] };
+    const data = { illust:works.illust.slides, photo:works.photo.slides, info:eventSlides };
     const slots = shuffle(Object.keys(SHOWCASE)).map((key, i)=>makeSlot(key, SHOWCASE[key], i === 0 ? 'lg' : 'sm', data[key]));
     slots.forEach(s=>box.appendChild(s.root));
     runSlots(slots);
@@ -362,7 +396,7 @@
   }
   fetchProfileSlides().then(startProfileShow, ()=>startProfileShow([]));
 
-  // --- 読み込み（種類ごとに1回だけ。SHOWCASE は両方そろってから組み立てる） ---
+  // --- 読み込み（種類ごとに1回だけ。SHOWCASE はイラスト・フォト・イベント告知がそろってから組み立てる） ---
   function loadWorks(kind){
     const d = works[kind];
     return fetchWorks(kind)
@@ -373,7 +407,7 @@
       .catch(()=>{ d.items = []; d.slides = []; })
       .then(()=>{ if(galleryKind === kind) renderGallery(); });
   }
-  Promise.all(Object.keys(works).map(loadWorks)).then(startShow);
+  Promise.all(Object.keys(works).map(loadWorks).concat(loadEvents())).then(startShow);
 
   // ===== 放送予定（このあと・当日のスケジュール） =====
   // 読み込み・放送日の判定・描画は js/onair.js（schedule.html と共用）に置いてある。
