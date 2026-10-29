@@ -594,7 +594,8 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
 
   .visual{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;height:auto;gap:10px}
   .show-status{padding:60px 0}
-  .vcard--lg{grid-row:auto;grid-column:1 / 3;aspect-ratio:4 / 5;max-height:78vh}
+  /* width:100%：aspect-ratio のあるグリッド項目は横に伸びないため、max-height が横幅まで縮めてしまう（770px 前後で右が空く） */
+  .vcard--lg{grid-row:auto;grid-column:1 / 3;aspect-ratio:4 / 5;max-height:78vh;width:100%}
   .vcard--sm{aspect-ratio:3 / 4}
   .vcard{border-radius:14px}
   .vc-head{padding:16px 16px}

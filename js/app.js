@@ -521,11 +521,12 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 // - 「放送中」の表示は AzuraCast から取る（いま放送中API ＋ スケジュールAPI）。
 //   番組かどうかは song.custom_fields.oa_id の有無で判定する。
 //     oa_id あり → 番組：放送時間・番組タイトル・出演者・紹介URL
-//     oa_id なし → BGM：「URATEN ミュージック」・曲名・アーティスト・音源の紹介URL
+//     oa_id なし → BGM：プレイリストの時間・曲名・アーティスト・音源の紹介URL
 //   運営が手で入れた番組は oa_id が無く BGM と同じ出方になる。それでよい。
 // - 放送時間はスケジュールAPIの is_now の start〜end を使う（played_at/duration は
-//   実ファイルの長さで枠より短いため使わない）。is_now が無いときは
-//   programs.json の同じ id から拾う（js/onair.js の findById）
+//   実ファイルの長さで枠より短いため使わない）。is_now が無いときは、番組は
+//   programs.json の同じ id から拾い（js/onair.js の findById）、BGM は
+//   「URATEN ミュージック」を出す（時間を決めていないプレイリストはスケジュールAPIに載らない）
 // - 取得できない・is_online が false のときは「放送中」を出さず、その旨を出す。
 //   「このあと」は programs.json 側（js/onair.js）が独立に出す
 (function initRadio(){
@@ -601,12 +602,17 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(!oa || !oa.timeRange) return '';
     return oa.timeRange(startIso, endIso, oa.currentDay());
   }
-  function programTime(oaId){
-    // スケジュールAPIの is_now が番組の枠の時間
+  // スケジュールAPIの is_now が今の枠（番組・プレイリスト）の時間。枠は重ならない前提
+  function nowRange(){
     for(let i = 0; i < schedule.length; i++){
       const s = schedule[i];
       if(s && s.is_now) return rangeLabel(s.start, s.end);
     }
+    return '';
+  }
+  function programTime(oaId){
+    const t = nowRange();
+    if(t) return t;
     // is_now が無いときは番組表の JSON から同じ id を引く
     const oa = window.uratenOnair;
     const p = oa && oa.findById ? oa.findById(oaId) : null;
@@ -758,7 +764,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
               songsId: hasSongs ? oaId : '', art, time:programTime(oaId)});
     }else{
       curOaId = '';
-      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:BGM_LABEL});
+      // 時間を決めたプレイリストならその枠の時間、決めていなければ「URATEN ミュージック」
+      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:nowRange() || BGM_LABEL});
     }
   }
 
