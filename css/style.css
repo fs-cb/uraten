@@ -140,12 +140,24 @@
 .fx-front{z-index:45}
 .fx-ready .player,.fx-ready .vcard,.fx-ready .cal-row,.fx-ready .gl-btn{--fxa:0}
 .fx-on .player,.fx-on .vcard,.fx-on .cal-row,.fx-on .gl-btn{--fxa:1}
+/* プレーヤーは LEVEL が上がるほど透かす（body[data-fx-lv]。js/app.js の syncLook）。地の濃さは
+   LEVEL 1〜4 で .62 / .50 / .38 / .26。LEVEL 0 へ戻る途中は元の濃さへ戻していく。
+   地が薄くなるぶん、文字に影を敷いて読みやすさを保つ（影も --fxa に合わせて濃くなる） */
+.fx-on .player{--fxa:.49}
+.fx-on[data-fx-lv="0"] .player{--fxa:0}
+.fx-on[data-fx-lv="2"] .player{--fxa:.66}
+.fx-on[data-fx-lv="3"] .player{--fxa:.83}
+.fx-on[data-fx-lv="4"] .player{--fxa:1}
 .fx-ready .player{transition:--fxa 6s ease;
   background:
-    radial-gradient(440px 240px at 6% 70%,rgba(255,62,165,.22),transparent 70%) padding-box,
-    radial-gradient(420px 220px at 70% -10%,rgba(139,108,255,.16),transparent 70%) padding-box,
-    linear-gradient(120deg,rgba(24,20,46,calc(.96 - .54 * var(--fxa,0))),rgba(10,10,24,calc(.96 - .54 * var(--fxa,0)))) padding-box,
-    linear-gradient(110deg,rgba(255,62,165,.8),rgba(139,108,255,.5) 40%,rgba(63,227,255,.38)) border-box}
+    radial-gradient(440px 240px at 6% 70%,rgba(255,62,165,calc(.22 - .1 * var(--fxa,0))),transparent 70%) padding-box,
+    radial-gradient(420px 220px at 70% -10%,rgba(139,108,255,calc(.16 - .08 * var(--fxa,0))),transparent 70%) padding-box,
+    linear-gradient(120deg,rgba(24,20,46,calc(.96 - .7 * var(--fxa,0))),rgba(10,10,24,calc(.96 - .7 * var(--fxa,0)))) padding-box,
+    linear-gradient(110deg,rgba(255,62,165,.8),rgba(139,108,255,.5) 40%,rgba(63,227,255,.38)) border-box;
+  text-shadow:0 1px 3px rgba(0,0,0,calc(.9 * var(--fxa,0))),0 0 14px rgba(0,0,0,calc(.7 * var(--fxa,0)))}
+/* 補足の文字（出演者・このあとの「もっと見る」）は地が薄いと沈むので、少し明るくする */
+.fx-on[data-fx-lv="3"] .player .pl-cast,.fx-on[data-fx-lv="4"] .player .pl-cast,
+.fx-on[data-fx-lv="3"] .player .pl-next-more,.fx-on[data-fx-lv="4"] .player .pl-next-more{color:#cfcbe8}
 .fx-ready .vcard{transition:box-shadow .25s,--fxa 6s ease;
   background:linear-gradient(rgba(14,14,28,calc(1 - .58 * var(--fxa,0))),rgba(14,14,28,calc(1 - .58 * var(--fxa,0)))) padding-box,
              linear-gradient(140deg,var(--accent),rgba(139,108,255,.55) 45%,rgba(63,227,255,.35)) border-box}

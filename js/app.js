@@ -1792,8 +1792,11 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }
     // 見た目の切り替え：景色が見えている間だけ body.fx-on（パネルを透かす）。
     // LEVEL 0 では公開中と同じ見た目にする。何も描かないときは canvas も隠す。変わったときだけ書き換える
-    let shownOn = null, shownFront = null, shownCrowd = null, shownCrowdMax = null;
+    let shownOn = null, shownFront = null, shownCrowd = null, shownCrowdMax = null, shownLv = null;
     function syncLook(){
+      // LEVEL が上がるほどプレーヤーの地を透かす（css の [data-fx-lv]。効くのは fx-on の間だけ）
+      const lvAttr = String(target.level);
+      if(lvAttr !== shownLv){ shownLv = lvAttr; document.body.dataset.fxLv = lvAttr; }
       // presence 3 以上（人が集まっている）：Discord の参加ボタンの縁を光らせる（css の .fx-crowd）
       const crowd = target.presence >= 3;
       if(crowd !== shownCrowd){ shownCrowd = crowd; document.body.classList.toggle('fx-crowd', crowd); }
