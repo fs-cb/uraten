@@ -502,13 +502,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 // - 再生はユーザーのタップ起点のみ（オートプレイなし）
 // - 「放送中」の表示は AzuraCast から取る（いま放送中API ＋ スケジュールAPI）。
 //   番組かどうかは song.custom_fields.oa_id の有無で判定する。
-//     oa_id あり → 番組：時間・番組タイトル・楽曲名（歌番組だけ）・出演者名の4行。
+//     oa_id あり → 番組：時間・番組タイトル・3行目・「詳細を見る」の4行。
 //       番組タイトル・出演者・紹介URL・区分は programs.json の同じ id の番組から取る。
-//       歌番組は曲を1曲ずつ流すので、楽曲名・出演者名・紹介URL は song から取る
-//       （CM のあいだは title が「CM」で artist が空）。programs.json に無い番組は
-//       区分が分からないので、song の title・artist・url をそのまま出す
+//       3行目は出演者名。歌番組は曲を1曲ずつ流すので「楽曲名 / アーティスト名」にし、
+//       紹介URL も song から取る（CM のあいだは title が「CM」で artist が空）。
+//       programs.json に無い番組は区分が分からないので、song の title・artist・url をそのまま出す
 //     oa_id なし → BGM：プレイリストの時間・曲名・アーティスト
-//   紹介URL はボタンにせず、出演者名に付ける（新しいタブ）。
+//   紹介URL は「詳細を見る」のボタンにする（新しいタブ）。
 //   運営が手で入れた番組は oa_id が無く BGM と同じ出方になる。それでよい。
 // - 放送時間はスケジュールAPIの is_now の start〜end を使う（played_at/duration は
 //   実ファイルの長さで枠より短いため使わない）。is_now が無いときは、番組は
@@ -544,13 +544,14 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
   const OFFLINE_TEXT   = 'ただいま放送の情報を取得できません';
   const SONG_KIND      = '歌番組';   // programs.json の kind。曲を1曲ずつ流す番組
   const CM_TITLE       = 'CM';       // 歌番組の CM のあいだの song.title
+  const LINK_TEXT      = '詳細を見る →';
 
   const audio    = document.getElementById('radioAudio');
   const playBtn  = document.getElementById('playBtn');
   const titleEl  = document.getElementById('npTitle');
   const artistEl = document.getElementById('npArtist');
   const timeEl   = document.getElementById('npTime');
-  const songEl   = document.getElementById('npSong');
+  const npLinkEl = document.getElementById('npLink');
   const artEl    = document.getElementById('npArt');
   const vinylEl  = document.getElementById('npVinyl');
   const onairEl  = document.getElementById('npOnair');
@@ -624,7 +625,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
   // 止まる時間を「秒」で揃えるには、はみ出し量ごとにキーフレームの % を変える必要がある
   // （@keyframes の % は var() にできない）。そのため要素ごとの定義をここで書き出し、
-  // animation は内側の span にインラインで指定する。対象は時間・番組名・楽曲名・出演者の4行。
+  // animation は内側の span にインラインで指定する。対象は時間・番組名・3行目（出演者など）の3行。
   const mqStyle = document.createElement('style');
   document.head.appendChild(mqStyle);
   const mqRules = {};
@@ -637,21 +638,16 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         lines.forEach(measureLine);
       })
     : null;
-  // url を渡すと、行の中身を新しいタブで開くリンク（a.mq-in）にする（出演者名の行）
-  function setLine(el, text, url){
+  function setLine(el, text){
     if(!el) return;
-    const tag = url ? 'A' : 'SPAN';
     let inner = el.firstElementChild;
-    if(!inner || !inner.classList.contains('mq-in') || inner.tagName !== tag){
-      if(inner && mqObserver) mqObserver.unobserve(inner);
+    if(!inner || !inner.classList.contains('mq-in')){
       el.textContent = '';
-      inner = document.createElement(tag.toLowerCase());
+      inner = document.createElement('span');
       inner.className = 'mq-in';
-      if(url){ inner.target = '_blank'; inner.rel = 'noopener noreferrer'; }
       el.appendChild(inner);
       if(mqObserver){ mqObserver.observe(el); mqObserver.observe(inner); }
     }
-    if(url && inner.getAttribute('href') !== url) inner.href = url;
     // 20秒ごとのポーリングで同じ文字が来ても、流れている途中から先頭に戻さない
     const next = text || '';
     if(inner.textContent === next && inner.dataset.mq) return;
@@ -686,7 +682,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     let mqTimer = null;
     window.addEventListener('resize', ()=>{
       clearTimeout(mqTimer);
-      mqTimer = setTimeout(()=>{ measureLine(timeEl); measureLine(titleEl); measureLine(songEl); measureLine(artistEl); }, 200);
+      mqTimer = setTimeout(()=>{ measureLine(timeEl); measureLine(titleEl); measureLine(artistEl); }, 200);
     });
   }
 
@@ -700,14 +696,15 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     // 番組なら放送時間、BGM ならプレイリストの時間か「URATEN ミュージック」をこの行に出す
     setLine(timeEl, v.time || '');
     setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
-    // 楽曲名（歌番組だけ）と出演者名は、空なら行ごと出さない
-    if(songEl){ songEl.hidden = !v.song; setLine(songEl, v.song || ''); }
-    // 紹介URL は出演者名に付ける。出演者名が無いときはリンクも出さない。
-    // 歌番組の CM のあいだは、曲との切り替わりで高さが変わらないよう、見えない行で場所だけ残す
-    if(artistEl){
-      artistEl.hidden = !v.cast && !v.keepCast;
-      artistEl.classList.toggle('is-reserved', !v.cast && !!v.keepCast);
-      setLine(artistEl, v.cast || '', v.cast ? v.url : '');
+    // 3行目：歌番組は「楽曲名 / アーティスト名」（CM のあいだは「CM」）、番組は出演者名、BGM はアーティスト。
+    // 空でも行は残す（.pl-detail-row と同じく位置を固定するため）
+    const third = v.song ? (v.cast ? v.song + ' / ' + v.cast : v.song) : (v.cast || '');
+    setLine(artistEl, third);
+    // 紹介URL があれば「詳細を見る」。ボタンの行は空でも残す
+    if(npLinkEl){
+      npLinkEl.hidden = !v.url;
+      if(v.url){ npLinkEl.href = v.url; npLinkEl.textContent = LINK_TEXT; }
+      else { npLinkEl.removeAttribute('href'); npLinkEl.textContent = ''; }
     }
     setArt(v.art);
 
@@ -759,10 +756,10 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         // 番組表に無い（7日より前の番組・読み込めない）：区分が分からないので song をそのまま出す
         render({mode:'program', time, title: title || nowName(), cast:artist, url:httpUrl(cf.url), art});
       }else if(prog.kind === SONG_KIND){
-        // 歌番組：song は流れている曲。CM のあいだは楽曲名に「CM」、出演者名とリンクは出さない
+        // 歌番組：song は流れている曲。CM のあいだは3行目が「CM」だけになり、詳細を見るは出さない
         const cm = title === CM_TITLE && !artist;
         render({mode:'program', time, title: prog.title || nowName(), song:title,
-                cast: cm ? '' : artist, url: cm ? '' : httpUrl(cf.url), keepCast:true, art});
+                cast: cm ? '' : artist, url: cm ? '' : httpUrl(cf.url), art});
       }else{
         render({mode:'program', time, title: prog.title || nowName() || title,
                 cast: prog.cast || artist, url: prog.url || httpUrl(cf.url), art});
