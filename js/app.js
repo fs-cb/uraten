@@ -467,30 +467,12 @@
   }
   function closeSched(){document.getElementById('schedModal').classList.remove('open')}
 
-  // ===== 歌い手枠の曲目モーダル（プレーヤーの「詳細を見る」から開く） =====
-  // 放送中の回の歌い手名・曲名・作詞／作曲だけを出す。描画は js/onair.js の
-  // fillSongs に任せる（当日のスケジュールと同じ songsEl を通すので見た目が一致する）。
-  let songsModalId = '';   // 放送中の歌い手枠の放送回ID（initRadio が入れる）
-  function openSongs(){
-    const oa = window.uratenOnair;
-    if(!songsModalId || !oa || !oa.fillSongs) return;
-    const p = oa.findById(songsModalId);
-    const t = document.getElementById('songsTitle');
-    if(t) t.textContent = (p && p.title) || '';
-    if(!oa.fillSongs(document.getElementById('songsList'), songsModalId)) return;  // 曲目が無ければ開かない
-    document.getElementById('songsModal').classList.add('open');
-  }
-  function closeSongs(){
-    const m = document.getElementById('songsModal');
-    if(m) m.classList.remove('open');
-  }
-
   // ===== イベントカレンダー =====
   // 読み込み・日付判定・描画は js/calendar.js（calendar.html と共用）に置いてある。
   // ここでは直近5件の描画を呼ぶだけ。
   if(window.uratenCalendar) window.uratenCalendar.renderTop();
 
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeEvent();closeSched();closeSongs();closeAbout();closeMenu()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWork();closeEvent();closeSched();closeAbout();closeMenu()}});
 
 
 // ===== 三本線のメニュー（画面幅が狭いとき） =====
@@ -520,8 +502,13 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 // - 再生はユーザーのタップ起点のみ（オートプレイなし）
 // - 「放送中」の表示は AzuraCast から取る（いま放送中API ＋ スケジュールAPI）。
 //   番組かどうかは song.custom_fields.oa_id の有無で判定する。
-//     oa_id あり → 番組：放送時間・番組タイトル・出演者・紹介URL
-//     oa_id なし → BGM：プレイリストの時間・曲名・アーティスト・音源の紹介URL
+//     oa_id あり → 番組：時間・番組タイトル・楽曲名（歌番組だけ）・出演者名の4行。
+//       番組タイトル・出演者・紹介URL・区分は programs.json の同じ id の番組から取る。
+//       歌番組は曲を1曲ずつ流すので、楽曲名・出演者名・紹介URL は song から取る
+//       （CM のあいだは title が「CM」で artist が空）。programs.json に無い番組は
+//       区分が分からないので、song の title・artist・url をそのまま出す
+//     oa_id なし → BGM：プレイリストの時間・曲名・アーティスト
+//   紹介URL はボタンにせず、出演者名に付ける（新しいタブ）。
 //   運営が手で入れた番組は oa_id が無く BGM と同じ出方になる。それでよい。
 // - 放送時間はスケジュールAPIの is_now の start〜end を使う（played_at/duration は
 //   実ファイルの長さで枠より短いため使わない）。is_now が無いときは、番組は
@@ -555,15 +542,15 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
   const FALLBACK_TITLE = 'URATEN';
   const BGM_LABEL      = 'URATEN ミュージック';
   const OFFLINE_TEXT   = 'ただいま放送の情報を取得できません';
-  const LINK_TEXT      = '詳細を見る →';
+  const SONG_KIND      = '歌番組';   // programs.json の kind。曲を1曲ずつ流す番組
+  const CM_TITLE       = 'CM';       // 歌番組の CM のあいだの song.title
 
   const audio    = document.getElementById('radioAudio');
   const playBtn  = document.getElementById('playBtn');
   const titleEl  = document.getElementById('npTitle');
   const artistEl = document.getElementById('npArtist');
   const timeEl   = document.getElementById('npTime');
-  const npLinkEl = document.getElementById('npLink');
-  const npSongsEl= document.getElementById('npSongs');
+  const songEl   = document.getElementById('npSong');
   const artEl    = document.getElementById('npArt');
   const vinylEl  = document.getElementById('npVinyl');
   const onairEl  = document.getElementById('npOnair');
@@ -578,6 +565,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
   let pollTimer = null;             // メタ取得ポーリングの interval
   let schedule = [];                // スケジュールAPIの配列
   let curOaId = '';                 // 放送中の放送回ID（無ければ空＝BGM）
+  let lastNp = null;                // 最後に取れたいま放送中API（programs.json が届いたら当て直す）
   let curMeta = {title:FALLBACK_TITLE, artist:'', art:''};
 
   // --- 表示ガード：値が無い / 内部ファイル名っぽい値は表示しない ---
@@ -602,13 +590,21 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(!oa || !oa.timeRange) return '';
     return oa.timeRange(startIso, endIso, oa.currentDay());
   }
-  // スケジュールAPIの is_now が今の枠（番組・プレイリスト）の時間。枠は重ならない前提
-  function nowRange(){
+  // スケジュールAPIの is_now が今の枠（番組・プレイリスト）。枠は重ならない前提
+  function nowSlot(){
     for(let i = 0; i < schedule.length; i++){
       const s = schedule[i];
-      if(s && s.is_now) return rangeLabel(s.start, s.end);
+      if(s && s.is_now) return s;
     }
-    return '';
+    return null;
+  }
+  function nowRange(){
+    const s = nowSlot();
+    return s ? rangeLabel(s.start, s.end) : '';
+  }
+  function nowName(){
+    const s = nowSlot();
+    return s ? safe(s.name) : '';
   }
   function programTime(oaId){
     const t = nowRange();
@@ -628,7 +624,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
   // 止まる時間を「秒」で揃えるには、はみ出し量ごとにキーフレームの % を変える必要がある
   // （@keyframes の % は var() にできない）。そのため要素ごとの定義をここで書き出し、
-  // animation は内側の span にインラインで指定する。対象は放送時間・番組名・出演者の3行。
+  // animation は内側の span にインラインで指定する。対象は時間・番組名・楽曲名・出演者の4行。
   const mqStyle = document.createElement('style');
   document.head.appendChild(mqStyle);
   const mqRules = {};
@@ -641,16 +637,21 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
         lines.forEach(measureLine);
       })
     : null;
-  function setLine(el, text){
+  // url を渡すと、行の中身を新しいタブで開くリンク（a.mq-in）にする（出演者名の行）
+  function setLine(el, text, url){
     if(!el) return;
+    const tag = url ? 'A' : 'SPAN';
     let inner = el.firstElementChild;
-    if(!inner || !inner.classList.contains('mq-in')){
+    if(!inner || !inner.classList.contains('mq-in') || inner.tagName !== tag){
+      if(inner && mqObserver) mqObserver.unobserve(inner);
       el.textContent = '';
-      inner = document.createElement('span');
+      inner = document.createElement(tag.toLowerCase());
       inner.className = 'mq-in';
+      if(url){ inner.target = '_blank'; inner.rel = 'noopener noreferrer'; }
       el.appendChild(inner);
       if(mqObserver){ mqObserver.observe(el); mqObserver.observe(inner); }
     }
+    if(url && inner.getAttribute('href') !== url) inner.href = url;
     // 20秒ごとのポーリングで同じ文字が来ても、流れている途中から先頭に戻さない
     const next = text || '';
     if(inner.textContent === next && inner.dataset.mq) return;
@@ -685,39 +686,34 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     let mqTimer = null;
     window.addEventListener('resize', ()=>{
       clearTimeout(mqTimer);
-      mqTimer = setTimeout(()=>{ measureLine(timeEl); measureLine(titleEl); measureLine(artistEl); }, 200);
+      mqTimer = setTimeout(()=>{ measureLine(timeEl); measureLine(titleEl); measureLine(songEl); measureLine(artistEl); }, 200);
     });
   }
 
   // --- 表示反映 ---
-  // v = {mode:'program'|'bgm'|'offline', title, cast, url, songsId, art, time}
+  // v = {mode:'program'|'bgm'|'offline', time, title, song, cast, url, art}
   function render(v){
     const offline = v.mode === 'offline';
     if(onairEl)  onairEl.classList.toggle('is-offline', offline);
     if(onairTxt) onairTxt.textContent = offline ? 'OFF AIR' : 'ON AIR';
 
-    setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
-
-    // 出演者は空でも行を残す（.pl-detail-row と同じく位置を固定するため）
-    setLine(artistEl, v.cast || '');
-    // 番組なら放送時間、BGM なら「URATEN ミュージック」をこの行に出す
+    // 番組なら放送時間、BGM ならプレイリストの時間か「URATEN ミュージック」をこの行に出す
     setLine(timeEl, v.time || '');
-    // 紹介URLがあれば外部リンク、無くて曲目があれば曲目モーダルのボタン。
-    // 歌い手枠は url が null なので、曲目モーダル側が出る。
-    songsModalId = v.songsId || '';
-    if(npLinkEl){
-      npLinkEl.hidden = !v.url;
-      if(v.url){ npLinkEl.href = v.url; npLinkEl.textContent = LINK_TEXT; }
-      else { npLinkEl.removeAttribute('href'); npLinkEl.textContent = ''; }
-    }
-    if(npSongsEl){
-      const showSongs = !v.url && !!v.songsId;
-      npSongsEl.hidden = !showSongs;
-      npSongsEl.textContent = showSongs ? LINK_TEXT : '';
+    setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
+    // 楽曲名（歌番組だけ）と出演者名は、空なら行ごと出さない
+    if(songEl){ songEl.hidden = !v.song; setLine(songEl, v.song || ''); }
+    // 紹介URL は出演者名に付ける。出演者名が無いときはリンクも出さない。
+    // 歌番組の CM のあいだは、曲との切り替わりで高さが変わらないよう、見えない行で場所だけ残す
+    if(artistEl){
+      artistEl.hidden = !v.cast && !v.keepCast;
+      artistEl.classList.toggle('is-reserved', !v.cast && !!v.keepCast);
+      setLine(artistEl, v.cast || '', v.cast ? v.url : '');
     }
     setArt(v.art);
 
-    curMeta = {title: v.title || FALLBACK_TITLE, artist: v.cast || '', art: v.art || ''};
+    // ロック画面：歌番組は曲名を主にし、番組タイトルを添える
+    curMeta = {title: v.song || v.title || FALLBACK_TITLE,
+               artist: v.cast || (v.song ? v.title : '') || '', art: v.art || ''};
     setMediaMetadata();
   }
 
@@ -757,16 +753,30 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
 
     if(oaId){
       curOaId = oaId;
-      // 歌い手枠は紹介URLが無い代わりに曲目を持つ。あれば曲目モーダルを出せるようにする
+      const time = programTime(oaId);
       const prog = (window.uratenOnair && window.uratenOnair.findById) ? window.uratenOnair.findById(oaId) : null;
-      const hasSongs = !!(prog && prog.songs && prog.songs.length);
-      render({mode:'program', title, cast:artist, url:httpUrl(cf.url),
-              songsId: hasSongs ? oaId : '', art, time:programTime(oaId)});
+      if(!prog){
+        // 番組表に無い（7日より前の番組・読み込めない）：区分が分からないので song をそのまま出す
+        render({mode:'program', time, title: title || nowName(), cast:artist, url:httpUrl(cf.url), art});
+      }else if(prog.kind === SONG_KIND){
+        // 歌番組：song は流れている曲。CM のあいだは楽曲名に「CM」、出演者名とリンクは出さない
+        const cm = title === CM_TITLE && !artist;
+        render({mode:'program', time, title: prog.title || nowName(), song:title,
+                cast: cm ? '' : artist, url: cm ? '' : httpUrl(cf.url), keepCast:true, art});
+      }else{
+        render({mode:'program', time, title: prog.title || nowName() || title,
+                cast: prog.cast || artist, url: prog.url || httpUrl(cf.url), art});
+      }
     }else{
       curOaId = '';
       // 時間を決めたプレイリストならその枠の時間、決めていなければ「URATEN ミュージック」
       render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:nowRange() || BGM_LABEL});
     }
+  }
+  // 番組表（programs.json）は別に読み込むので、届いたら最後の放送中の情報を当て直す
+  // （開いた直後は番組表がまだ無く、song の値で出ているため）
+  if(window.uratenOnair && window.uratenOnair.onLoad){
+    window.uratenOnair.onLoad(()=>{ if(lastNp) applyNowPlaying(lastNp); });
   }
 
   async function poll(){
@@ -784,6 +794,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }catch(e){ /* スケジュールが取れなくても番組表の JSON で代替する */ }
 
     schedule = sc || [];              // programTime より先に入れる
+    lastNp = np;
     if(np) applyNowPlaying(np);
     else { curOaId = ''; render({mode:'offline'}); }
 
