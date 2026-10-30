@@ -119,7 +119,7 @@
 @keyframes live{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
 
 /* NEXT（このあと）。行は js/onair.js の .up / .up-time / .up-thumb / .up-name / .up-label */
-.pl-next{grid-area:next;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:10px;padding-left:28px;border-left:1px solid var(--line);min-width:0}
+.pl-next{grid-area:next;align-self:stretch;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;padding-left:28px;border-left:1px solid var(--line);min-width:0}
 .pl-next-h{flex:none;font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:.26em;color:var(--violet)}
 .pl-up{display:flex;flex-direction:column;gap:10px;min-width:0}
 .up{display:flex;gap:12px;align-items:baseline;font-size:13px;min-width:0;min-height:1.5em}
