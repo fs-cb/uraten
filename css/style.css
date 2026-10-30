@@ -83,7 +83,8 @@
 .pl-time,.pl-title,.pl-cast{white-space:nowrap;overflow:hidden}
 .pl-time{font-family:var(--display);font-size:17px;font-weight:500;letter-spacing:.08em;color:var(--cyan);min-height:1.45em}
 .pl-title{margin-top:6px;font-size:clamp(20px,2vw,26px);font-weight:700;letter-spacing:.03em;min-height:1.4em}
-.pl-cast{margin-top:5px;font-size:16px;color:var(--dim);min-height:1.55em}
+/* 3行目（出演者名・楽曲名 / アーティスト名）は読ませたい情報なので、補足の灰色より明るく・少し大きく */
+.pl-cast{margin-top:5px;font-size:17px;font-weight:500;color:rgba(247,244,255,.88);min-height:1.55em}
 .pl-detail-row{margin-top:12px;min-height:33px}
 .pl-detail{display:inline-flex;align-items:center;gap:6px;padding:6px 15px;border-radius:99px;font-size:12.5px;font-weight:500;letter-spacing:.04em;cursor:pointer;
   color:#fff;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.05);transition:.2s}
@@ -157,8 +158,7 @@
     linear-gradient(120deg,rgba(24,20,46,calc(.96 - .7 * var(--fxa,0))),rgba(10,10,24,calc(.96 - .7 * var(--fxa,0)))) padding-box,
     linear-gradient(110deg,rgba(255,62,165,.8),rgba(139,108,255,.5) 40%,rgba(63,227,255,.38)) border-box;
   text-shadow:0 1px 3px rgba(0,0,0,calc(.9 * var(--fxa,0))),0 0 14px rgba(0,0,0,calc(.7 * var(--fxa,0)))}
-/* 補足の文字（出演者・このあとの「もっと見る」）は地が薄いと沈むので、少し明るくする */
-.fx-on[data-fx-lv="3"] .player .pl-cast,.fx-on[data-fx-lv="4"] .player .pl-cast,
+/* 補足の文字（このあとの「もっと見る」）は地が薄いと沈むので、少し明るくする */
 .fx-on[data-fx-lv="3"] .player .pl-next-more,.fx-on[data-fx-lv="4"] .player .pl-next-more{color:#cfcbe8}
 .fx-ready .vcard{transition:box-shadow .25s,--fxa 6s ease;
   background:linear-gradient(rgba(14,14,28,calc(1 - .58 * var(--fxa,0))),rgba(14,14,28,calc(1 - .58 * var(--fxa,0)))) padding-box,
@@ -599,7 +599,7 @@ a.oa-cm-item:hover{border-color:var(--cyan);color:var(--cyan)}
   .pl-disc::after{width:15px;height:15px}
   .pl-time{font-size:14px}
   .pl-title{font-size:17px;margin-top:3px}
-  .pl-cast{font-size:13.5px;margin-top:3px}
+  .pl-cast{font-size:14.5px;margin-top:3px}
   .pl-detail-row{margin-top:8px;min-height:27px}
   .pl-detail{padding:4px 12px;font-size:11.5px}
   .pl-playbox{width:62px;gap:8px}

@@ -693,8 +693,8 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     if(onairEl)  onairEl.classList.toggle('is-offline', offline);
     if(onairTxt) onairTxt.textContent = offline ? 'OFF AIR' : 'ON AIR';
 
-    // 番組なら放送時間、BGM ならプレイリストの時間か「URATEN ミュージック」をこの行に出す
-    setLine(timeEl, v.time || '');
+    // 番組なら放送時間、BGM ならプレイリストの時間。時間が分からないときは番組でも「URATEN ミュージック」
+    setLine(timeEl, offline ? '' : (v.time || BGM_LABEL));
     setLine(titleEl, offline ? OFFLINE_TEXT : (v.title || FALLBACK_TITLE));
     // 3行目：歌番組は「楽曲名 / アーティスト名」（CM のあいだは「CM」）、番組は出演者名、BGM はアーティスト。
     // 空でも行は残す（.pl-detail-row と同じく位置を固定するため）
@@ -767,7 +767,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
     }else{
       curOaId = '';
       // 時間を決めたプレイリストならその枠の時間、決めていなければ「URATEN ミュージック」
-      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:nowRange() || BGM_LABEL});
+      render({mode:'bgm', title, cast:artist, url:httpUrl(cf.url), art, time:nowRange()});
     }
   }
   // 番組表（programs.json）は別に読み込むので、届いたら最後の放送中の情報を当て直す
