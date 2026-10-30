@@ -13,11 +13,15 @@
 
    トップに出すのは「このあと」だけ。番組内容・曲目・区分（kind）は
    当日のスケジュール（モーダル）と schedule.html にのみ出す。
+   当日のスケジュールの末尾には「本日のCM」（today_cm.json）を出す。
+   名前と紹介URLは申込者の入力なので、programs.json と同じく textContent で入れる
 ========================================================= */
 (function (global) {
   'use strict';
 
   var DATA_URL   = 'https://media.ura-ten.jp/onair/programs.json';
+  var CM_URL     = 'https://media.ura-ten.jp/onair/today_cm.json';   // 本日のCM（当日のスケジュールだけ）
+  var RERUN_KIND = '再放送';        // 放送枠の2回目からの放送（2026-10-29 に Picks から変更）
   var RELOAD_MS  = 5 * 60 * 1000;   // JSON は15分ごとに作り直される。5分で読み直せば十分
   var TOP_MAX    = 2;               // トップの「このあと」に出す数
   var DAYS       = 7;               // schedule.html に出す日数
@@ -33,13 +37,16 @@
     dayEmpty:  '放送予定はまだありません',
     more:      '続きを読む',
     less:      '閉じる',
-    timeNote:  '※ 開始時刻は目安です。編成の都合で前後します。'
+    timeNote:  '※ 開始時刻は目安です。編成の都合で前後します。',
+    cmHead:    '本日のCM'
   };
 
-  /* 紹介URLのリンク文言。トップのプレーヤー（js/app.js）と同じにする */
+  /* 紹介URLのリンク文言（当日のスケジュールと schedule.html の番組の行） */
   var LINK_TEXT = '詳細を見る →';
 
   var data      = null;      // 正規化した programs.json
+  var cm        = null;      // 正規化した today_cm.json（{day, list}。読めなければ null）
+  var listeners = [];        // programs.json を読み込むたびに呼ぶ（app.js のプレーヤー）
   var loadState = 'loading'; // 'loading' | 'ok' | 'error'
   var nowId     = '';        // 放送中の放送回ID（app.js の initRadio が渡す）
   var timer     = null;
@@ -267,7 +274,7 @@
     var titleLine = el('div', 'oa-titleline');
     titleLine.appendChild(el('b', 'oa-title', p.title || '（番組名は未定）'));
     if (p.id && p.id === nowId) titleLine.appendChild(el('span', 'oa-badge', 'ON AIR'));
-    else if (p.kind === 'Picks') titleLine.appendChild(el('span', 'oa-badge is-rerun', '再放送'));
+    else if (p.kind === RERUN_KIND) titleLine.appendChild(el('span', 'oa-badge is-rerun', '再放送'));
     body.appendChild(titleLine);
 
     if (p.cast) body.appendChild(el('div', 'oa-cast', p.cast));
@@ -368,6 +375,42 @@
     box.appendChild(el('p', 'oa-dayline', dayLabel(dayKey) + ' の放送'));
     fillDay(box, dayKey, Date.now());
     box.appendChild(timeNote());
+    var cmBox = cmEl(dayKey);
+    if (cmBox) box.appendChild(cmBox);
+  }
+
+  /* 本日のCM。today_cm.json の day が今の放送日のときだけ、入っている順に並べる。
+     0件・読めない・前の日のデータのときは見出しごと出さない */
+  function cmEl(dayKey) {
+    if (!cm || cm.day !== dayKey || !cm.list.length) return null;
+    var wrap = el('div', 'oa-cm');
+    wrap.appendChild(el('p', 'oa-dayline', MSG.cmHead));
+    var ul = el('ul', 'oa-cm-list');
+    for (var i = 0; i < cm.list.length; i++) {
+      var c = cm.list[i];
+      var li = el('li');
+      li.appendChild(c.url ? linkEl(c.url, c.name, 'oa-cm-item') : el('span', 'oa-cm-item', c.name));
+      ul.appendChild(li);
+    }
+    wrap.appendChild(ul);
+    return wrap;
+  }
+
+  function normalizeCm(src) {
+    if (!src || typeof src !== 'object') return null;
+    var day = str(src.day);
+    if (!YMD.test(day)) return null;
+    var list = [];
+    var raw = src.cm;
+    if (raw && raw.length) {
+      for (var i = 0; i < raw.length; i++) {
+        var c = raw[i];
+        if (!c || typeof c !== 'object') continue;
+        var name = str(c.name);
+        if (name) list.push({ name: name, url: httpUrl(c.url) });
+      }
+    }
+    return { day: day, list: list };
   }
 
   /* ---------- schedule.html（7日分） ---------- */
@@ -408,13 +451,20 @@
     renderTop();
     if (document.getElementById('schedList')) renderToday();
     if (document.getElementById('onairDays')) paintFull();
+    for (var i = 0; i < listeners.length; i++) {
+      try { listeners[i](); } catch (e) { /* 呼び出し先の失敗で描画を止めない */ }
+    }
   }
 
-  function load() {
-    return fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
+  function getJson(url) {
+    return fetch(url, { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('http ' + res.status);
       return res.json();
-    }).then(function (json) {
+    });
+  }
+
+  function loadPrograms() {
+    return getJson(DATA_URL).then(function (json) {
       var norm = normalize(json);
       if (!norm) throw new Error('bad shape');
       data = norm;
@@ -422,7 +472,21 @@
     }).catch(function (err) {
       loadState = 'error';
       if (global.console) console.error('programs.json load failed:', err);
-    }).then(paintAll);
+    });
+  }
+
+  /* 本日のCMは当日のスケジュール（トップのモーダル）にだけ出すので、そのページでだけ読む */
+  function loadCm() {
+    if (!document.getElementById('schedList')) return Promise.resolve();
+    return getJson(CM_URL).then(function (json) {
+      cm = normalizeCm(json);
+    }).catch(function () {
+      cm = null;   // 読めなければ「本日のCM」を出さないだけ
+    });
+  }
+
+  function load() {
+    return Promise.all([loadPrograms(), loadCm()]).then(paintAll);
   }
 
   var started = false;
@@ -458,20 +522,14 @@
     if (document.getElementById('schedList')) renderToday();
   }
 
-  /* 指定した放送回の曲目を box に描く。曲目が無ければ何も描かず false を返す。
-     トップのプレーヤーの「詳細を見る」から曲目モーダルを開くために app.js が使う。
-     当日のスケジュールと同じ songsEl() を通すので、見た目は一致する */
-  function fillSongs(box, id) {
-    if (!box) return false;
-    box.textContent = '';
-    var p = findById(id);
-    if (!p || !p.songs.length) return false;
-    box.appendChild(songsEl(p.songs));
-    return true;
+  /* programs.json を読み込むたびに fn を呼ぶ。トップのプレーヤーが、番組タイトル・出演者・
+     区分を番組表から当て直すために使う */
+  function onLoad(fn) {
+    if (typeof fn === 'function') listeners.push(fn);
   }
 
-  /* oa_id から番組を引く。AzuraCast のスケジュールAPIに is_now が無いときの
-     放送時間のフォールバックに使う */
+  /* oa_id から番組を引く。トップのプレーヤーが番組タイトル・出演者・紹介URL・区分を出すのと、
+     AzuraCast のスケジュールAPIに is_now が無いときの放送時間のフォールバックに使う */
   function findById(id) {
     var v = str(id);
     if (!v || !data) return null;
@@ -489,7 +547,7 @@
     renderFull: renderFull,
     setNowId: setNowId,
     findById: findById,
-    fillSongs: fillSongs,
+    onLoad: onLoad,
     currentDay: function () { return broadcastDay(new Date()); },
     timeRange: timeRange
   };
