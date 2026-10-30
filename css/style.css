@@ -33,8 +33,8 @@
 /* =========================================================
    プレーヤー
    js/app.js（initRadio）が中身を入れる：
-     #npOnair（.is-offline）/ #npOnairLabel / #npTime / #npTitle / #npSong / #npArtist /
-     #npArt / #npVinyl / #playBtn（.playing / .loading）/
+     #npOnair（.is-offline）/ #npOnairLabel / #npTime / #npTitle / #npArtist /
+     #npLink / #npArt / #npVinyl / #playBtn（.playing / .loading）/
      #player（.is-playing）/ #playLabel
    「このあと」の行（.up）は js/onair.js が #upNext に入れる
 ========================================================= */
@@ -78,19 +78,16 @@
 /* 放送時間・番組名・出演者・詳細を見る の4行。内容の有無で位置が動かないよう、
    どれも1行に固定して高さを確保する。はみ出す行は js/app.js が幅を測って横に流す */
 .pl-info{grid-area:info;min-width:0}
-/* 4行：時間・番組タイトル・楽曲名（歌番組だけ）・出演者名。楽曲名と出演者名は空なら行ごと出さない（hidden） */
-.pl-time,.pl-title,.pl-song,.pl-cast{white-space:nowrap;overflow:hidden}
+/* 4行：時間・番組タイトル・3行目（歌番組は「楽曲名 / アーティスト名」、番組は出演者名、BGM はアーティスト）・
+   詳細を見る（紹介URL があるときだけ）。3行目とボタンの行は空でも場所を残す（高さを変えないため） */
+.pl-time,.pl-title,.pl-cast{white-space:nowrap;overflow:hidden}
 .pl-time{font-family:var(--display);font-size:17px;font-weight:500;letter-spacing:.08em;color:var(--cyan);min-height:1.45em}
 .pl-title{margin-top:6px;font-size:clamp(20px,2vw,26px);font-weight:700;letter-spacing:.03em;min-height:1.4em}
-.pl-song{margin-top:3px;font-size:16px;font-weight:500;color:var(--ink);min-height:1.55em}
-.pl-cast{margin-top:1px;font-size:16px;color:var(--dim);min-height:1.55em}
-/* 紹介URL は出演者名に付ける。文字だけでは気づきにくいので下線と ↗ を付け、上下に余白を足して押しやすくする */
-.pl-cast a.mq-in{padding:3px 0;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(255,255,255,.45);
-  text-underline-offset:4px;transition:color .2s}
-.pl-cast a.mq-in::after{content:"↗";margin-left:.35em;color:var(--cyan);text-decoration:none;display:inline-block}
-.pl-cast a.mq-in:hover{color:var(--cyan);text-decoration-color:var(--cyan)}
-/* 歌番組の CM のあいだ：行は出さないが、リンクのある行と同じ高さだけ場所を残す（js/app.js の render） */
-.pl-cast.is-reserved{visibility:hidden;min-height:calc(1.55em + 6px)}
+.pl-cast{margin-top:5px;font-size:16px;color:var(--dim);min-height:1.55em}
+.pl-detail-row{margin-top:12px;min-height:33px}
+.pl-detail{display:inline-flex;align-items:center;gap:6px;padding:6px 15px;border-radius:99px;font-size:12.5px;font-weight:500;letter-spacing:.04em;cursor:pointer;
+  color:#fff;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.05);transition:.2s}
+.pl-detail:hover{border-color:var(--cyan);color:var(--cyan)}
 /* 横スクロール（はみ出す行だけ）。@keyframes と animation は js/app.js が書き出す */
 .mq-in{display:inline-block;white-space:nowrap}
 
@@ -602,10 +599,9 @@ a.oa-cm-item:hover{border-color:var(--cyan);color:var(--cyan)}
   .pl-disc::after{width:15px;height:15px}
   .pl-time{font-size:14px}
   .pl-title{font-size:17px;margin-top:3px}
-  .pl-song{font-size:13.5px;margin-top:3px}
-  .pl-cast{font-size:13.5px;margin-top:1px}
-  .pl-cast a.mq-in{padding:7px 0}
-  .pl-cast.is-reserved{min-height:calc(1.55em + 13px)}
+  .pl-cast{font-size:13.5px;margin-top:3px}
+  .pl-detail-row{margin-top:8px;min-height:27px}
+  .pl-detail{padding:4px 12px;font-size:11.5px}
   .pl-playbox{width:62px;gap:8px}
   .pl-play{width:62px;height:62px}
   .pl-play::before{inset:-5px}
