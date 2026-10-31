@@ -420,7 +420,7 @@ a.cal-row::after{content:"→";flex:none;margin-left:auto;color:var(--mute)}
    js/library.js が組み立てる。カードはアイコン・掲載名・ジャンル・活動地域だけ（無料・有料で差を付けない）
    絞り込みのボタンは押すたびにオン・オフ。ジャンルはピンク、活動地域はシアン
 ========================================================= */
-.lib-tools{display:grid;gap:14px;margin-bottom:22px;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:rgba(14,14,28,.7)}
+.lib-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-bottom:22px;padding:18px 20px;border-radius:16px;border:1px solid var(--line);background:rgba(14,14,28,.7)}
 .lib-search{display:flex;gap:8px}
 .lib-q{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);padding:10px 16px;border-radius:99px;border:1px solid var(--line2);background:rgba(255,255,255,.04);outline:none;transition:border-color .2s}
 .lib-q::placeholder{color:var(--mute)}
@@ -658,7 +658,11 @@ a.oa-cm-item:hover{border-color:var(--cyan);color:var(--cyan)}
   .pf-icon span{font-size:28px}
   .pf-name{font-size:22px}
   .pf-qa-item{padding:15px 16px}
+  /* 見出しが1行に収まらないので2行に（1行目 PROFILE・プロフィールライブラリー、2行目 線・掲載する →） */
+  .lib-head{flex-wrap:wrap;row-gap:10px}
+  .lib-head .sec-line{flex:1 1 120px}
   .lib-tools{padding:14px;gap:12px}
+  .lib-q{font-size:16px}  /* 16px 未満だと iPhone が入力時に画面を拡大する */
   .lib-group{grid-template-columns:minmax(0,1fr);gap:6px}
   .lib-label{padding-top:0}
   .lib-card{padding:18px 10px 16px;gap:10px}
