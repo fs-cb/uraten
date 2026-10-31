@@ -825,7 +825,7 @@ document.querySelectorAll('#drawer a').forEach(a=>a.addEventListener('click',clo
       navigator.mediaSession.metadata = new MediaMetadata({
         title: curMeta.title || FALLBACK_TITLE,
         artist: curMeta.artist || '',
-        album: 'URATEN Radio',
+        album: 'URATEN',
         artwork
       });
     }catch(e){ /* 一部環境では失敗しうる。無視 */ }
